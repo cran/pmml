@@ -1,0 +1,4 @@
+export(
+       pmml.kmeans,
+       pmml.rpart
+       )
