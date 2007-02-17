@@ -1,15 +1,18 @@
 \name{pmml.kmeans}
 \alias{pmml.kmeans}
 \title{
-  Generate PMML for a kmeans object (cluster)
+  Generate PMML for a kmeans object
 }
 \description{
   
-  Generate the PMML representation of an KMeans object (cluster).
+  Generate the PMML representation for a KMeans object (cluster). The
+  kmeans object (a cluster described by k centroids) is converted into a
+  PMML representation. The PMML can then be imported into other systems
+  that accept PMML.
   
 }
 \usage{
-pmml.kmeans(model, model.name="KMeans Model", app.name="Rattle/PMML",
+pmml.kmeans(model, model.name="KMeans_Model", app.name="Rattle/PMML",
             description="KMeans cluster model", copyright)
 }
 \arguments{
@@ -23,13 +26,6 @@ pmml.kmeans(model, model.name="KMeans Model", app.name="Rattle/PMML",
   \item{description}{a descriptive text for the header of the PMML.}
   
   \item{copyright}{the copyright notice for the model.}
-}
-\details{
-
-  A kmeans object (a cluster described by k centroids) is converted into
-  a PMML representation. The PMML should then be importable into other
-  systems that accept PMML.
-
 }
 \references{Package home page: \url{http://rattle.togaware.com}}
 \author{\email{Graham.Williams@togaware.com}}
