@@ -3,7 +3,7 @@
 \title{Generate PMML for an rpart object}
 \description{
   
-  Generate the Predictive Model Markup Language (PMML) representation of
+  Generate the PMML (Predictive Model Markup Language) representation of
   an \pkg{rpart} object (classification tree).  The rpart object
   (currently expected to be a classification tree) is converted into a
   PMML representation. The PMML can then be imported into other systems
@@ -11,8 +11,8 @@
   
 }
 \usage{
-pmml.rpart(model, model.name="RPart_Model", app.name="Rattle/PMML",
-           description="RPart decision tree model", copyright)
+\method{pmml}{rpart}(model, model.name="RPart_Model", app.name="Rattle/PMML",
+     description="RPart decision tree model", copyright=NULL, \dots)
 }
 \arguments{
   
@@ -26,6 +26,7 @@ pmml.rpart(model, model.name="RPart_Model", app.name="Rattle/PMML",
   
   \item{copyright}{the copyright notice for the model.}
 
+  \item{\dots}{further arguments passed to or from other methods.}
 }
 \details{
 

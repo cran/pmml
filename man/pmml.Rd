@@ -1,0 +1,46 @@
+\name{pmml}
+\alias{pmml}
+\title{Generate PMML for an R object}
+\description{
+  
+  'pmml' is a generic function implementing S3 methods used to produce
+  the PMML (Predictive Model Markup Language) representation of an R
+  object.  The PMML can then be imported into other systems that accept
+  PMML.
+  
+}
+\usage{
+pmml(model, model.name="Rattle_Model",app.name="Rattle/PMML",
+     description=NULL, copyright=NULL, \dots)
+}
+\arguments{
+  
+  \item{model}{an object to be converted to PMML.}
+
+  \item{model.name}{a name to give to the model in the PMML.}
+
+  \item{app.name}{the name of the application that generated the PMML.}
+
+  \item{description}{a descriptive text for the header of the PMML.}
+  
+  \item{copyright}{the copyright notice for the model.}
+
+  \item{\dots}{further arguments passed to or from other methods.}
+
+}
+\details{
+
+  The generated PMML can be imported into any PMML consuming
+  application, such as Teradata Warehouse Miner and DB2. Generally,
+  these applications convert the PMML into SQL for execution across a
+  database.
+
+}
+\references{Package home page: \url{http://rattle.togaware.com}}
+\author{\email{Graham.Williams@togaware.com}}
+\examples{
+library(rpart)
+fit <- rpart(Kyphosis ~ Age + Number + Start, data=kyphosis)
+pmml(fit)
+}
+\keyword{interface}

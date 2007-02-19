@@ -10,8 +10,8 @@
 
 }
 \usage{
-pmml.rsf(model, model.name="rsfForest_Model", app.name="Rattle/PMML",
-           description="Random Survival Forest Tree Model", copyright)
+\method{pmml}{rsf}(model, model.name="rsfForest_Model", app.name="Rattle/PMML",
+     description="Random Survival Forest Tree Model", copyright, ...)
 }
 \arguments{
   
@@ -28,6 +28,7 @@ pmml.rsf(model, model.name="rsfForest_Model", app.name="Rattle/PMML",
   
   \item{copyright}{the copyright notice for the model.}
 
+  \item{\dots}{further arguments passed to or from other methods.}
 }
 \details{
   The Predictive Model Markup Language is an XML based language which
@@ -100,7 +101,7 @@ veteran.out <- rsf(Survrsf(time, status)~.,
         ntree = 5,
         forest = TRUE)
 veteran.forest <- veteran.out$forest
-pmml.rsf(veteran.forest)
+pmml(veteran.forest)
 }
 \keyword{interface}
 \keyword{survival}
