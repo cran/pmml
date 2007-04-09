@@ -111,8 +111,17 @@
     WITH DATA UNIQUE PRIMARY INDEX ("UserID");
   }
 }
-\references{Package home page: \url{http://rattle.togaware.com}}
+\references{
+
+  Package home page: \url{http://rattle.togaware.com}
+
+  PMML home page: \url{http://www.dmg.org}
+
+}
 \author{\email{Graham.Williams@togaware.com}}
+\seealso{
+  \code{\link{pmml}}.
+}
 \examples{
 library(rpart)
 fit <- rpart(Kyphosis ~ Age + Number + Start, data=kyphosis)

@@ -5,12 +5,12 @@
   
   'pmml' is a generic function implementing S3 methods used to produce
   the PMML (Predictive Model Markup Language) representation of an R
-  object.  The PMML can then be imported into other systems that accept
+  model.  The PMML can then be imported into other systems that accept
   PMML.
   
 }
 \usage{
-pmml(model, model.name="Rattle_Model",app.name="Rattle/PMML",
+pmml(model, model.name="Rattle_Model", app.name="Rattle/PMML",
      description=NULL, copyright=NULL, \dots)
 }
 \arguments{
@@ -36,11 +36,17 @@ pmml(model, model.name="Rattle_Model",app.name="Rattle/PMML",
   database.
 
 }
-\references{Package home page: \url{http://rattle.togaware.com}}
+\references{
+
+  Package home page: \url{http://rattle.togaware.com}
+
+  PMML home page: \url{http://www.dmg.org}
+
+}
 \author{\email{Graham.Williams@togaware.com}}
-\examples{
-library(rpart)
-fit <- rpart(Kyphosis ~ Age + Number + Start, data=kyphosis)
-pmml(fit)
+\seealso{
+  \code{\link{pmml.kmeans}},
+  \code{\link{pmml.rpart}},
+  \code{\link{pmml.rsf}}.
 }
 \keyword{interface}

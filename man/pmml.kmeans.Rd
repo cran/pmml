@@ -29,8 +29,18 @@
 
   \item{\dots}{further arguments passed to or from other methods.}
 }
-\references{Package home page: \url{http://rattle.togaware.com}}
+\references{
+
+  Package home page: \url{http://rattle.togaware.com}
+
+  PMML home page: \url{http://www.dmg.org}
+
+}
 \author{\email{Graham.Williams@togaware.com}}
+\seealso{
+  \code{\link{pmml}},
+  \code{\link{kmeans}}.
+}
 \examples{
 ds <- rbind(matrix(rnorm(100, sd = 0.3), ncol = 2),
                 matrix(rnorm(100, mean = 1, sd = 0.3), ncol = 2))

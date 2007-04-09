@@ -2,7 +2,7 @@
 ##
 ## Part of the Rattle package for Data Mining
 ##
-## Time-stamp: <2007-02-19 21:33:13 Graham>
+## Time-stamp: <2007-04-09 09:30:57 Graham>
 ##
 ## Copyright (c) 2007 Graham Williams, Togaware.com, GPL Version 2
 ##
@@ -33,7 +33,7 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   ## Header
   
-  VERSION <- "1.0.5"
+  VERSION <- "1.1.0"
 
   if (is.null(copyright))
     header <- xmlNode("Header", attrs=c(description=description))

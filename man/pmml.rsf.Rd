@@ -31,6 +31,7 @@
   \item{\dots}{further arguments passed to or from other methods.}
 }
 \details{
+
   The Predictive Model Markup Language is an XML based language which
   provides a way for applications to define statistical and data mining
   models and to share models between PMML compliant applications.  More
@@ -43,13 +44,12 @@
   achieving interoperability, is not an efficient data storage mechanism
   in this case.
 
-  It is anticipated that \code{pmml.rsf} will be used to export the
-  geometry of the forest to other PMML compliant applications, including
-  graphics packages that are capable of printing binary trees.  In
-  addition, the user may wish to save the geometry of the forest for
-  later retrieval and prediction on new data sets using \code{pmml.rsf}
-  together with \code{pmml_to_rsf}.
-  
+  This function is used to export the geometry of the forest to other
+  PMML compliant applications, including graphics packages that are
+  capable of printing binary trees.  In addition, the user may wish to
+  save the geometry of the forest for later retrieval and prediction on
+  new data sets using \code{pmml.rsf} together with \code{pmml_to_rsf}.
+
 }    
 \value{
   
@@ -70,6 +70,13 @@
   warrant release in this version of the product.
 
 }
+\references{
+
+  H. Ishwaran and Udaya B. Kogalur (2006).  Random Survival Forests.
+  \emph{Cleveland Clinic Technical Report}.
+
+  PMML home page: \url{http://www.dmg.org}
+}	
 \author{
 
   Hemant Ishwaran \email{hemant.ishwaran@gmail.com} and Udaya B. Kogalur
@@ -77,21 +84,8 @@
   by \email{Graham.Williams@togaware.com}
 
 }
-\references{
-
-  H. Ishwaran and Udaya B. Kogalur (2006).  Random Survival Forests.
-  \emph{Cleveland Clinic Technical Report}.
-
-    http://www.dmg.org
-}	
-
 \seealso{
-  \code{xmlTreeParse},
-  \code{xmlRoot},
-  \code{saveXML},
-  \code{rsf},
-  \code{predict.rsf},
-  \code{pmml_to_rsf}.
+  \code{\link{pmml}}.
 }
 \examples{
 library(randomSurvivalForest)
