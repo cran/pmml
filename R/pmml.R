@@ -2,7 +2,7 @@
 ##
 ## Part of the Rattle package for Data Mining
 ##
-## Time-stamp: <2007-04-09 09:30:57 Graham>
+## Time-stamp: <2007-06-04 20:56:26 Graham>
 ##
 ## Copyright (c) 2007 Graham Williams, Togaware.com, GPL Version 2
 ##
@@ -33,7 +33,7 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   ## Header
   
-  VERSION <- "1.1.0"
+  VERSION <- "1.1.1"
 
   if (is.null(copyright))
     header <- xmlNode("Header", attrs=c(description=description))
@@ -131,6 +131,114 @@ pmmlMiningSchema <- function(field, target=NULL)
   return(mining.schema)
 }
 
+########################################################################
+## LM
+##
+## Author: rguha@indiana.edu
+## Date: 28 May 2007
+##
+
+pmml.lm <- function(model,
+                    model.name="lm_model",
+                    app.name="Rattle/PMML",
+                    description="Linear Regression Model",
+                    copyright=NULL, ...)
+{
+  if (! inherits(model, "lm")) stop("Not a legitimate lm object")
+
+  require(XML, quietly=TRUE)
+
+  ## Collect the required information. We list all variables,
+  ## irrespective of whether they appear in the final model. This
+  ## seems to be the standard thing to do with PMML. It also adds
+  ## extra information - i.e., the model did not need these extra
+  ## variables!
+
+  terms <- attributes(model$terms)
+  field <- NULL
+  field$name <- names(terms$dataClasses)
+  number.of.fields <- length(field$name)
+  field$class <- terms$dataClasses
+  target <- field$name[1]
+
+  for (i in 1:number.of.fields)
+    {
+      ## We don't need to bother with ylevels since lm doesn't do
+      ## factor predictions
+      if (field$class[[field$name[i]]] == "factor")
+        field$levels[[field$name[i]]] <- model$xlevels[[field$name[i]]]
+    }
+  
+  ## PMML
+
+  pmml <- pmmlRootNode()
+
+  ## PMML -> Header
+
+  if (is.null(copyright))
+    copyright <- "Copyright (c) 2007 rguha@indiana.edu"
+  pmml <- append.XMLNode(pmml, pmmlHeader(description, copyright, app.name))
+  
+  ## PMML -> DataDictionary
+
+  pmml <- append.XMLNode(pmml, pmmlDataDictionary(field))
+
+  ## PMML -> RegressionModel
+
+  lm.model <- xmlNode("RegressionModel",
+                      attrs=c(modelName=model.name,
+                        functionName="regression",
+                        algorithmName="least squares",
+                        targetFieldName=target))
+  
+  ## PMML -> RegressionModel -> MiningSchema
+  
+  lm.model <- append.XMLNode(lm.model, pmmlMiningSchema(field, target))
+
+  ## PMML -> RegressionModel -> RegressionTable
+  
+  coeff <- coefficients(model)
+  coeffnames <- names(coeff)
+  
+  regTable <- xmlNode("RegressionTable",
+                      attrs=c(intercept=as.numeric(coeff[1])))
+
+  for (i in 1:length(field$name))
+  {
+    name <- field$name[[i]]
+    if (name == target) next
+    klass <- field$class[[name]]
+    if (klass == 'numeric')
+    {
+      predictorNode <- xmlNode("NumericPredictor",
+                               attrs=c(name=name,
+                                 exponent="1",
+                                 coefficient=as.numeric(coeff[which(coeffnames == name)])))
+      regTable <- append.XMLNode(regTable, predictorNode)              
+    }
+    else if (klass == 'factor')
+    {
+      levs <- model$xlevels[[name]]
+      for (l in levs[-1])
+      {
+        tmp <- paste(name, l, sep='')
+        predictorNode <- xmlNode("CategoricalPredictor",
+                                 attrs=c(name=name,
+                                   value=l,
+                                   coefficient=as.numeric(coeff[ which(coeffnames == tmp) ])))
+        regTable <- append.XMLNode(regTable, predictorNode)
+      }
+    }
+  }
+  
+  lm.model <- append.XMLNode(lm.model, regTable)
+
+  ## Add to the top level structure.
+  
+  pmml <- append.XMLNode(pmml, lm.model)
+
+  return(pmml)
+}
 
 ########################################################################
 
@@ -226,12 +334,10 @@ pmml.rpart <- function(model,
   
   node <- genBinaryTreeNodes(depth, count, score, field, operator, value)
 
-  ## tree.model[[2]] <- node
   tree.model <- append.XMLNode(tree.model, node)
 
   ## Add to the top level structure.
   
-  ## pmml$children[[3]] <- tree.model
   pmml <- append.XMLNode(pmml, tree.model)
 
   return(pmml)
