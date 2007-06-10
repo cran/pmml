@@ -1,8 +1,8 @@
 Package: pmml
 Type: Package
 Title: Generate PMML for various models
-Version: 1.1.1
-Date: 2007-06-04
+Version: 1.1.2
+Date: 2007-06-10
 Author: Graham Williams <Graham.Williams@togaware.com>
 Maintainer: Graham Williams <Graham.Williams@togaware.com>
 Depends: XML
@@ -15,9 +15,9 @@ Description: The Predictive Modelling Markup Language (PMML) is a language
   The package provides a generic pmml function to generate pmml for an
   object. Using a S3 generic function the approriate method for the
   class of the supplied object is dispatched.
-  The package currently supports the export of PMML for rpart
-  classification trees, randomSurvivalForest forest models, and kmeans
-  clusters.
+  The package currently supports the export of PMML for linear
+  regression (but not interaction terms), rpart classification trees,
+  randomSurvivalForest forest models, and kmeans clusters.
   This package is part of the Rattle toolkit.
 URL: http://rattle.togaware.com/
-Packaged: Mon Jun  4 20:56:46 2007; gjw
+Packaged: Sun Jun 10 11:32:49 2007; gjw

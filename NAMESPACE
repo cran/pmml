@@ -1,6 +1,7 @@
 export(
        pmml,
        pmml.kmeans,
+       pmml.lm,
        pmml.rpart,
        pmml.rsf
        )
