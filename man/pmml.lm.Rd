@@ -9,8 +9,8 @@
   
 }
 \usage{
-\method{pmml}{lm}(model, model.name="lm_model", app.name="Rattle/PMML",
-     description="Linear Regression Model", copyright=NULL, \dots)
+\method{pmml}{lm}(model, model.name="Regression_model", app.name="Rattle/PMML",
+     description="Regression Model", copyright=NULL, \dots)
 }
 \arguments{
   

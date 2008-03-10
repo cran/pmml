@@ -1,0 +1,76 @@
+\name{pmml.ksvm}
+\alias{pmml.ksvm}
+\title{
+  Generate PMML for a ksvm object
+}
+\description{
+  
+  Generate the PMML representation for a ksvm object (SVM). The
+  ksvm object is converted into a PMML representation. The PMML 
+  can then be imported into other systems that accept PMML. 
+  With this code, a PMML representation can be obtained for SVMs
+  implementing classification (multi-class and binary) as well
+  as regression.
+  
+}
+\usage{
+\method{pmml}{ksvm}(model, model.name="SVM_model", app.name="Rattle/PMML",
+     description="Support Vector Machine PMML Model", copyright=NULL,  data.name, \dots)
+}
+\arguments{
+  
+  \item{model}{a ksvm object.}
+
+  \item{data.name}{the name of the data object used to train the SVM
+  model in ksvm - required since the ksvm object does not appear to
+  record information about the used categorical variables.}
+  
+  \item{model.name}{a name to give to the model in the PMML.}
+
+  \item{app.name}{the name of the application that generated the PMML.}
+
+  \item{description}{a descriptive text for the header of the PMML.}
+  
+  \item{copyright}{the copyright notice for the model.}
+
+  \item{\dots}{further arguments passed to or from other methods.}
+}
+\details{
+
+  The generated PMML can be imported into any PMML consuming
+  application that recognizes PMML 3.2. An example is ADAPA. 
+  ADAPA (Adaptive Decision and Predictive Analytics) is a lightweight 
+  decision engine that offers at its core batch and real-time scoring 
+  of predictive models as well as fast execution of business rules. 
+  ADAPA supports an extensive collection of PMML elements, including the 
+  following predictive techniques: 1) Neural Networks (Backprogagation 
+  and Neural Gas); 2) Support Vector Machines; 3) Linear and Logistic 
+  Regression as well as all general regression PMML models: a) Multinomial 
+  Logistic; b) General Linear; 3) Ordinal Multinomial; 4) Simple Regression; 
+  and 5) Generalized Linear Model. ADAPA  provides a reliable and fast 
+  way to manage, deploy, and execute a multitude of models and decision 
+  strategies.
+
+}
+\references{
+
+  Package home page: \url{http://rattle.togaware.com}
+
+  PMML home page: \url{http://www.dmg.org}
+
+  ADAPA home page: \url{http://www.zementis.com/adapa.htm}
+
+}
+\author{\email{info@zementis.com}}
+\seealso{
+  \code{\link{pmml}}.
+  \code{\link[kernlab]{ksvm}}.
+}
+\examples{
+# train a support vector machine to perform binary classification
+require(kernlab)
+audit <- read.csv(file("http://rattle.togaware.com/audit.csv"))
+myksvm <- ksvm(as.factor(Adjusted) ~ ., data=audit[,c(2:10,13)], kernel="rbfdot", prob.model=TRUE)
+pmml.ksvm(myksvm, data=audit)
+}
+\keyword{interface}
