@@ -1,8 +1,8 @@
-export(
-       pmml,
-       pmml.kmeans,
-       pmml.ksvm,
-       pmml.lm,
-       pmml.rpart,
-       pmml.rsf
-       )
+export(pmml)
+S3method(pmml, kmeans)
+S3method(pmml, ksvm)
+S3method(pmml, lm)
+S3method(pmml, rpart)
+S3method(pmml, rsf)
+S3method(pmml, rules)
+S3method(pmml, itemsets)

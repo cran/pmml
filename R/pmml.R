@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2008-04-16 06:38:34 Graham Williams>
+# Time-stamp: <2008-04-21 19:06:02 Graham Williams>
 #
 # Copyright (c) 2007-2008 Togaware, GPL Version 2
 #
@@ -167,8 +167,9 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   # Header
   
-  VERSION <- "1.1.6"
-  #  "1.1.5" # Add pmml.nnet.
+  VERSION <- "1.1.7" # Add arules.
+  # "1.1.6"
+  # "1.1.5" # Add pmml.nnet.
   # "1.1.4" # Add pmml.ksvm. Fix extensions. 
   # "1.1.3" # Fixes for new version of randomSurvivalForest.
   # "1.1.2" Expose pmml.lm in NAMESPACE - woops.
@@ -2498,3 +2499,4 @@ generateClusteringModelSQL <- function(tree)
 {
   return("SELECT CLUSTER NOT YET IMPLEMENTED")
 }
+

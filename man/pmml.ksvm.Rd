@@ -71,6 +71,6 @@
 require(kernlab)
 audit <- read.csv(file("http://rattle.togaware.com/audit.csv"))
 myksvm <- ksvm(as.factor(Adjusted) ~ ., data=audit[,c(2:10,13)], kernel="rbfdot", prob.model=TRUE)
-pmml.ksvm(myksvm, data=audit)
+pmml(myksvm, data=audit)
 }
 \keyword{interface}
