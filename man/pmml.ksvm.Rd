@@ -5,17 +5,16 @@
 }
 \description{
   
-  Generate the PMML representation for a ksvm object (SVM). The
-  ksvm object is converted into a PMML representation. The PMML 
-  can then be imported into other systems that accept PMML. 
-  With this code, a PMML representation can be obtained for SVMs
-  implementing classification (multi-class and binary) as well
-  as regression.
+  Generate the PMML representation for a ksvm object (SVM). The PMML can
+  then be imported into other systems that accept PMML.  With this code,
+  a PMML representation can be obtained for SVMs implementing
+  classification (multi-class and binary) as well as regression.
   
 }
 \usage{
 \method{pmml}{ksvm}(model, model.name="SVM_model", app.name="Rattle/PMML",
-     description="Support Vector Machine PMML Model", copyright=NULL,  data.name, \dots)
+     description="Support Vector Machine PMML Model", copyright=NULL,
+     data.name, \dots)
 }
 \arguments{
   
@@ -37,19 +36,11 @@
 }
 \details{
 
-  The generated PMML can be imported into any PMML consuming
-  application that recognizes PMML 3.2. An example is ADAPA. 
-  ADAPA (Adaptive Decision and Predictive Analytics) is a lightweight 
-  decision engine that offers at its core batch and real-time scoring 
-  of predictive models as well as fast execution of business rules. 
-  ADAPA supports an extensive collection of PMML elements, including the 
-  following predictive techniques: 1) Neural Networks (Backprogagation 
-  and Neural Gas); 2) Support Vector Machines; 3) Linear and Logistic 
-  Regression as well as all general regression PMML models: a) Multinomial 
-  Logistic; b) General Linear; 3) Ordinal Multinomial; 4) Simple Regression; 
-  and 5) Generalized Linear Model. ADAPA  provides a reliable and fast 
-  way to manage, deploy, and execute a multitude of models and decision 
-  strategies.
+  The generated PMML can be imported into any PMML consuming application
+  that recognizes PMML 3.2. An example is ADAPA (Adaptive Decision and
+  Predictive Analytics), a lightweight decision engine with batch and
+  real-time scoring of predictive models (also supporting neural
+  networks and linear and logistic regression).
 
 }
 \references{
@@ -58,6 +49,8 @@
 
   PMML home page: \url{http://www.dmg.org}
 
+  Zementis' useful PMML convert: \url{http://www.zementis.com/pmml_converters.htm}
+  
   ADAPA home page: \url{http://www.zementis.com/adapa.htm}
 
 }
@@ -67,10 +60,14 @@
   \code{\link[kernlab]{ksvm}}.
 }
 \examples{
-# train a support vector machine to perform binary classification
+# Train a support vector machine to perform binary classification.
 require(kernlab)
-audit <- read.csv(file("http://rattle.togaware.com/audit.csv"))
-myksvm <- ksvm(as.factor(Adjusted) ~ ., data=audit[,c(2:10,13)], kernel="rbfdot", prob.model=TRUE)
-pmml(myksvm, data=audit)
+data(spam)
+index <- sample(1:dim(spam)[1])
+ds <- spam[index[1:300],] # For illustration only use a small dataset.
+fit <- ksvm(type~., data=ds, kenrel="rbfdot")
+
+# Genetate the PMML.
+pmml(fit, data=ds)
 }
 \keyword{interface}

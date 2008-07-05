@@ -117,6 +117,7 @@
 
   PMML home page: \url{http://www.dmg.org}
 
+  Zementis' useful PMML convert: \url{http://www.zementis.com/pmml_converters.htm}
 }
 \author{\email{Graham.Williams@togaware.com}}
 \seealso{

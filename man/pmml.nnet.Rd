@@ -54,6 +54,8 @@
 
   PMML home page: \url{http://www.dmg.org}
 
+  Zementis' useful PMML convert: \url{http://www.zementis.com/pmml_converters.htm}
+  
   ADAPA home page: \url{http://www.zementis.com/adapa.htm}
 
 }

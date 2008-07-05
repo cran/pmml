@@ -29,11 +29,13 @@
 \details{
 
   The generated PMML can be imported into any PMML consuming
-  application, such as Teradata Warehouse Miner and DB2. Generally,
-  these applications convert the PMML into SQL for execution across a
-  database.
+  application, such as Zementis' ADAPA.
 
-  Currently, the resultant PMML document will not encode interaction terms.
+  Currently, the resultant PMML document will not encode interaction
+  terms.
+
+  Only numeric regression is supported currently. Generalised linear
+  models (logistic regression) are not yet supported.
 
 }
 \references{
@@ -41,7 +43,8 @@
   Package home page: \url{http://rattle.togaware.com}
 
   PMML home page: \url{http://www.dmg.org}
-
+  
+  Zementis' useful PMML convert: \url{http://www.zementis.com/pmml_converters.htm}
 }
 \author{\email{rguha@indiana.edu}}
 \seealso{
