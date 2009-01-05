@@ -2,9 +2,9 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2008-06-21 14:14:31 Graham Williams>
+# Time-stamp: <2009-01-05 10:32:55 Graham Williams>
 #
-# Copyright (c) 2008 Togaware Pty Ltd
+# Copyright (c) 2009 Togaware Pty Ltd
 #
 # This files is part of the Rattle suite for Data Mining in R.
 #
@@ -28,7 +28,9 @@ pmml <- function(model,
                  model.name="Rattle_Model",
                  app.name="Rattle/PMML",
                  description=NULL,
-                 copyright=NULL, ...)
+                 copyright=NULL,
+                 transforms=NULL,
+                 ...)
   UseMethod("pmml")
 
 ########################################################################
@@ -102,15 +104,27 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   # Header
   
-  VERSION <- "1.1.9" # Update rpart/nnet/ksvm from Zementis + many improvements
-  # "1.1.8" # Increase number of digits extracted for rpart tests.
-  # "1.1.7" # Add arules.
-  # "1.1.6"
-  # "1.1.5" # Add pmml.nnet.
-  # "1.1.4" # Add pmml.ksvm. Fix extensions. 
-  # "1.1.3" # Fixes for new version of randomSurvivalForest.
-  # "1.1.2" Expose pmml.lm in NAMESPACE - woops.
-  # "1.1.1" Add pmml.lm
+  VERSION <- "1.2.0" # Fix documentation and packaing and release to CRAN
+    # "1.1.20" # Bug - fix rpart var names with transforms
+    # "1.1.19" # Tidyup and update ClusterField
+    # "1.1.18" # Include pmml.hclust in NAMESPACE
+    # "1.1.17" # Export hclust as kmeans.
+    # "1.1.16" # export pmml.multinom
+    # "1.1.15" # Handle multinomial model.
+    # "1.1.14" # Handle singularities in lm/glm better.
+    # "1.1.13" # Support export of poisson(log)
+    # "1.1.12" # Tree Array have quoted values. 0 for base in regression
+    # "1.1.11" # Bug fix for pmml.lm - continuing to fix below problem
+    # "1.1.10" # Bug fix for pmml.lm with categorical logistic target
+    # "1.1.9" # Update rpart/nnet/ksvm from Zementis + many improvements
+    # "1.1.8" # Increase number of digits extracted for rpart tests.
+    # "1.1.7" # Add arules.
+    # "1.1.6"
+    # "1.1.5" # Add pmml.nnet.
+    # "1.1.4" # Add pmml.ksvm. Fix extensions. 
+    # "1.1.3" # Fixes for new version of randomSurvivalForest.
+    # "1.1.2" Expose pmml.lm in NAMESPACE - woops.
+    # "1.1.1" Add pmml.lm
 
   if (is.null(copyright)) copyright <- generateCopyright()
   header <- xmlNode("Header",
@@ -145,6 +159,7 @@ pmmlDataDictionary <- function(field)
   # field$name is a vector of strings, and includes target
   # field$class is indexed by fields$names
   # field$levels is indexed by fields$names
+  
   number.of.fields <- length(field$name)
 
   # DataDictionary
@@ -191,8 +206,14 @@ pmmlDataDictionary <- function(field)
 
 }
 
-pmmlMiningSchema <- function(field, target=NULL)
+pmmlMiningSchema <- function(field, target=NULL, inactive=NULL)
 {
+  # 081103 Add inactive to list those variables that should be marked
+  # as inactive in the model. This was added so that singularities can
+  # be identified as inactive for a linear model. It could also be
+  # used to capture ignored variables, if they were to ever be
+  # included in the variable list.
+  
   number.of.fields <- length(field$name)
   mining.fields <- list()
 
@@ -202,6 +223,18 @@ pmmlMiningSchema <- function(field, target=NULL)
       usage <- "active"
     else
       usage <- ifelse(field$name[i] == target, "predicted", "active")
+
+    # 081103 Find out which variables should be marked as
+    # inactive. Currently the inactive list is often supplied from
+    # lm/glm as the variables which result in singularities in the
+    # model. However, for categorics, this is the indicator variable,
+    # like GenderMale. The test for %in% fails! So as a quick fix use
+    # grep. This is not a solution (because the variable Test is a
+    # substring of TestAll, etc)
+    
+    # 081103 if (field$name[i] %in% inactive) usage <- "inactive"
+    if (length(grep(field$name[i], inactive))) usage <- "inactive"
+      
     mining.fields[[i]] <- xmlNode("MiningField",
                                   attrs=c(name=field$name[i],
                                     usageType=usage))

@@ -13,7 +13,7 @@
 }
 \usage{
 \method{pmml}{kmeans}(model, model.name="KMeans_Model", app.name="Rattle/PMML",
-     description="KMeans cluster model", copyright=NULL, \dots)
+     description="KMeans cluster model", copyright=NULL, transforms=NULL, \dots)
 }
 \arguments{
   
@@ -26,6 +26,8 @@
   \item{description}{a descriptive text for the header of the PMML.}
   
   \item{copyright}{the copyright notice for the model.}
+
+  \item{transforms}{a coded list of transforms performed.}
 
   \item{\dots}{further arguments passed to or from other methods.}
 }

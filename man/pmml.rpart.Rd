@@ -12,7 +12,7 @@
 }
 \usage{
 \method{pmml}{rpart}(model, model.name="RPart_Model", app.name="Rattle/PMML",
-     description="RPart decision tree model", copyright=NULL, \dots)
+     description="RPart Decision Tree Model", copyright=NULL, transforms=NULL, \dots)
 }
 \arguments{
   
@@ -25,6 +25,8 @@
   \item{description}{a descriptive text for the header of the PMML.}
   
   \item{copyright}{the copyright notice for the model.}
+
+  \item{transforms}{a coded list of transforms performed.}
 
   \item{\dots}{further arguments passed to or from other methods.}
 }

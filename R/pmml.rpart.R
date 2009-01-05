@@ -2,9 +2,9 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2008-06-21 15:48:59 Graham Williams>
+# Time-stamp: <2009-01-05 10:34:42 Graham Williams>
 #
-# Copyright (c) 2008 Togaware Pty Ltd
+# Copyright (c) 2009 Togaware Pty Ltd
 #
 # This files is part of the Rattle suite for Data Mining in R.
 #
@@ -30,34 +30,51 @@
 #          added ScoreDistribution, missingValueStrategy 
 #          by Zementis, Inc. in June 2008
 #           
-#######################################################################
+
 pmml.rpart <- function(model,
                        model.name="RPart_Model",
                        app.name="Rattle/PMML",
-                       description="RPart decision tree model",
-                       copyright=NULL, ...)
+                       description="RPart Decision Tree Model",
+                       copyright=NULL,
+                       transforms=NULL,
+                        ...)
 {
-  if (! inherits(model, "rpart"))
-    stop("Not a legitimate rpart object")
+  if (! inherits(model, "rpart")) stop("Not a legitimate rpart object")
+  require(XML, quietly=TRUE)
+  require(rpart, quietly=TRUE)
 
   functionName <- "classification"
   if (model$method != "class") functionName <- "regression"
   
-  require(XML, quietly=TRUE)
-  require(rpart, quietly=TRUE)
-  
-  # Collect the required information. We list all variables,
-  # irrespective of whether they appear in the final model. This
-  # seems to be the standard thing to do with PMML. It also adds
-  # extra information - i.e., the model did not need these extra
-  # variables!
+  # Collect the required information.
+
+  # We list all variables, irrespective of whether they appear in the
+  # final model. This seems to be the standard thing to do with
+  # PMML. It also adds extra information - i.e., the model did not
+  # need these extra variables!
 
   field <- NULL
   field$name <- as.character(attr(model$terms, "variables"))[-1]
-  number.of.fields <- length(field$name)
   field$class <- attr(model$terms, "dataClasses")
-  target <- field$name[1]
 
+  # 081229 Our names and types get out of sync for multiple transforms
+  # on the one variable. TODO How to fix? For now, we will assume a
+  # single transform on each variable.
+
+  if (exists("pmml.transforms") && ! is.null(transforms))
+  {
+    field$name <- unifyTransforms(field$name, transforms)
+
+    # 090102 Reset the field$class names to correspond to the new
+    # variables.
+    
+    names(field$class) <- field$name
+  }
+    
+  number.of.fields <- length(field$name)
+  
+  target <- field$name[1]
+  
   for (i in 1:number.of.fields)
   {
     if (field$class[[field$name[i]]] == "factor")
@@ -67,7 +84,7 @@ pmml.rpart <- function(model,
         field$levels[[field$name[i]]] <- attr(model,"xlevels")[[field$name[i]]]
   }
 
-  # Start to create the PMML object
+  # PMML
 
   pmml <- pmmlRootNode("3.2")
 
@@ -81,7 +98,7 @@ pmml.rpart <- function(model,
 
   # PMML -> TreeModel
 
-  tree.model <- xmlNode("TreeModel", attrs=c(modelName=model.name,
+  the.model <- xmlNode("TreeModel", attrs=c(modelName=model.name,
                                        functionName=functionName,
                                        algorithmName="rpart",
                                        splitCharacteristic="binarySplit",
@@ -89,8 +106,13 @@ pmml.rpart <- function(model,
 
   # PMML -> TreeModel -> MiningSchema
   
-  tree.model <- append.XMLNode(tree.model, pmmlMiningSchema(field, target))
+  the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target))
 
+  # PMML -> TreeModel -> LocalTransformations -> DerivedField -> NormContiuous
+
+  if (exists("pmml.transforms") && ! is.null(transforms))
+    the.model <- append.XMLNode(the.model, pmml.transforms(transforms))
+  
   # PMML -> TreeModel -> Node
 
   # Collect information to create nodes.
@@ -118,35 +140,42 @@ pmml.rpart <- function(model,
 
   # Get the information for the primary predicates
 
-  for (i in 2:length(label))
+  if (length(label) > 1)
   {
-    fieldLabel <-  c(fieldLabel, strsplit(label[i], '>|<|=')[[1]][1])
-    op <- substr(label[i], nchar(fieldLabel[i])+1, nchar(fieldLabel[i])+2)
-    if (op == ">=")
+    for (i in 2:length(label))
     {
-      operator <- c(operator, "greaterOrEqual")
-      value <- c(value, substr(label[i], nchar(fieldLabel[i])+3, nchar(label[i])))
+      fieldLabel <-  c(fieldLabel, strsplit(label[i], '>|<|=')[[1]][1])
+      op <- substr(label[i], nchar(fieldLabel[i])+1, nchar(fieldLabel[i])+2)
+      if (op == ">=")
+      {
+        operator <- c(operator, "greaterOrEqual")
+        value <- c(value, substr(label[i], nchar(fieldLabel[i])+3, nchar(label[i])))
+      }
+      else if (op == "< ")
+      {
+        operator <- c(operator, "lessThan")
+        value <- c(value, substr(label[i], nchar(fieldLabel[i])+3, nchar(label[i])))
+      }
+      else if (substr(op, 1, 1) == "=")
+      {
+        operator <- c(operator, "isIn")
+        value <- c(value, substr(label[i], nchar(fieldLabel[i])+2, nchar(label[i])))
+      }
     }
-    else if (op == "< ")
-    {
-      operator <- c(operator, "lessThan")
-      value <- c(value, substr(label[i], nchar(fieldLabel[i])+3, nchar(label[i])))
-    }
-    else if (substr(op, 1, 1) == "=")
-    {
-      operator <- c(operator, "isIn")
-      value <- c(value, substr(label[i], nchar(fieldLabel[i])+2, nchar(label[i])))
-    }
+    node <- genBinaryTreeNodes(depth, id, count, score, fieldLabel, operator, value,
+                               model, parent_ii, rows,"right")
+  }
+  else
+  {
+    node <- genBinaryTreeNodes(depth, id, count, score, fieldLabel, operator, value,
+                               model, parent_ii, rows,"right")
   }
 
-  node <- genBinaryTreeNodes(depth, id, count, score, fieldLabel, operator, value ,
-                             model, parent_ii, rows,"right")
-
-  tree.model <- append.XMLNode(tree.model, node)
+  the.model <- append.XMLNode(the.model, node)
 
   # Add to the top level structure.
 
-  pmml <- append.XMLNode(pmml, tree.model)
+  pmml <- append.XMLNode(pmml, the.model)
 
   return(pmml)
 }
@@ -398,23 +427,26 @@ getSurrogatePredicates <- function(predicate, model,i,position)
 ########################################################################
 # Function: getSimpleSetPredicate
 #
-# Goal: refator the original code, which creates the simple set predicate
+# Goal: refactor the original code, which creates the simple set predicate
 # 
-# Original by: togaware
-#
+# Original by: Togaware
 # Refactored by: Zementis, Inc.
-#
 # Refactored date: June, 2008
 
 getSimpleSetPredicate <- function(field, op, value)
 {
-  predicate <- xmlNode("SimpleSetPredicate", attrs=c(field=field, booleanOperator=op))
+  predicate <- xmlNode("SimpleSetPredicate", attrs=c(field=field,
+                                               booleanOperator=op))
   value <- strsplit(value[[1]], ",")[[1]]
 
-  # Do we need quotes around the values?
-  # vals <- paste('"', value, '"', collapse=" ", sep="")
-
-  vals <- paste(value, collapse=" ", sep="")
+  # 081019 gjw We need quotes around the values since there may be
+  # embedded spaces. So we ensure they have quotes. In the PMML this
+  # comes out as "&quot;", which when read back into R comes as a '"',
+  # so perhaps that is okay? The SPSS generated PMML has actual
+  # quotes. We may need to change this to ensure we get actual quotes
+  # rather than the XML code for a quote.
+  
+  vals <- paste('"', value, '"', collapse=" ", sep="")
 
   predicate <- append.XMLNode(predicate, xmlNode("Array", vals,
                                                  attrs=c(n=length(value),
@@ -492,15 +524,15 @@ pmml.rpart.as.rules <- function(model,
 
   # PMML -> RuleSetModel
   
-  tree.model <- xmlNode("RuleSetModel",
+  the.model <- xmlNode("RuleSetModel",
                         attrs=c(modelName=model.name,
                           functionName="classification",
                           splitCharacteristic="binary",
                           algorithmName="rpart"))
 
-  # MiningSchema
+  # PMML -> MiningSchema
   
-  tree.model <- append.XMLNode(tree.model, pmmlMiningSchema(field, target))
+  the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target))
 
   # Add in actual tree nodes.
 
@@ -546,12 +578,11 @@ pmml.rpart.as.rules <- function(model,
     }
   }
 
-  tree.model <- append.XMLNode(tree.model, rule.set)
+  the.model <- append.XMLNode(the.model, rule.set)
   
   # Add to the top level structure.
   
-  pmml <- append.XMLNode(pmml, tree.model)
+  pmml <- append.XMLNode(pmml, the.model)
   
   return(pmml)
 }
-

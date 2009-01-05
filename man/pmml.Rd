@@ -11,7 +11,7 @@
 }
 \usage{
 pmml(model, model.name="Rattle_Model", app.name="Rattle/PMML",
-     description=NULL, copyright=NULL, \dots)
+     description=NULL, copyright=NULL, transforms=NULL, \dots)
 }
 \arguments{
   
@@ -24,6 +24,8 @@ pmml(model, model.name="Rattle_Model", app.name="Rattle/PMML",
   \item{description}{a descriptive text for the header of the PMML.}
   
   \item{copyright}{the copyright notice for the model.}
+
+  \item{transforms}{a coded list of transforms performed.}
 
   \item{\dots}{further arguments passed to or from other methods.}
 

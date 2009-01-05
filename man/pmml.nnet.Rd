@@ -62,6 +62,5 @@
 \author{\email{info@zementis.com}}
 \seealso{
   \code{\link{pmml}}.
-  \code{\link{nnet}}.
 }
 \keyword{interface}
