@@ -2,7 +2,9 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-01-05 10:34:19 Graham Williams>
+# Handle lm and glm models.
+#
+# Time-stamp: <2009-03-03 18:41:14 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -22,7 +24,7 @@
 # along with Rattle. If not, see <http://www.gnu.org/licenses/>.
 
 ########################################################################
-# LM
+# Linear Model PMML exporter
 #
 # Implemented: 070528 rguha@indiana.edu based on Graham's template for
 # handling rpart trees.
@@ -57,18 +59,10 @@ pmml.lm <- function(model,
   field$class <- terms$dataClasses
   orig.class <- field$class
 
-  # 090103 gjw Support transforms if available.
+  # 090103 Support transforms if available.
   
-  if (exists("pmml.transforms") && ! is.null(transforms))
-  {
-    field$name <- unifyTransforms(field$name, transforms)
-
-    # 090102 Reset the field$class names to correspond to the new
-    # variables.
-    
-    names(field$class) <- field$name
-  }
-
+  if (supportTransformExport(transforms))
+    field <- unifyTransforms(field, transforms)
   number.of.fields <- length(field$name)
   
   target <- field$name[1]
@@ -107,9 +101,17 @@ pmml.lm <- function(model,
   # PMML -> RegressionModel
 
   # Added by Zementis so that code can also export binary logistic
-  # regression glm models built with binomial(logit)
+  # regression glm models built with binomial(logit). 090303 gjw This
+  # looks dangerous, assumingthe third argument is the model type. For
+  # now, go with it, but set a default model type in case the call has
+  # less than two arguments.
+
+  model.type <- if (length(model$call) > 2)
+    as.character(model$call[[3]])[1]
+  else
+    ""
   
-  if (as.character(model$call[[3]])[1] == "binomial")
+  if (model.type == "binomial")
   {
     the.model <- xmlNode("RegressionModel",
                         attrs=c(modelName=model.name,
@@ -118,7 +120,7 @@ pmml.lm <- function(model,
                           normalizationMethod="softmax",
                           targetFieldName=target)) 
   }
-  else if (as.character(model$call[[3]])[1] == "poisson")
+  else if (model.type == "poisson")
   {
     the.model <- xmlNode("RegressionModel",
                         attrs=c(modelName=model.name,
@@ -142,7 +144,7 @@ pmml.lm <- function(model,
 
   # PMML -> TreeModel -> LocalTransformations -> DerivedField -> NormContiuous
 
-  if (exists("pmml.transforms") && ! is.null(transforms))
+  if (supportTransformExport(transforms))
     the.model <- append.XMLNode(the.model, pmml.transforms(transforms))
   
   # PMML -> RegressionModel -> RegressionTable
@@ -153,13 +155,19 @@ pmml.lm <- function(model,
   # Added by Graham Williams so that code identifies a targetCategory for binary
   # logistic regression glm models built with binomial(logit).
 
-  if (as.character(model$call[[3]])[1] == "binomial")
+  if (model.type == "binomial")
   {
-    # 080620 TODO The YES here should be the actual class value that
-    # is being predicted.
-    
+    # 090117 Identify the two possible values for the target variable,
+    # and select the second as the target. Extend the PMML specs so I
+    # can add the other value as well, since I need that when
+    # generating C code to return a class rather than a probability.
+
+    values <- sort(unique(model$data[[target]]))
+    alternative.value <- as.character(values[1])
+    target.value <- as.character(values[2])
     regTable <- xmlNode("RegressionTable",
-                        attrs=c(targetCategory="YES",
+                        attrs=c(targetCategory=target.value,
+                          alternativeCategory=alternative.value,
                           intercept=as.numeric(coeff[1])))
   }
   else

@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2008-11-03 15:51:13 Graham Williams>
+# Time-stamp: <2009-02-16 06:34:53 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -36,7 +36,9 @@ pmml.multinom <- function(model,
                           model.name="Multinom_Model",
                           app.name="Rattle/PMML",
                           description="Multinom nnet model",
-                          copyright=NULL, ...)
+                          copyright=NULL,
+                          transforms=NULL,
+                          ...)
 {
   if (! inherits(model, "multinom")) stop("Not a legitimate multinom object")
   require(XML, quietly=TRUE)
@@ -47,8 +49,17 @@ pmml.multinom <- function(model,
   terms <- attributes(model$terms)
   field <- NULL
   field$name <- names(terms$dataClasses)
+  orig.names <- field$name
   number.of.fields <- length(field$name)
   field$class <- terms$dataClasses
+  orig.class <- field$class
+
+   # 090216 Support transforms if available.
+  
+  if (supportTransformExport(transforms))
+    field <- unifyTransforms(field, transforms)
+  number.of.fields <- length(field$name)
+ 
   target <- field$name[1]
 
   for (i in 1:number.of.fields)
@@ -92,6 +103,11 @@ pmml.multinom <- function(model,
   
   the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target))
 
+  # PMML -> TreeModel -> LocalTransformations -> DerivedField -> NormContiuous
+
+  if (supportTransformExport(transforms))
+    the.model <- append.XMLNode(the.model, pmml.transforms(transforms))
+  
   # PMML -> RegressionModel -> RegressionTable
   
   coeff <- coefficients(model)
@@ -104,11 +120,12 @@ pmml.multinom <- function(model,
                          attrs=c(intercept=as.numeric(coeff[k, 1]),
                            targetCategory=targetnames[k]))
 
-    for (i in 1:length(field$name))
+  for (i in 1:length(orig.names))
     {
-      name <- field$name[[i]]
+      name <- orig.names[[i]]
+
       if (name == target) next
-      klass <- field$class[[name]]
+      klass <- orig.class[[name]]
       if (klass == 'numeric')
       {
         predictor.node <-
@@ -119,12 +136,12 @@ pmml.multinom <- function(model,
         reg.table <- append.XMLNode(reg.table, predictor.node)
       }
     }
-    for (i in 1:length(field$name))
-    {
-      name <- field$name[[i]]
-      if (name == target) next
-      klass <- field$class[[name]]
-      if (klass == 'factor')
+   for (i in 1:length(orig.names))
+   {
+     name <- orig.names[[i]]
+     if (name == target) next
+     klass <- orig.class[[name]]
+     if (klass == 'factor')
       {
         levs <- model$xlevels[[name]]
         for (l in levs)

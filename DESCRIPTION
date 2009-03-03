@@ -1,8 +1,8 @@
 Package: pmml
 Type: Package
 Title: Generate PMML for various models
-Version: 1.2.0
-Date: 2009-01-05
+Version: 1.2.8
+Date: 2009-03-03
 Author: Graham Williams, Michael Hahsler (arules), Zementis Inc, 
   Hemant Ishwaran, Udaya B. Kogalur, Rajarshi Guha
 Maintainer: Graham Williams <Graham.Williams@togaware.com>
@@ -21,4 +21,4 @@ Description: The Predictive Modelling Markup Language (PMML) is a language
   randomSurvivalForest forest models, and kmeans clusters.
   This package is part of the Rattle toolkit.
 URL: http://rattle.togaware.com/
-Packaged: Mon Jan  5 15:00:02 2009; gjw
+Packaged: Tue Mar  3 18:58:32 2009; gjw
