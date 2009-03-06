@@ -4,7 +4,7 @@
 #
 # Handle lm and glm models.
 #
-# Time-stamp: <2009-03-03 18:41:14 Graham Williams>
+# Time-stamp: <2009-03-06 21:25:48 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -102,41 +102,57 @@ pmml.lm <- function(model,
 
   # Added by Zementis so that code can also export binary logistic
   # regression glm models built with binomial(logit). 090303 gjw This
-  # looks dangerous, assumingthe third argument is the model type. For
-  # now, go with it, but set a default model type in case the call has
-  # less than two arguments.
+  # looks dangerous, assuming the third argument is the model
+  # type. For now, go with it, but set a default model type in case
+  # the call has less than two arguments. A general lm model has data
+  # as the third part of the call, thus we need to accept that as a
+  # genuine model and not an unknown model type! For now, default
+  # to generating lm PMML.
 
-  model.type <- if (length(model$call) > 2)
-    as.character(model$call[[3]])[1]
+  if (model$call[[1]] == "lm")
+    model.type <- "lm"
+  else if (model$call[[1]] == "glm" && length(model$call) > 2)
+    model.type <- as.character(model$call[[3]])[1]
   else
-    ""
+    model.type <- "unknown"
   
   if (model.type == "binomial")
   {
     the.model <- xmlNode("RegressionModel",
-                        attrs=c(modelName=model.name,
-                          functionName="regression",
-                          algorithmName="glm",
-                          normalizationMethod="softmax",
-                          targetFieldName=target)) 
+                         attrs=c(modelName=model.name,
+                           functionName="regression",
+                           algorithmName="glm",
+                           normalizationMethod="softmax",
+                             targetFieldName=target)) 
   }
   else if (model.type == "poisson")
   {
     the.model <- xmlNode("RegressionModel",
-                        attrs=c(modelName=model.name,
-                          functionName="regression",
-                          algorithmName="glm",
-                          normalizationMethod="exp",
-                          targetFieldName=target)) 
+                         attrs=c(modelName=model.name,
+                           functionName="regression",
+                             algorithmName="glm",
+                           normalizationMethod="exp",
+                           targetFieldName=target)) 
   }
-  else # The original code for linear regression models
+  else if (model.type == "gaussian")
   {
     the.model <- xmlNode("RegressionModel",
-                        attrs=c(modelName=model.name,
-                          functionName="regression",
-                          algorithmName="least squares",
-                          targetFieldName=target))
+                         attrs=c(modelName=model.name,
+                           functionName="regression",
+                           algorithmName="glm",
+                           targetFieldName=target)) 
+  }		
+  else if (model.type == "lm")
+  {
+    # The original code for linear regression models.
+    the.model <- xmlNode("RegressionModel",
+                         attrs=c(modelName=model.name,
+                           functionName="regression",
+                           algorithmName="least squares",
+                           targetFieldName=target))
   }
+  else 
+    stop("PMML.LM: Not a supported family object: ", model.type)
 
   # PMML -> RegressionModel -> MiningSchema
 
@@ -151,6 +167,14 @@ pmml.lm <- function(model,
 
   coeff <- coefficients(model)
   coeffnames <- names(coeff)
+
+  # 090306 Handle the case where the intercept is not in the
+  # coefficients, and hence is 0?
+  
+  if (coeffnames[[1]] == "(Intercept")
+    intercept <- as.numeric(coeff[[1]])
+  else
+    intercept <- 0
   
   # Added by Graham Williams so that code identifies a targetCategory for binary
   # logistic regression glm models built with binomial(logit).
@@ -168,26 +192,23 @@ pmml.lm <- function(model,
     regTable <- xmlNode("RegressionTable",
                         attrs=c(targetCategory=target.value,
                           alternativeCategory=alternative.value,
-                          intercept=as.numeric(coeff[1])))
+                          intercept=intercept))
   }
   else
   {
     regTable <- xmlNode("RegressionTable",
-                        attrs=c(intercept=as.numeric(coeff[1])))
+                        attrs=c(intercept=intercept))
   }
   
   # 080620 gjw The PMML spec (at least the Zementis validator)
   # requires NumericPredictors first and then
-  # CategoricalPreictors. Simplest approach is to loop twice!!
+  # CategoricalPredictors. Simplest approach is to loop twice!!
   # Hopefully, this is not a significant computational expense.
 
-#  for (i in 1:length(field$name))
   for (i in 1:length(orig.names))
   {
-#    name <- field$name[[i]]
     name <- orig.names[[i]]
     if (name == target) next
-#    klass <- field$class[[name]]
     klass <- orig.class[[name]]
     if (klass == 'numeric')
     {
@@ -198,13 +219,11 @@ pmml.lm <- function(model,
       regTable <- append.XMLNode(regTable, predictorNode)
     }
   }
-#  for (i in 1:length(field$name))
+
   for (i in 1:length(orig.names))
   {
-#    name <- field$name[[i]]
     name <- orig.names[[i]]
     if (name == target) next
-#    klass <- field$class[[name]]
     klass <- orig.class[[name]]
     if (klass == 'factor')
     {
@@ -219,11 +238,17 @@ pmml.lm <- function(model,
       # all the modelled levels (levs, i.e., all values in xlevels)
       # instead of all but the first level (levs[-1], i.e., the base
       # level). When we have the first level, we simply note the
-      # coefficient as 0.
+      # coefficient as 0. 090306 This was updated to remove the
+      # assumption that the first level has a 0 coefficient. This is
+      # not the case in simple lm models (e.g., exampe(lm);
+      # pmml(lm.D90)).
       for (l in levs)
       {
         tmp <- paste(name, l, sep='')
-        coefficient <- ifelse(l==levs[1], 0.00,
+        # 090306 Change this test from one that assumes a 0
+        # coefficient for the first level, to one that has a 0
+        # coefficient for any missing level.
+        coefficient <- ifelse(!length(which(coeffnames == tmp)), 0.00,
                               as.numeric(coeff[which(coeffnames == tmp)]))
         predictorNode <- xmlNode("CategoricalPredictor",
                                  attrs=c(name=name,

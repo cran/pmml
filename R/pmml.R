@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-03-03 18:58:16 Graham Williams>
+# Time-stamp: <2009-03-06 21:28:05 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -104,7 +104,8 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   # Header
   
-  VERSION <- "1.2.8" # Fix a pmml.lm bug.
+  VERSION <- "1.2.9" # Further fix a pmml.lm bug.
+    # "1.2.8" # Fix a pmml.lm bug.
     # "1.2.7" # Export logistic classes
     # "1.2.6" # Support RMA transforms.
     # "1.2.5" # Include .TRANSFORM constants within pmml package.
