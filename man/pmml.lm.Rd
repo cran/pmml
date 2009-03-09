@@ -52,4 +52,11 @@
 \seealso{
   \code{\link{pmml}}.
 }
+\examples{
+# Build a simple lm model
+(iris.lm <- lm(Sepal.Length ~ ., data=iris))
+
+# Convert to pmml
+pmml(iris.lm)
+}
 \keyword{interface}

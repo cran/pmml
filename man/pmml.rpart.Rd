@@ -127,8 +127,8 @@
 }
 \examples{
 library(rpart)
-fit <- rpart(Kyphosis ~ Age + Number + Start, data=kyphosis)
-pmml(fit)
+(iris.rpart <- rpart(Species ~ ., data=iris))
+pmml(iris.rpart)
 }
 \keyword{interface}
 \keyword{tree}

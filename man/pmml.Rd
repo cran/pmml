@@ -51,4 +51,11 @@ pmml(model, model.name="Rattle_Model", app.name="Rattle/PMML",
   \code{\link{pmml.rpart}},
   \code{\link{pmml.rsf}}.
 }
+\examples{
+# Build a simple lm model
+(iris.lm <- lm(Sepal.Length ~ ., data=iris))
+
+# Convert to pmml
+pmml(iris.lm)
+}
 \keyword{interface}

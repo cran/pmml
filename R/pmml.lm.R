@@ -4,7 +4,7 @@
 #
 # Handle lm and glm models.
 #
-# Time-stamp: <2009-03-06 21:25:48 Graham Williams>
+# Time-stamp: <2009-03-07 09:42:48 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -171,7 +171,7 @@ pmml.lm <- function(model,
   # 090306 Handle the case where the intercept is not in the
   # coefficients, and hence is 0?
   
-  if (coeffnames[[1]] == "(Intercept")
+  if (coeffnames[[1]] == "(Intercept)")
     intercept <- as.numeric(coeff[[1]])
   else
     intercept <- 0
