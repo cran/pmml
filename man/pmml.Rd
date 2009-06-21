@@ -47,9 +47,15 @@ pmml(model, model.name="Rattle_Model", app.name="Rattle/PMML",
 }
 \author{\email{Graham.Williams@togaware.com}}
 \seealso{
+  \code{\link{pmml.rules}},
+  \code{\link{pmml.hclust}},
   \code{\link{pmml.kmeans}},
+  \code{\link{pmml.ksvm}},
+  \code{\link{pmml.lm}},
+  \code{\link{pmml.nnet}},
   \code{\link{pmml.rpart}},
-  \code{\link{pmml.rsf}}.
+  \code{\link{pmml.rsf}},
+  \code{\link{pmmltoc}}.
 }
 \examples{
 # Build a simple lm model

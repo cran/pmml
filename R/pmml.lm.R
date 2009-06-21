@@ -4,7 +4,7 @@
 #
 # Handle lm and glm models.
 #
-# Time-stamp: <2009-03-07 09:42:48 Graham Williams>
+# Time-stamp: <2009-06-13 21:48:11 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -60,14 +60,33 @@ pmml.lm <- function(model,
   orig.class <- field$class
 
   # 090103 Support transforms if available.
-  
+
   if (supportTransformExport(transforms))
     field <- unifyTransforms(field, transforms)
   number.of.fields <- length(field$name)
   
   target <- field$name[1]
+
+  # 090501 Identify those who are singularities. For numerics, this is
+  # easy since the names are just the variable names. For categorics
+  # this gets tricky because the names include the levels. So we need
+  # to keep in inactive the actual variable name, if all coefficients
+  # for that variable are NAs.
   
   inactive <- names(which(is.na(coef(model))))
+  active <- names(which(!is.na(coef(model))))
+
+  # These are the actual variable names.
+  
+  tmp <- sapply(sapply(field$name, grep, inactive), length)
+  inactive.vars <- names(tmp[tmp>0])
+  tmp <- sapply(sapply(field$name, grep, active), length)
+  active.vars <- names(tmp[tmp>0])
+  
+  # Now remove any which have any non-NA levels, and that final
+  # list is passed on the definitive list of onactive variables
+
+  inactive <- setdiff(inactive.vars, active.vars)
 
   for (i in 1:number.of.fields)
   {
@@ -111,8 +130,8 @@ pmml.lm <- function(model,
 
   if (model$call[[1]] == "lm")
     model.type <- "lm"
-  else if (model$call[[1]] == "glm" && length(model$call) > 2)
-    model.type <- as.character(model$call[[3]])[1]
+  else if (model$call[[1]] == "glm")
+    model.type <- model$family$family
   else
     model.type <- "unknown"
   
@@ -152,7 +171,7 @@ pmml.lm <- function(model,
                            targetFieldName=target))
   }
   else 
-    stop("PMML.LM: Not a supported family object: ", model.type)
+    stop("pmml.lm: Not a supported family object: ", model.type)
 
   # PMML -> RegressionModel -> MiningSchema
 

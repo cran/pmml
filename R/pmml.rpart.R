@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-02-19 07:30:10 Graham Williams>
+# Time-stamp: <2009-06-17 19:20:19 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -65,9 +65,16 @@ pmml.rpart <- function(model,
   {
     frame <- model$frame
     leaves <- frame$var == "<leaf>"
-    used <- unique(frame$var[!leaves])
+    # 090607 This is no longer required?
+    #used<-unlist(lapply(as.character(unique(frame$var[!leaves])), transformToBasename))
+    used <- as.character(unique(frame$var[!leaves]))
 
-    trs <- sapply(transforms, transformToDerived)
+    # 090617 Make sure we include any transforms that don't appear in
+    # the model, but other variables trsnformed from them do.
+
+    used <- union(used, sapply(transforms, function(x) x$orig))
+
+    trs <- names(transforms)
     unused <- as.vector(sapply(setdiff(trs, used), function(x) which(x == trs)))
 
     if (length(unused)) transforms <- transforms[-unused]
@@ -86,6 +93,11 @@ pmml.rpart <- function(model,
   # single transform on each variable.
 
   ofield <- field
+
+  # 090617 Ensure that the list of fields includes those necessary for
+  # the transforms. By this stage the transforms should have removed
+  # from it any that are not needed in the model.
+  
   if (supportTransformExport(transforms))
     field <- unifyTransforms(field, transforms)
   number.of.fields <- length(field$name)
@@ -101,6 +113,22 @@ pmml.rpart <- function(model,
         field$levels[[field$name[i]]] <- attr(model,"xlevels")[[field$name[i]]]
   }
 
+  # 090519 Identify those variables that are not used in the model. We
+  # need to deal with a model that has surrogates. Use maxsurrogate to
+  # distinguish. However, when using surrogates perhaps we also need
+  # to identify the smaller list of inactive, since there may still be
+  # inactive variables. This is not yet implemented.
+
+  if (model$control$maxsurrogate == 0)
+  {
+    frame <- model$frame
+    leaves <- frame$var == "<leaf>"
+    used <- unique(frame$var[!leaves])
+    inactive <- setdiff(setdiff(levels(used), used), "<leaf>")
+  }
+  else
+    inactive <- NULL
+  
   # PMML
 
   pmml <- pmmlRootNode("3.2")
@@ -123,7 +151,7 @@ pmml.rpart <- function(model,
 
   # PMML -> TreeModel -> MiningSchema
   
-  the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target))
+  the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target, inactive))
 
   # PMML -> TreeModel -> LocalTransformations -> DerivedField -> NormContiuous
 

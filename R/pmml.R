@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-03-09 07:47:09 Graham Williams>
+# Time-stamp: <2009-06-21 22:38:42 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -104,7 +104,12 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   # Header
   
-  VERSION <- "1.2.10" # Fix typo in pmml.lm
+  VERSION <- "1.2.15" # Update documentation
+  # "1.2.14" # Support mult transforms for rpart
+  # "1.2.13" # Change strcutre used to record transforms.
+  # "1.2.12" # Fix pmml.lm handling of singularities -> inactive
+  # "1.2.11" # Fix categroics with one singularity in lm were marked inactive.
+  # "1.2.10" # Fix typo in pmml.lm
   # "1.2.9" # Further fix a pmml.lm bug.
   # "1.2.8" # Fix a pmml.lm bug.
   # "1.2.7" # Export logistic classes
@@ -239,10 +244,17 @@ pmmlMiningSchema <- function(field, target=NULL, inactive=NULL)
     # model. However, for categorics, this is the indicator variable,
     # like GenderMale. The test for %in% fails! So as a quick fix use
     # grep. This is not a solution (because the variable Test is a
-    # substring of TestAll, etc)
+    # substring of TestAll, etc). 
+
+    # 090328 Revert to the exact test. We need to be cleverer in what
+    # we pass through in the inactive vector. Whilst GenderMale might
+    # be NA and thus is the only value included for this categoric,
+    # for a categoric with more levels we need to no treat the others
+    # as inactive so the whole categroic itself should not be
+    # inactive. For now, the simple reversion works.
     
-    # 081103 if (field$name[i] %in% inactive) usage <- "inactive"
-    if (length(grep(field$name[i], inactive))) usage <- "inactive"
+    if (field$name[i] %in% inactive) usage <- "inactive"
+    # 090328 if (length(grep(field$name[i], inactive))) usage <- "inactive"
       
     mining.fields[[i]] <- xmlNode("MiningField",
                                   attrs=c(name=field$name[i],
@@ -258,14 +270,31 @@ pmmlMiningSchema <- function(field, target=NULL, inactive=NULL)
 
 # GLOBAL CONSTANTS
 
-.TRANSFORMS.NORM.CONTINUOUS <- c("RRC_", "R01_", "RMD_", "RMA_")
-.TRANSFORMS.IMPUTE <- paste(c("IZR", "IMN", "IMD", "IMO", "ICN"), "_", sep="")
-.TRANSFORMS.APPLY <- c("RLG_")
-.TRANSFORMS.BIN <- c("BQ_", "BK_", "BE_")
+# 090517 List here all transforms that we know about from the rattle
+# package. In using the pmml package with rattle these are used to
+# identify tranformations. Information about how the transformation is
+# performed (i.e., the transformation parameters) is separately
+# recorded within rattle (crs$transforms) and must be used separately
+# to generate the appropriate PMML code. Eventually I expect to see
+# the handling of transform variables incorporated into the pmml
+# package.
+
+.TRANSFORMS.NORM.CONTINUOUS <- c("RRC", "R01", "RMD", "RMA")
+.TRANSFORMS.IMPUTE <- c("IZR", "IMN", "IMD", "IMO", "ICN")
+.TRANSFORMS.APPLY <- c("RLG")
+.TRANSFORMS.BIN <- c("BQ", "BK", "BE")
+.TRANSFORMS.INDICATOR <- c("TIN")
+
+.TRANSFORMS.OTHER.NUM <- c("RRK", "TFC")
+.TRANSFORMS.OTHER.CAT <- c("TJN", "TNM")
+.TRANSFORMS.OTHER <- c(.TRANSFORMS.OTHER.NUM, .TRANSFORMS.OTHER.CAT)
+
 .TRANSFORMS <- c(.TRANSFORMS.NORM.CONTINUOUS,
                  .TRANSFORMS.APPLY,
                  .TRANSFORMS.IMPUTE,
-                 .TRANSFORMS.BIN)
+                 .TRANSFORMS.BIN,
+                 .TRANSFORMS.INDICATOR,
+                 .TRANSFORMS.OTHER)
 
 supportTransformExport <- function(transforms=NULL)
 {
@@ -281,54 +310,67 @@ supportTransformExport <- function(transforms=NULL)
 
 unifyTransforms <- function(field, transforms)
 {
-  # 090102 Clean up the list of variables in field based on the known
-  # transforms. The variable transforms is a list of strings,
-  # generally of the form "A_B_C_D_E", at least for the transforms I
-  # am working with at present (see .TRANSFORMS). A is the type of
-  # transform, and D and E are the two (more or less, dependingon the
-  # type, A) parameters of the transform. We make sure "B_C" (which
-  # might have more than a single underscore) is included in the list
-  # of vars and that "A_B_C_D_E" is not included in the list.
+  # 090102 Unify the list of variables in FIELD based on the known
+  # TRANSFORMS, so that the variables in the TRANSFORMS are removed
+  # from FIELD and replaced with the original variables from which the
+  # TRANFROMS are derived. 090617 The final list of fields then are those
+  # variables which need to be supplied to run the model.
+  #
+  # The variable TRANSFORMS is a list of transform structures (lists),
+  # and each list has a type and original name.
 
-  # 090111 We also make sure that the field class is reset
-  # appropriately, in special cases. So a binning transform, which is
-  # now a categoric, was originally a numeric! Change it back.
+  # 090111 We make sure that the field class is reset appropriately,
+  # in special cases. So a binning transform, which is now a
+  # categoric, was originally a numeric! Change it back to numeric.
 
-  for (i in transforms)
+  for (i in seq_along(transforms))
   {
+    var <- transforms[i][[1]]
+    type <- var$type
+    vname <- names(transforms)[i] # The transformed variable name
 
-    tr.type <- transformToCode(i)
-    ibase <- transformToDerived(i)
+    # 090102 The vname should be in the list of variables in field,
+    # where we replace it with the original name. 090617 If it is not
+    # in the list of variables then it should be an "intermediate"
+    # transform, which is used later in another transform. We need to
+    # handle this.
 
-    # 090102 The name ibase should be in the list of vars, where we
-    # replace it with the the same name, but remove the first
-    # component, to give B_C.
-
-    if (ibase %in% field$name)
+    # 090617 if (vname %in% field$name)
+    # 090617 {
+    index <- which(vname == field$name)
+    if (length(index) > 0)
     {
-      index <- which(ibase == field$name)
-      
-      # 081229 I should probably be testing if index is NULL
+          
+      # 081229 I should probably be testing if index is integer(0) -
+      # 090617 Now doing so.
 
-      new.var <- sub("^([^_]*)_", "", field$name[index])
+      # 090607 REMOVE oname <- sub("^([^_]*)_", "", field$name[index])
 
       # 090111 For the binning operations, be sure to change the class
       # from categoric back to numeric.
 
-      if (tr.type %in% .TRANSFORMS.BIN)
+      if (type %in% .TRANSFORMS.BIN)
         field$class[index] <- "numeric"
 
-      # 090102 If the new var is already in the input variables, then
-      # simply remove the entry naming the transformed var, otherwise
-      # replace the entry naming the transformed var with the new var.
+      # 090102 If the original variable (the untransformed variable)
+      # for this transformed variable vname is already in the input
+      # variables or is itself a transformed variable, then simply
+      # remove the entry naming the transformed variable vname,
+      # otherwise replace the entry naming the transformed var with
+      # the original variable name.
       
-      if (new.var %in% field$name)
+      if (var$orig %in% union(field$name, names(transforms)))
       {
         field$name <- field$name[-index]
         field$class <- field$class[-index]
       }
       else
-        field$name[index] <- new.var
+        field$name[index] <- var$orig
+    }
+    else if (length(which(var$orig == field$name)) == 0) # Orig not in field
+    {
+      field$name <- c(field$name, var$orig)
+      field$class <- c(field$class, origVarType(var$type))
     }
   }
 
@@ -340,38 +382,132 @@ unifyTransforms <- function(field, transforms)
   return(field)
 }
 
-isTransformVar <- function(var.name)
+pmmlCanExport <- function(vname)
 {
-  return(transformToCode(var.name) %in% .TRANSFORMS)
+  # 090517 In general this support function will return TRUE if the
+  # variable name supplied is either not a transform (hence it is
+  # exportable in general, since it is a supplied variable) or if it
+  # is a transform, it is a supported transformation, if there is such
+  # a list available. This is intended for the implementation of
+  # transforms into PMML. An extermal package will provide a
+  # pmml.transforms function and will override the simple default here
+  # to test whether the transform is one that it can handle.
+  return(! isTransformVar(vname))
 }
 
-transformToCode <- function(var)
+isTransformVar <- function(vname)
 {
-  code <- sub("^([^_]*_).*$", "\\1", var)
-  if (sprintf("%s_", substr(code, 1, 2)) %in% .TRANSFORMS.BIN)
-    code <- sprintf("%s_", substr(code, 1, 2))
-      
-  return(code)
+# 090607
+#  print(vname)
+#  print(transformType(vname))
+#  print(.TRANSFORMS)
+#  cat(sprintf("Option 1: %s\n", transformType(vname) %in% .TRANSFORMS))
+#  cat(sprintf("Option 2: %s\n", vname %in% names(crs$transforms)))
+#  cat("Going with option 1\n")
+  return(transformType(vname) %in% .TRANSFORMS)
+# 090612 Revert to the above since crs$transforms is not available in
+# the pmml package! This is used in pmmltocibi and ends up wrapping
+# transforms with FloatVal in the wrong place.
+#
+#  print(vname %in% names(crs$transforms))
+#  return(vname %in% names(crs$transforms))
+
+  # 090613 It seems that returning FALSE always is okay! Thus need to
+  # remove this throughout the code.
+
+#  return(FALSE)
+}
+
+origVarType <- function(ty)
+{
+  if (ty %in% c(.TRANSFORMS.NORM.CONTINUOUS,
+                .TRANSFORMS.IMPUTE, # 090617 But IZR and ICN are ambiguous.
+                .TRANSFORMS.APPLY,
+                .TRANSFORMS.BIN,
+                .TRANSFORMS.OTHER.NUM))
+    return("numeric")
+  else
+    return("factor")
+}
+
+
+transformType <- function(tr)
+{
+  # 090607 Return the code of the type of transform representated by
+  # the variable TR. The supplied parameter TR must be a transform
+  # data structure (list) and this function simply returns the "type"
+  # element of the list. 090609 However, pmmltocibi currently calls
+  # this function often with a strin g variable, so let's keep that
+  # working for now until migrated.
+  
+  # 090517 Should we be returning NULL if there is no type recorded?
+  # Or perhaps an empty string so that %in% will still work. 09607
+  # Note that there should always be a type.
+
+  if (class(tr) == "character") # 090709 Remove this sometime - needed
+                                # in pmmltocibi for now.
+  {
+    code <- sub("^([^_]*)_.*$", "\\1", tr)
+    if (substr(code, 1, 2) %in% .TRANSFORMS.BIN)
+      code <- substr(code, 1, 2)
+    return(code)
+  }
+  else
+    return(tr[[1]]$type)
 }
 
 transformToDerived <- function(var)
 {
-  if (transformToCode(var) %in% .TRANSFORMS.APPLY)
+  # 090607 REMOVE This function should not be needed any more with the
+  # new transforms data structure (list). Remove it eventually, but
+  # for now simply return the supplied var.
+
+  return(var)
+  
+  if (transformType(var) %in% .TRANSFORMS.APPLY)
     # No args
     return(var) 
-  else if (transformToCode(var) %in% .TRANSFORMS.IMPUTE)
+  else if (transformType(var) %in% .TRANSFORMS.IMPUTE)
     # One arg
     return(sub("^([^_]*_)(.*)(_[^_]*)$", "\\1\\2", var))
-  else if (transformToCode(var) %in% .TRANSFORMS.NORM.CONTINUOUS)
+  else if (transformType(var) %in% .TRANSFORMS.NORM.CONTINUOUS)
     # two args
     return(sub("^([^_]*_)(.*)(_[^_]*){2}$", "\\1\\2", var))
-  else if (transformToCode(var) %in% .TRANSFORMS.BIN)
+  else if (transformType(var) %in% .TRANSFORMS.BIN)
   {
     nparms <- as.integer(sub("^..([^_]*)_.*$", "\\1", var)) + 1
     return(sub(sprintf("^([^_]*_)(.*)(_[^_]*){%s}$", nparms), "\\1\\2", var))
   }
+  else if (transformType(var) %in% .TRANSFORMS.INDICATOR)
+    # 090603 Split the values out and return list of transform var
+    # names
+    return(paste(transformToBasename(var), strsplit(var, "_")[[1]][-c(1,2)], sep="_"))
   else
     return(NULL)
+}
+
+transformToBasename <- function(var)
+{
+  # 090607 REMOVE No longer used. Simply return var. Remove this eventually.
+
+  return(var)
+  
+  # 090603 This is awaiting turning crs$transforms into a structure to
+  # handle this properly, then we won't need this kludge. For now we
+  # assume no variable has _ in its name, but limit this assumption
+  # to indicator variables for now.
+
+  # 090601 For TIN_Marital_Married_..., return TIN_Marital.
+
+  if (substr(var, 1, 4) == "TIN_")
+    # 090603 TIN now lists all levels in one go.
+    return(sub("^([^_]+_[^_]+)_.*$", "\\1", var))
+    # 090601 Bit of an assumption that the levels do not have
+    # underscores in them, but assume so for now. Strip off the level
+    # from the transformed variable's name and return that.
+    ## return(sub("^(.*)_[^_]+$", "\\1", var))
+  else
+    return(var)
 }
 
 transformToOriginal <- function(var)
@@ -381,7 +517,7 @@ transformToOriginal <- function(var)
 
 transformToParms <- function(var)
 {
-  if (transformToCode(var) %in% .TRANSFORMS.BIN)
+  if (transformType(var) %in% .TRANSFORMS.BIN)
   {
     nparms <- as.integer(sub("^..([^_]*)_.*$", "\\1", var)) + 1
     return(unlist(strsplit(

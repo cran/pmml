@@ -1,4 +1,4 @@
-\name{pmml.arules}
+\name{pmml.rules}
 \alias{pmml.rules}
 \alias{pmml.itemsets}
 \title{Generate PMML for arules objects}

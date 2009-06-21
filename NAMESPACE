@@ -10,4 +10,4 @@ S3method(pmml, rsf)
 S3method(pmml, rules)
 S3method(pmml, itemsets)
 
-export(pmmltoc)
+export(pmmltoc, pmmlCanExport)
