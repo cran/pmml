@@ -103,6 +103,11 @@ pmml.multinom <- function(model,
   
   the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target))
 
+  #########################################
+  #  OUTPUT
+  the.model <- append.XMLNode(the.model, pmmlOutput(field,target))
+
+
   # PMML -> TreeModel -> LocalTransformations -> DerivedField -> NormContiuous
 
   if (supportTransformExport(transforms))

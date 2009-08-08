@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-02-08 08:23:45 Graham Williams>
+# Time-stamp: <2009-08-08 09:22:30 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -31,10 +31,9 @@ pmml.kmeans <- function(model,
                         transforms=NULL,
                         ...)
 {
+  if (! inherits(model, "kmeans")) stop("Not a legitimate kmeans object")
   require(XML, quietly=TRUE)
   
-  if (! inherits(model, "kmeans")) stop("Not a legitimate kmeans object")
-
   # Collect the required information.
 
   field <- NULL
@@ -42,11 +41,18 @@ pmml.kmeans <- function(model,
   number.of.fields <- length(field$name)
   field$class <- rep("numeric", number.of.fields) # All fields are numeric
   names(field$class) <- field$name
-  
   orig.fields <- field$name
-  if (supportTransformExport(transforms))
-    field <- unifyTransforms(field, transforms)
 
+  # 090808 Mark any categoric transforms as inactive since they won't
+  # have been used in the clustering (at least not until we automate
+  # the conversion to indicator variables.
+
+  for (i in which(sapply(transforms, function(x) x$type) %in%
+                  .TRANSFORMS.TO.CATEGORIC))
+    transforms[[i]]$status <- "inactive"
+  
+  if (supportTransformExport(transforms))
+    field <- unifyTransforms(field, transforms, keep.first=FALSE)
   number.of.clusters <- length(model$size)
   cluster.names <- rownames(model$centers)
 

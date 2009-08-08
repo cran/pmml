@@ -4,7 +4,7 @@
 #
 # Handle lm and glm models.
 #
-# Time-stamp: <2009-06-13 21:48:11 Graham Williams>
+# Time-stamp: <2009-08-08 10:33:45 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -43,13 +43,14 @@ pmml.lm <- function(model,
                     ...)
 {
   if (! inherits(model, "lm")) stop("Not a legitimate lm object")
+  
   require(XML, quietly=TRUE)
 
   # Collect the required information.
 
   # For a regression, all variables will have been used except those
   # with a NA coefficient indicating singularities. We mark
-  # singularities as inactive.
+  # singularities as inactive shortly.
 
   terms <- attributes(model$terms)
   
@@ -64,7 +65,7 @@ pmml.lm <- function(model,
   if (supportTransformExport(transforms))
     field <- unifyTransforms(field, transforms)
   number.of.fields <- length(field$name)
-  
+
   target <- field$name[1]
 
   # 090501 Identify those who are singularities. For numerics, this is
@@ -83,8 +84,8 @@ pmml.lm <- function(model,
   tmp <- sapply(sapply(field$name, grep, active), length)
   active.vars <- names(tmp[tmp>0])
   
-  # Now remove any which have any non-NA levels, and that final
-  # list is passed on the definitive list of onactive variables
+  # Now remove any which have any non-NA levels. This final list is
+  # passed on as the definitive list of nonactive variables
 
   inactive <- setdiff(inactive.vars, active.vars)
 

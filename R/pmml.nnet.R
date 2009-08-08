@@ -288,6 +288,9 @@ pmml.nnet <- function(model,
   
   nnet.model <- append.XMLNode(nnet.model, pmml.nnet.MiningSchema(field, target))
   
+  #########################################
+  #  OUTPUT
+  nnet.model <- append.XMLNode(nnet.model, pmmlOutput(field,target))
   
   ##############################################################################
   # PMML -> NeuralNetwork -> NeuralInputs

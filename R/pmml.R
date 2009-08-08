@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-06-21 22:38:42 Graham Williams>
+# Time-stamp: <2009-08-08 10:36:00 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -104,7 +104,9 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   # Header
   
-  VERSION <- "1.2.15" # Update documentation
+  VERSION <- "1.2.17" # Zementis: add Output node.
+  # "1.2.16" # Support TJN (joincat).
+  # "1.2.15" # Update documentation
   # "1.2.14" # Support mult transforms for rpart
   # "1.2.13" # Change strcutre used to record transforms.
   # "1.2.12" # Fix pmml.lm handling of singularities -> inactive
@@ -171,10 +173,13 @@ pmmlHeader <- function(description, copyright, app.name)
 
 pmmlDataDictionary <- function(field)
 {
-  # field$name is a vector of strings, and includes target
-  # field$class is indexed by fields$names
-  # field$levels is indexed by fields$names
+  # 090806 Generate and return a DataDictionary element that incldues
+  # each supplied field.
   
+  # field$name is a vector of strings, and includes target
+  # field$class is indexed by fields$name
+  # field$levels is indexed by fields$name
+
   number.of.fields <- length(field$name)
 
   # DataDictionary
@@ -251,9 +256,10 @@ pmmlMiningSchema <- function(field, target=NULL, inactive=NULL)
     # be NA and thus is the only value included for this categoric,
     # for a categoric with more levels we need to no treat the others
     # as inactive so the whole categroic itself should not be
-    # inactive. For now, the simple reversion works.
+    # inactive. For now, the simple reversion works. 090808 Move from
+    # the use of inactive to supplementary to be in line with the DTD.
     
-    if (field$name[i] %in% inactive) usage <- "inactive"
+    if (field$name[i] %in% inactive) usage <- "supplementary"
     # 090328 if (length(grep(field$name[i], inactive))) usage <- "inactive"
       
     mining.fields[[i]] <- xmlNode("MiningField",
@@ -263,6 +269,31 @@ pmmlMiningSchema <- function(field, target=NULL, inactive=NULL)
   mining.schema <- xmlNode("MiningSchema")
   mining.schema$children <- mining.fields
   return(mining.schema)
+}
+
+#####################################################################
+# PMML Output element
+pmmlOutput <- function(field, target=NULL)
+{
+  number.of.fields <- length(field$name)
+
+  output <- xmlNode("Output")
+  output.fields <- list()
+
+  for (i in 1:number.of.fields) {
+    if (field$name[i]==target) {
+          for (j in seq_along(field$levels[[field$name[i]]]))
+           output.fields[[j]] <- xmlNode("OutputField",
+                           attrs=c(name=paste("Probability_",
+                                     field$levels[[field$name[i]]][j],sep=""),
+                             optype="continuous",
+                           dataType = "double", feature="probability",
+                           value= field$levels[[field$name[i]]][j]))
+    }
+  }
+
+  output$children <- output.fields
+  return(output)
 }
 
 ########################################################################
@@ -282,10 +313,10 @@ pmmlMiningSchema <- function(field, target=NULL, inactive=NULL)
 .TRANSFORMS.NORM.CONTINUOUS <- c("RRC", "R01", "RMD", "RMA")
 .TRANSFORMS.IMPUTE <- c("IZR", "IMN", "IMD", "IMO", "ICN")
 .TRANSFORMS.APPLY <- c("RLG")
-.TRANSFORMS.BIN <- c("BQ", "BK", "BE")
+.TRANSFORMS.BIN <- c("BQ", "BK", "BE", "TFC")
 .TRANSFORMS.INDICATOR <- c("TIN")
 
-.TRANSFORMS.OTHER.NUM <- c("RRK", "TFC")
+.TRANSFORMS.OTHER.NUM <- c("RRK")
 .TRANSFORMS.OTHER.CAT <- c("TJN", "TNM")
 .TRANSFORMS.OTHER <- c(.TRANSFORMS.OTHER.NUM, .TRANSFORMS.OTHER.CAT)
 
@@ -295,6 +326,8 @@ pmmlMiningSchema <- function(field, target=NULL, inactive=NULL)
                  .TRANSFORMS.BIN,
                  .TRANSFORMS.INDICATOR,
                  .TRANSFORMS.OTHER)
+
+.TRANSFORMS.TO.CATEGORIC <- c(.TRANSFORMS.BIN, "TJN")
 
 supportTransformExport <- function(transforms=NULL)
 {
@@ -308,7 +341,7 @@ supportTransformExport <- function(transforms=NULL)
          ! is.null(transforms))
 }
 
-unifyTransforms <- function(field, transforms)
+unifyTransforms <- function(field, transforms, keep.first=TRUE)
 {
   # 090102 Unify the list of variables in FIELD based on the known
   # TRANSFORMS, so that the variables in the TRANSFORMS are removed
@@ -317,18 +350,37 @@ unifyTransforms <- function(field, transforms)
   # variables which need to be supplied to run the model.
   #
   # The variable TRANSFORMS is a list of transform structures (lists),
-  # and each list has a type and original name.
+  # and each list has at least named elements called type, original
+  # name, and status.
 
-  # 090111 We make sure that the field class is reset appropriately,
+  # 090111 We make sure that the FIELD class is reset appropriately,
   # in special cases. So a binning transform, which is now a
   # categoric, was originally a numeric! Change it back to numeric.
 
+  # 090806 Obtain a list of those varaibles that are listed as the
+  # original variable within an active transform. This is used to
+  # determine which transforms to ignore. Some inactive transforms are
+  # needed because there is an active transform derived from it.
+
+  active.by.orig <- unique(unlist(sapply(crs$transforms, function(x)
+                                         if (x$status=="active") x$orig)))
+  
   for (i in seq_along(transforms))
   {
     var <- transforms[i][[1]]
     type <- var$type
     vname <- names(transforms)[i] # The transformed variable name
 
+    # 090801 If the status is inactive and there is no active
+    # transform that uses this vname (i.e., it is not in the
+    # active.by.orig vector), then skip its processing - the variable
+    # is not required hence it's source variable is not required.
+
+    status <- transforms[i][[1]]$status
+    if (status == "inactive" &&
+        (is.null(active.by.orig) ||
+         ! (vname  %in% active.by.orig))) next
+    
     # 090102 The vname should be in the list of variables in field,
     # where we replace it with the original name. 090617 If it is not
     # in the list of variables then it should be an "intermediate"
@@ -338,7 +390,7 @@ unifyTransforms <- function(field, transforms)
     # 090617 if (vname %in% field$name)
     # 090617 {
     index <- which(vname == field$name)
-    if (length(index) > 0)
+    if (length(index))
     {
           
       # 081229 I should probably be testing if index is integer(0) -
@@ -358,19 +410,33 @@ unifyTransforms <- function(field, transforms)
       # remove the entry naming the transformed variable vname,
       # otherwise replace the entry naming the transformed var with
       # the original variable name.
-      
-      if (var$orig %in% union(field$name, names(transforms)))
+
+      for (v in var$orig)
       {
-        field$name <- field$name[-index]
-        field$class <- field$class[-index]
+        if (v %in% union(field$name, names(transforms)))
+        {
+          field$name <- field$name[-index]
+          field$class <- field$class[-index]
+        }
+        else
+        {
+          # 090724 For TJN with two orig variables we loop through
+          # here twice, so the second time through (i.e., when v is
+          # not the same as var$orig[1]) add the dependent variable to
+          # the end of the list and record a class for it - assumed to
+          # always be factor.
+          if (v != var$orig[1]) index <- length(field$name) + 1
+          field$name[index] <- v
+          if (v != var$orig[1]) field$class[index] <- "factor"
+        }
+        
       }
-      else
-        field$name[index] <- var$orig
     }
     else if (length(which(var$orig == field$name)) == 0) # Orig not in field
     {
       field$name <- c(field$name, var$orig)
-      field$class <- c(field$class, origVarType(var$type))
+      # 090724 Add this rep to account for TJN which has multiple orig vars.
+      field$class <- c(field$class, rep(origVarType(var$type), length(var$orig)))
     }
   }
 
@@ -378,6 +444,34 @@ unifyTransforms <- function(field, transforms)
   # variables.
 
   names(field$class) <- field$name
+
+  # 090801 If this is called in the context of a running Rattle, then
+  # sort the fields to be the same order they appear in
+  # names(crs$dataset). We need to keep the first field as is if it is
+  # the target field to ensure the follow on logic for predictive
+  # models. Not required for descriptive models.
+
+  if (exists("crs") && ! is.null(crs$dataset))
+  {
+    if (keep.first)
+    {
+      orig <- field
+      f1 <- field$class[1]
+      field$class <- field$class[-1]
+      field$name <- field$name[-1]
+      field$class <- field$class[names(crs$dataset)[names(crs$dataset) %in% field$name]]
+      field$class <- c(f1, field$class)
+      field$class <- c(field$class, orig$class[! (orig$name %in% names(field$class))])
+      field$name <- names(field$class)
+    }
+    else
+    {
+      orig <- field
+      field$class <- field$class[names(crs$dataset)[names(crs$dataset) %in% field$name]]
+      field$class <- c(field$class, orig$class[! (orig$name %in% names(field$class))])
+      field$name <- names(field$class)
+    }
+  }
   
   return(field)
 }

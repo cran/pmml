@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-06-17 19:20:19 Graham Williams>
+# Time-stamp: <2009-08-01 20:43:33 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -30,7 +30,7 @@
 #          added ScoreDistribution, missingValueStrategy 
 #          by Zementis, Inc. in June 2008
 #           
-
+# Updated: updated by Zementis Inc. to add Output element in July 2009
 pmml.rpart <- function(model,
                        model.name="RPart_Model",
                        app.name="Rattle/PMML",
@@ -70,7 +70,7 @@ pmml.rpart <- function(model,
     used <- as.character(unique(frame$var[!leaves]))
 
     # 090617 Make sure we include any transforms that don't appear in
-    # the model, but other variables trsnformed from them do.
+    # the model, but have other variables transformed from them.
 
     used <- union(used, sapply(transforms, function(x) x$orig))
 
@@ -97,11 +97,11 @@ pmml.rpart <- function(model,
   # 090617 Ensure that the list of fields includes those necessary for
   # the transforms. By this stage the transforms should have removed
   # from it any that are not needed in the model.
-  
+
   if (supportTransformExport(transforms))
     field <- unifyTransforms(field, transforms)
   number.of.fields <- length(field$name)
-  
+
   target <- field$name[1]
   
   for (i in 1:number.of.fields)
@@ -153,6 +153,11 @@ pmml.rpart <- function(model,
   
   the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target, inactive))
 
+  #########################################
+  #  OUTPUT
+  the.model <- append.XMLNode(the.model, pmmlOutput(field,target))
+
+  ############################################################################
   # PMML -> TreeModel -> LocalTransformations -> DerivedField -> NormContiuous
 
   if (supportTransformExport(transforms))
