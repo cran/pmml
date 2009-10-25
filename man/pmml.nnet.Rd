@@ -15,7 +15,8 @@
 }
 \usage{
 \method{pmml}{nnet}(model, model.name="NeuralNet_model", app.name="Rattle/PMML",
-     description="Neural Network PMML Model", copyright=NULL, \dots)
+     description="Neural Network PMML Model", copyright=NULL,
+transforms=NULL, \dots)
 }
 \arguments{
   
@@ -28,6 +29,8 @@
   \item{description}{a descriptive text for the header of the PMML.}
   
   \item{copyright}{the copyright notice for the model.}
+
+  \item{transforms}{a coded list of transforms performed.}
 
   \item{\dots}{further arguments passed to or from other methods.}
 }

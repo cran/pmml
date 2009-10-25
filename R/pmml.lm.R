@@ -4,7 +4,7 @@
 #
 # Handle lm and glm models.
 #
-# Time-stamp: <2009-08-08 10:33:45 Graham Williams>
+# Time-stamp: <2009-10-09 22:13:38 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -63,7 +63,10 @@ pmml.lm <- function(model,
   # 090103 Support transforms if available.
 
   if (supportTransformExport(transforms))
+  {
     field <- unifyTransforms(field, transforms)
+    transforms <- activateDependTransforms(transforms)
+  }
   number.of.fields <- length(field$name)
 
   target <- field$name[1]
@@ -178,7 +181,7 @@ pmml.lm <- function(model,
 
   the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target, inactive))
 
-  # PMML -> TreeModel -> LocalTransformations -> DerivedField -> NormContiuous
+  # PMML -> TreeModel -> LocalTransforms
 
   if (supportTransformExport(transforms))
     the.model <- append.XMLNode(the.model, pmml.transforms(transforms))
@@ -196,9 +199,14 @@ pmml.lm <- function(model,
   else
     intercept <- 0
   
-  # Added by Graham Williams so that code identifies a targetCategory for binary
-  # logistic regression glm models built with binomial(logit).
+  # Added by Graham Williams so that code identifies a targetCategory
+  # for binary logistic regression glm models built with
+  # binomial(logit) and 091009 adds an extra RegressionTable
+  # (regTable2) to explicitly refer to the second target category, as
+  # recommended in PMML 4.0 specs. and having an intercept of 0.0.
 
+  regTable2 <- NULL
+  
   if (model.type == "binomial")
   {
     # 090117 Identify the two possible values for the target variable,
@@ -211,8 +219,10 @@ pmml.lm <- function(model,
     target.value <- as.character(values[2])
     regTable <- xmlNode("RegressionTable",
                         attrs=c(targetCategory=target.value,
-                          alternativeCategory=alternative.value,
                           intercept=intercept))
+    regTable2 <- xmlNode("RegressionTable",
+                         attrs=c(targetCategory=alternative.value,
+                           intercept="0.0"))
   }
   else
   {
@@ -279,6 +289,7 @@ pmml.lm <- function(model,
   }
   
   the.model <- append.XMLNode(the.model, regTable)
+  if (! is.null(regTable2)) the.model <- append.XMLNode(the.model, regTable2)
   
   # Add to the top level structure.
   

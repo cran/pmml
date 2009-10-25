@@ -14,13 +14,13 @@
 \usage{
 \method{pmml}{ksvm}(model, model.name="SVM_model", app.name="Rattle/PMML",
      description="Support Vector Machine PMML Model", copyright=NULL,
-     transforms=NULL, data.name, \dots)
+     transforms=NULL, dataset=NULL, \dots)
 }
 \arguments{
   
   \item{model}{a ksvm object.}
 
-  \item{data.name}{the name of the data object used to train the SVM
+  \item{dataset}{the original dataset used to train the SVM
   model in ksvm - required since the ksvm object does not appear to
   record information about the used categorical variables.}
   
@@ -70,6 +70,6 @@ ds <- spam[index[1:300],] # For illustration only use a small dataset.
 fit <- ksvm(type~., data=ds, kenrel="rbfdot")
 
 # Genetate the PMML.
-pmml(fit, data=ds)
+pmml(fit, dataset=ds)
 }
 \keyword{interface}

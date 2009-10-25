@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-02-16 06:34:53 Graham Williams>
+# Time-stamp: <2009-08-18 19:45:31 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -57,7 +57,10 @@ pmml.multinom <- function(model,
    # 090216 Support transforms if available.
   
   if (supportTransformExport(transforms))
+  {
     field <- unifyTransforms(field, transforms)
+    transforms <- activateDependTransforms(transforms)
+  }
   number.of.fields <- length(field$name)
  
   target <- field$name[1]

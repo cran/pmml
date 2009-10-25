@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-08-08 09:22:30 Graham Williams>
+# Time-stamp: <2009-08-13 22:24:55 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -52,7 +52,11 @@ pmml.kmeans <- function(model,
     transforms[[i]]$status <- "inactive"
   
   if (supportTransformExport(transforms))
+  {
     field <- unifyTransforms(field, transforms, keep.first=FALSE)
+    transforms <- activateDependTransforms(transforms)
+  }
+  
   number.of.clusters <- length(model$size)
   cluster.names <- rownames(model$centers)
 

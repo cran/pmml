@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-08-08 10:36:00 Graham Williams>
+# Time-stamp: <2009-10-25 12:16:34 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -30,6 +30,7 @@ pmml <- function(model,
                  description=NULL,
                  copyright=NULL,
                  transforms=NULL,
+                 dataset=NULL,
                  ...)
   UseMethod("pmml")
 
@@ -104,7 +105,9 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   # Header
   
-  VERSION <- "1.2.17" # Zementis: add Output node.
+  VERSION <- "1.2.19" # Several fixes for PMML conformance.
+  # "1.2.18" # Fix export of pmml for hclust with transforms.
+  # "1.2.17" # Zementis: add Output node.
   # "1.2.16" # Support TJN (joincat).
   # "1.2.15" # Update documentation
   # "1.2.14" # Support mult transforms for rpart
@@ -147,38 +150,40 @@ pmmlHeader <- function(description, copyright, app.name)
   header <- xmlNode("Header",
                     attrs=c(copyright=copyright, description=description))
 
-  # Header -> Extension
-						   
-  header <- append.XMLNode(header,
-                           xmlNode("Extension",
-                                   attrs=c(name="timestamp",
-                                     value=sprintf("%s", Sys.time()),
-                                     extender="Rattle")))
-  
-  header <- append.XMLNode(header, xmlNode("Extension",
-                                           attrs=c(name="description",
-                                             value=sprintf("%s",
-                                               Sys.info()["user"]),
-                                             extender="Rattle")))
-  
-
   # Header -> Application
 
   header <- append.XMLNode(header, xmlNode("Application",
                                            attrs=c(name=app.name,
                                              version=VERSION)))
 
+  # Header -> Timestamp
+						   
+  header <- append.XMLNode(header,
+                           xmlNode("Timestamp", sprintf("%s", Sys.time())))
+
+  # Header -> User (Extension)
+  
+  header <- append.XMLNode(header, xmlNode("Extension",
+                                           attrs=c(name="user",
+                                             value=sprintf("%s",
+                                               Sys.info()["user"]),
+                                             extender="Rattle")))
+  
+
   return(header)
 }
 
-pmmlDataDictionary <- function(field)
+pmmlDataDictionary <- function(field, dataset=NULL)
 {
   # 090806 Generate and return a DataDictionary element that incldues
   # each supplied field.
-  
+  #
   # field$name is a vector of strings, and includes target
   # field$class is indexed by fields$name
   # field$levels is indexed by fields$name
+  #
+  # 091003 If the dataset is supplied then also include an Interval
+  # element within the DataField for each numeric variable.
 
   number.of.fields <- length(field$name)
 
@@ -212,6 +217,19 @@ pmmlDataDictionary <- function(field)
                                                 optype=optype,
                                                 dataType=datype))
 
+    # DataDictionary -> DataField -> Interval
+
+    if (optype == "continuous" && ! is.null(dataset))
+    {
+      interval <-  xmlNode("Interval",
+                           attrs=c(closure="closedClosed",
+                             leftMargin=min(dataset[[field$name[i]]],
+                               na.rm=TRUE), # 091025 Handle missing values
+                             rightMargin=max(dataset[[field$name[i]]],
+                               na.rm=TRUE))) # 091025 Handle missing values
+      data.fields[[i]] <- append.XMLNode(data.fields[[i]], interval)
+    }
+    
     # DataDictionary -> DataField -> Value
 
     if (optype == "categorical")
@@ -227,11 +245,22 @@ pmmlDataDictionary <- function(field)
 
 pmmlMiningSchema <- function(field, target=NULL, inactive=NULL)
 {
-  # 081103 Add inactive to list those variables that should be marked
-  # as inactive in the model. This was added so that singularities can
-  # be identified as inactive for a linear model. It could also be
-  # used to capture ignored variables, if they were to ever be
-  # included in the variable list.
+  # Generate the PMML for the MinimgSchema element.
+
+  # 091003 Currently we only include the name and usageType
+  # attributes. We could also include relative importance (like a
+  # correlation between 0 and 1), invalidValueTreatment (returnInvalid
+  # to return a value indicating an invalid result; asis to return a
+  # value without modification; asMissing to treat it as a missing
+  # value and return the missingValueReplacement value instead),
+  # missingValueReplacement, and outliers (asis, asMisingValues,
+  # asExtremeValues).
+  
+  # 081103 Add inactive to list (as supplementary) those variables
+  # that should be marked as inactive in the model. This was added so
+  # that singularities can be identified as inactive for a linear
+  # model. It could also be used to capture ignored variables, if they
+  # were to ever be included in the variable list.
   
   number.of.fields <- length(field$name)
   mining.fields <- list()
@@ -273,25 +302,42 @@ pmmlMiningSchema <- function(field, target=NULL, inactive=NULL)
 
 #####################################################################
 # PMML Output element
-pmmlOutput <- function(field, target=NULL)
+
+pmmlOutput <- function(field, target=NULL, optype=NULL)
 {
   number.of.fields <- length(field$name)
 
   output <- xmlNode("Output")
   output.fields <- list()
 
-  for (i in 1:number.of.fields) {
-    if (field$name[i]==target) {
-          for (j in seq_along(field$levels[[field$name[i]]]))
-           output.fields[[j]] <- xmlNode("OutputField",
-                           attrs=c(name=paste("Probability_",
-                                     field$levels[[field$name[i]]][j],sep=""),
-                             optype="continuous",
-                           dataType = "double", feature="probability",
-                           value= field$levels[[field$name[i]]][j]))
+  for (i in 1:number.of.fields)
+  {
+    if (field$name[i]==target)
+    {
+      if (is.null(optype))
+        output.fields[[1]] <- xmlNode("OutputField",
+                                      attrs=c(name=target,
+                                        feature="predictedValue"))
+      else
+        output.fields[[1]] <- xmlNode("OutputField",
+                                      attrs=c(name=target,
+                                        optype=optype,
+                                        dataType=ifelse(optype=="continuous",
+                                          "double", "string"),
+                                        feature="predictedValue"))
+
+      for (j in seq_along(field$levels[[field$name[i]]]))
+        output.fields[[j+1]] <- xmlNode("OutputField",
+                                        attrs=c(name=paste("Probability_",
+                                                  field$levels[[field$name[i]]][j],
+                                                  sep=""),
+                                          optype="continuous",
+                                          dataType = "double",
+                                          feature="probability",
+                                          value= field$levels[[field$name[i]]][j]))
     }
   }
-
+  
   output$children <- output.fields
   return(output)
 }
@@ -339,6 +385,36 @@ supportTransformExport <- function(transforms=NULL)
   return(exists("pmml.transforms") &&
          # length(getAnywhere("pmml.transforms")$objs) > 0 &&
          ! is.null(transforms))
+}
+
+activateTransforms <- function(transforms)
+{
+  # 090813 For each transform ensure the stats is set to active. This
+  # is needed when we have multiple transforms and we have remove from
+  # the list of transforms those which are truely ignored (i.e.,
+  # inactive). Those that remain with an inactive status are then
+  # assumed to be used for active transforms. So make them active.
+
+  return(lapply(transforms, function(x) {x$status <- "active"; return(x)}))
+}
+
+activateDependTransforms <- function(transforms)
+{
+  # 090813 For each transform, starting from the last (assuming the
+  # order of multiple transforms goes from the beginning to the end -
+  # i.e., RRC_TNM_EDUCATION appears later than TNM_EDUCATION),
+  # activate any inactive transforms that are needed for later active
+  # transforms.
+
+  for (i in rev(seq_along(transforms)))
+  {
+    if (i == length(transforms)) next
+    if (names(transforms)[i] %in%
+        sapply(transforms[seq(i+1, length(transforms))],
+               function(x) ifelse(x$status=="active", x$orig, NA)))
+      transforms[[i]]$status <- "active"
+  }
+  return(transforms)
 }
 
 unifyTransforms <- function(field, transforms, keep.first=TRUE)
@@ -415,8 +491,17 @@ unifyTransforms <- function(field, transforms, keep.first=TRUE)
       {
         if (v %in% union(field$name, names(transforms)))
         {
-          field$name <- field$name[-index]
-          field$class <- field$class[-index]
+          # 090819 Not 100% this is correct, but it captures where
+          # TJN_EDUCATION_GENDER is a transform and GENDER is also the
+          # target. the second time through this loop v is GENDER, but
+          # we do not want to remove the "index" item since that will
+          # have been set to EDUCATION the first time through the
+          # loop!
+          if (length(var$orig) == 1)
+          {
+            field$name <- field$name[-index]
+            field$class <- field$class[-index]
+          }
         }
         else
         {

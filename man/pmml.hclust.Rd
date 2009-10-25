@@ -14,7 +14,7 @@
 \usage{
 \method{pmml}{hclust}(model, model.name="HClust_Model", app.name="Rattle/PMML",
      description="Hierarchical cluster model", copyright=NULL,
-transforms=NULL, centers, \dots)
+transforms=NULL, dataset=NULL, centers, \dots)
 }
 \arguments{
   
@@ -30,6 +30,8 @@ transforms=NULL, centers, \dots)
 
   \item{transforms}{a coded list of transforms performed.}
   
+  \item{dataset}{the orginal training dataset, if available.}
+
   \item{centers}{a list of means to represent the clusters.}
 
   \item{\dots}{further arguments passed to or from other methods.}

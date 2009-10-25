@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-01-05 10:39:43 Graham Williams>
+# Time-stamp: <2009-10-25 20:59:17 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -163,13 +163,13 @@ pmml.ksvm <- function(model,
                       description="Support Vector Machine PMML Model",
                       copyright=NULL,
                       transforms=NULL,
-                      data.name,
+                      dataset=NULL,
                       ...)
 {
   if (! inherits(model, "ksvm"))
     stop("Not a legitimate ksvm object.")
   
-  if (! is.object(data.name))
+  if (! is.object(dataset))
     stop("Specified dataset not a legitimate object.")
 
   require(XML, quietly=TRUE)
@@ -248,7 +248,7 @@ pmml.ksvm <- function(model,
 
   # PMML -> DataDictionary
   
-  pmml <- append.XMLNode(pmml, pmml.ksvm.DataDictionary(field, data.name))
+  pmml <- append.XMLNode(pmml, pmml.ksvm.DataDictionary(field, dataset))
   
   # PMML -> SupportVectorMachineModel
   
@@ -305,7 +305,7 @@ pmml.ksvm <- function(model,
   # LocalTransformations are necessary to scale x and y and make data
   # compatible with ksvm's algorithm (pre-processing)
   
-  number.of.data.names <- length(names(data.name))
+  number.of.data.names <- length(names(dataset))
   number.of.scaled <- length(attributes.model$scaling$x.scale$`scaled:center`)
   
   LocalTransformations <- xmlNode("LocalTransformations")
@@ -317,10 +317,10 @@ pmml.ksvm <- function(model,
 
       for (j in 1:number.of.data.names)
       {
-        if (terms$term.labels[i] == names(data.name)[j])
+        if (terms$term.labels[i] == names(dataset)[j])
         {
-          number.of.values = length(levels(data.name[[j]]))
-          usedValues <- levels(data.name[[j]])
+          number.of.values = length(levels(dataset[[j]]))
+          usedValues <- levels(dataset[[j]])
           break
         }
       }
@@ -510,11 +510,11 @@ pmml.ksvm <- function(model,
   {
     if (field$class[[field$name[i+1]]] == "factor")
     {
-      for (j in 1:number.of.data.names)
-        if (terms$term.labels[i] == names(data.name)[j])
+      for (j in 1:number.of.datasets)
+        if (terms$term.labels[i] == names(dataset)[j])
         {
-          number.of.values = length(levels(data.name[[j]]))
-          usedValues <- levels(data.name[[j]])
+          number.of.values = length(levels(dataset[[j]]))
+          usedValues <- levels(dataset[[j]])
           break
         }
       for (j in 1:number.of.values)

@@ -11,7 +11,7 @@
 }
 \usage{
 pmml(model, model.name="Rattle_Model", app.name="Rattle/PMML",
-     description=NULL, copyright=NULL, transforms=NULL, \dots)
+     description=NULL, copyright=NULL, transforms=NULL, dataset=NULL, \dots)
 }
 \arguments{
   
@@ -26,6 +26,8 @@ pmml(model, model.name="Rattle_Model", app.name="Rattle/PMML",
   \item{copyright}{the copyright notice for the model.}
 
   \item{transforms}{a coded list of transforms performed.}
+
+  \item{dataset}{the orginal training dataset, if available.}
 
   \item{\dots}{further arguments passed to or from other methods.}
 

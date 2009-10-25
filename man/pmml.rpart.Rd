@@ -12,7 +12,8 @@
 }
 \usage{
 \method{pmml}{rpart}(model, model.name="RPart_Model", app.name="Rattle/PMML",
-     description="RPart Decision Tree Model", copyright=NULL, transforms=NULL, \dots)
+     description="RPart Decision Tree Model", copyright=NULL,
+transforms=NULL, dataset=NULL, \dots)
 }
 \arguments{
   
@@ -27,6 +28,8 @@
   \item{copyright}{the copyright notice for the model.}
 
   \item{transforms}{a coded list of transforms performed.}
+
+  \item{dataset}{the orginal training dataset, if available.}
 
   \item{\dots}{further arguments passed to or from other methods.}
 }
