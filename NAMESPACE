@@ -9,5 +9,6 @@ S3method(pmml, rpart)
 S3method(pmml, rsf)
 S3method(pmml, rules)
 S3method(pmml, itemsets)
+S3method(pmml, coxph)
 
 export(pmmltoc, pmmlCanExport)
