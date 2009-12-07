@@ -2,9 +2,9 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Handle coxph regression model.
+# Handle survreg regression model.
 #
-# Time-stamp: <2009-11-23 20:15:16 Graham Williams>
+# Time-stamp: <2009-11-23 20:30:08 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -28,15 +28,15 @@
 #
 # Implemented: 091015 Graham Williams based on pmml.lm
 
-pmml.coxph <- function(model,
-                       model.name="CoxPH_Survival_Regression_Model",
-                       app.name="Rattle/PMML",
-                       description="CoxPH Survival Regression Model",
-                       copyright=NULL,
-                       transforms=NULL,
-                       ...)
+pmml.survreg <- function(model,
+                         model.name="Survival_Regression_Model",
+                         app.name="Rattle/PMML",
+                         description="Survival Regression Model",
+                         copyright=NULL,
+                         transforms=NULL,
+                         ...)
 {
-  if (! inherits(model, "coxph")) stop("Not a legitimate coxph object")
+  if (! inherits(model, "survreg")) stop("Not a legitimate survreg object")
   
   require(XML, quietly=TRUE)
 
@@ -129,12 +129,12 @@ pmml.coxph <- function(model,
 
   # PMML -> RegressionModel
 
-  model.type <- "coxph"
+  model.type <- "survreg"
   
   the.model <- xmlNode("RegressionModel",
                        attrs=c(modelName=model.name,
                          functionName="regression",
-                         algorithmName="coxph",
+                         algorithmName="survreg",
                          targetFieldName=target))
 
   # PMML -> RegressionModel -> MiningSchema
@@ -152,7 +152,7 @@ pmml.coxph <- function(model,
   coeffnames <- names(coeff)
   means <- model$means
 
-  intercept <- 0
+  intercept <- coeff[['(Intercept)']]
   
   regTable <- xmlNode("RegressionTable",
                       attrs=c(intercept=intercept))

@@ -4,7 +4,7 @@
 #
 # Handle lm and glm models.
 #
-# Time-stamp: <2009-10-09 22:13:38 Graham Williams>
+# Time-stamp: <2009-12-06 21:29:19 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -103,6 +103,7 @@ pmml.lm <- function(model,
       # variable is categoric then the levels are not recorded in
       # xlevels for the target variable, so we will need to get the
       # levels from the data itself.
+
       if (is.null(model$data))
         field$levels[[field$name[i]]] <- model$xlevels[[field$name[i]]]
       else

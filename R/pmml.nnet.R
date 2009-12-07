@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-08-30 10:58:34 Graham Williams>
+# Time-stamp: <2009-12-07 06:34:57 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -34,107 +34,105 @@
 
 # Function pmml.nnet.DataDictionary
 
-pmml.nnet.DataDictionary <- function(field)
-{
-  # field$name is a vector of strings, and includes target
-  # field$class is indexed by fields$names
-  # field$levels is indexed by fields$names
-  number.of.fields <- length(field$name)
+##091206 REMOVE Revert to using the original version of this rather than a special one for nnet
+##091206  pmml.nnet.DataDictionary <- function(field)
+## {
+##   # field$name is a vector of strings, and includes target
+##   # field$class is indexed by fields$names
+##   # field$levels is indexed by fields$names
+##   number.of.fields <- length(field$name)
   
-  # DataDictionary
+##   # DataDictionary
 	
-  data.dictionary <- xmlNode("DataDictionary",
-                             attrs=c(numberOfFields=number.of.fields))
-  data.fields <- list()
-  for (i in 1:number.of.fields)
-  {
-    # Determine the operation type
+##   data.dictionary <- xmlNode("DataDictionary",
+##                              attrs=c(numberOfFields=number.of.fields))
+##   data.fields <- list()
+##   for (i in 1:number.of.fields)
+##   {
+##     # Determine the operation type
     
-    optype <- "UNKNOWN"
-    datype <- "UNKNOWN"
-    values <- NULL
-    modified.target <- FALSE
+##     optype <- "UNKNOWN"
+##     datype <- "UNKNOWN"
+##     values <- NULL
+##     #091206 orig.target <- field$name[1]
     
-    if (field$class[[field$name[i]]] == "numeric")
-    {
-      optype <- "continuous"
-      datype <- "double"
-    }
-    else if (field$class[[field$name[i]]] == "factor")
-    {
-      optype <- "categorical"
-      datype <- "string"
+##     if (field$class[[field$name[i]]] == "numeric")
+##     {
+##       optype <- "continuous"
+##       datype <- "double"
+##     }
+##     else if (field$class[[field$name[i]]] == "factor")
+##     {
+##       optype <- "categorical"
+##       datype <- "string"
       
-      temp = grep("as.factor", field$name[i], value = TRUE, fixed = TRUE)
-      if (i == 1 && length(temp) > 0)
-      {
-        target <- field$name[i]
-        tempName <- strsplit(field$name[i],"")
-        endPos <- (length(tempName[[1]]) - 1)
-        field$name[i] <- substring(target,11,endPos)
-        modified.target <- TRUE
-      }
-    }
+##       temp = grep("as.factor", field$name[i], value = TRUE, fixed = TRUE)
+##       if (i == 1 && length(temp) > 0)
+##         field$name[i] <- sub("as.factor\\((.*)\\)", "\\1", field$name[i])
+##     }
     
-    # DataDictionary -> DataField
+##     # DataDictionary -> DataField
     
-    data.fields[[i]] <- xmlNode("DataField", attrs=c(name=field$name[i],
-                                               optype=optype,
-                                               dataType=datype))
+##     data.fields[[i]] <- xmlNode("DataField", attrs=c(name=field$name[i],
+##                                                optype=optype,
+##                                                dataType=datype))
+
+##     # Restore the original target name. 091206 This is wastefull to do
+##     # it every loop. Need to improve this. The aim is to use the real
+##     # variable name in the above data.field but I'm not sure why we
+##     # needed to revert it here? I don't think we do. so don't
     
-    if (modified.target == TRUE)
-    {
-      field$name[1] <- target
-    }
+##     # 091206 field$name[1] <- orig.target
     
-    # DataDictionary -> DataField -> Value
+##     # DataDictionary -> DataField -> Value
     
-    if (optype == "categorical")
-      for (j in 1:length(field$levels[[field$name[i]]]))
-        data.fields[[i]][[j]] <- xmlNode("Value",
-                                         attrs=c(value=field$levels[[field$name[i]]][j]))
-  }
-  data.dictionary$children <- data.fields
+##     if (optype == "categorical")
+##       for (j in 1:length(field$levels[[field$name[i]]]))
+##         data.fields[[i]][[j]] <- xmlNode("Value",
+##                                          attrs=c(value=field$levels[[field$name[i]]][j]))
+##   }
+##   data.dictionary$children <- data.fields
   
-  return(data.dictionary)
+##   return(data.dictionary)
   
-}
+## }
 
 ###################################################################
 # Function pmml.nnet.MiningSchema
 
-pmml.nnet.MiningSchema <- function(field, target=NULL)
-{
-  number.of.fields <- length(field$name)
-  mining.fields <- list()
-  for (i in 1:number.of.fields)
-  {
-    if (field$class[[field$name[i]]] == "factor")
-    {
-			temp = grep("as.factor", field$name[i], value = TRUE, fixed = TRUE)
-			if (i == 1 && length(temp) > 0)
-			{
-				targetTmp <- field$name[i]
-				tempName <- strsplit(field$name[i],"")
-				endPos <- (length(tempName[[1]]) - 1)
-				field$name[i] <- substring(targetTmp,11,endPos)
-                                modified.target <- TRUE
-                        }
-    }
+##091206 REMOVE Revert to using the original version of this rather than a special one for nnet
+## pmml.nnet.MiningSchema <- function(field, target=NULL)
+## {
+##   number.of.fields <- length(field$name)
+##   mining.fields <- list()
+##   for (i in 1:number.of.fields)
+##   {
+##     if (field$class[[field$name[i]]] == "factor")
+##     {
+## 			temp = grep("as.factor", field$name[i], value = TRUE, fixed = TRUE)
+## 			if (i == 1 && length(temp) > 0)
+## 			{
+## 				targetTmp <- field$name[i]
+## 				tempName <- strsplit(field$name[i],"")
+## 				endPos <- (length(tempName[[1]]) - 1)
+## 				field$name[i] <- substring(targetTmp,11,endPos)
+##                                 modified.target <- TRUE
+##                         }
+##     }
     
-    if (is.null(target))
-      usage <- "active"
-    else
-      usage <- ifelse(field$name[i] == target, "predicted", "active")
+##     if (is.null(target))
+##       usage <- "active"
+##     else
+##       usage <- ifelse(field$name[i] == target, "predicted", "active")
       
-    mining.fields[[i]] <- xmlNode("MiningField",
-                                  attrs=c(name=field$name[i],
-                                        usageType=usage))
-  }
-  mining.schema <- xmlNode("MiningSchema")
-  mining.schema$children <- mining.fields
-  return(mining.schema)
-}
+##     mining.fields[[i]] <- xmlNode("MiningField",
+##                                   attrs=c(name=field$name[i],
+##                                         usageType=usage))
+##   }
+##   mining.schema <- xmlNode("MiningSchema")
+##   mining.schema$children <- mining.fields
+##   return(mining.schema)
+## }
 
 ###################################################################
 # Function pmml.nnet
@@ -188,6 +186,18 @@ pmml.nnet <- function(model,
     }
   }
 
+  # 091206 Fix up the as.factor(TARGET) for categoric models by
+  # removing as.factor here so that all the rest just works as normal.
+
+  if (length(grep("^as.factor\\(", field$name[1])))
+  {
+    field$name[1] <- sub("^as.factor\\((.*)\\)", "\\1", field$name[1])
+    names(field$class)[1] <- sub("^as.factor\\((.*)\\)", "\\1", names(field$class)[1])
+    names(field$levels)[1] <- sub("^as.factor\\((.*)\\)", "\\1", names(field$levels)[1])
+  }
+
+  target <- field$name[1]
+  
   # 090820 Support transforms if available.
 
   if (supportTransformExport(transforms))
@@ -227,14 +237,49 @@ pmml.nnet <- function(model,
   if (field$class[[field$name[1]]] == "factor")
     field$levels[[field$name[1]]] <- model$lev
 
-  factor_count <- 1
+  # 091206 BUG When we have an as.numeric transform (TNM_RainToday)
+  # the field variable here records that the original value was a
+  # factor, even though now we have a numeric. As a result we see the
+  # error:
+  #
+  # model$xlevels[[factor_count]] : subscript out of bounds
+  #
+  # Repeat with weather, create TNM_RainToday and use that as the only
+  # input variable. Then field contains:
+  #
+  #====================================================
+  # $name
+  # [1] "as.factor(RainTomorrow)" "RainToday"              
+  # 
+  # $class
+  # as.factor(RainTomorrow)               RainToday 
+  #                "factor"                "factor" 
+  # 
+  # $levels
+  # $levels$`as.factor(RainTomorrow)`
+  # [1] "No"  "Yes"
+  #====================================================
+  #
+  # Then the rest of the code here has a problem.... since
+  # TNM_RainToday is thought to be a factor? RainToday is needed as
+  # the original variable. Note that a glm is exported okay, so
+  # perhaps there is the clue?
+  #
+  # This used factor_count, but why does it need to - should it not be
+  # using the actual variable name? that is why glm works - it uses
+  # the variable name, not an index. Then the bug moves along a bit
+  # further to be "Error in x$children[[i]] <- value : attempt to
+  # select less than one element"
+  
+  #091206 REMOVE factor_count <- 1
   for (i in seq_len(number.of.inputs))
     if (field$class[[field$name[i + 1]]] == "factor")
     {
-      field$levels[[field$name[i + 1]]] <- model$xlevels[[factor_count]]
-      factor_count <- factor_count + 1
+      field$levels[[field$name[i + 1]]] <- model$xlevels[[field$name[i + 1]]]
+      #091206 REMOVE field$levels[[field$name[i + 1]]] <- model$xlevels[[factor_count]]
+      #091206 REMOVE factor_count <- factor_count + 1
     }
-  
+
   ##############################################################################
   # PMML
   
@@ -245,9 +290,10 @@ pmml.nnet <- function(model,
   pmml <- append.XMLNode(pmml, pmmlHeader(description, copyright, app.name))
   
   # PMML -> DataDictionary
-  
-  pmml <- append.XMLNode(pmml, pmml.nnet.DataDictionary(field))
-  
+
+  pmml <- append.XMLNode(pmml, pmmlDataDictionary(field))
+  #091206 REMOVE pmml <- append.XMLNode(pmml, pmml.nnet.DataDictionary(field))
+
   # PMML -> NeuralNetwork
 
   if (model$n[length(model$n)] == 1 && field$class[[field$name[1]]] == "factor")
@@ -278,19 +324,21 @@ pmml.nnet <- function(model,
   
   # PMML -> NeuralNetwork -> MiningSchema
   
-  temp = grep("as.factor", target, value = TRUE, fixed = TRUE)
-  if (length(temp))
-  {
-    tempName <- strsplit(target,"")
-    endPos <- (length(tempName[[1]]) - 1)
-    target <- substring(target,11,endPos)
-  }
-  
-  the.model <- append.XMLNode(the.model, pmml.nnet.MiningSchema(field, target))
+#091206  REMOVE This is part of the bug fix
+#  temp = grep("as.factor", target, value = TRUE, fixed = TRUE)
+#  if (length(temp))
+#  {
+#    tempName <- strsplit(target,"")
+#    endPos <- (length(tempName[[1]]) - 1)
+#    target <- substring(target,11,endPos)
+#  }
+
+  the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target))
+  #091206 REMOVE the.model <- append.XMLNode(the.model, pmml.nnet.MiningSchema(field, target))
   
   #  PMML -> NeuralNetwork -> Output
 
-  the.model <- append.XMLNode(the.model, pmmlOutput(field,target))
+  the.model <- append.XMLNode(the.model, pmmlOutput(field, target))
 
   # PMML -> NeuralNetwork -> LocalTransforms
 
@@ -443,16 +491,16 @@ pmml.nnet <- function(model,
       }
       for (k in 1:previous.number.of.neurons)
       {
-				number.of.connections <- model$n[i + 1]
-				
-				connectionNode <- xmlNode("Con",
-                                                          attrs=c(from=model$conn[wtsID],
-												weight=model$wts[wtsID]))
-                                wtsID <- wtsID + 1
-				
-				neuronNode <- append.XMLNode(neuronNode, connectionNode)
-                              }
-			neuralLayerNode <- append.XMLNode(neuralLayerNode, neuronNode)
+        number.of.connections <- model$n[i + 1]
+        
+        connectionNode <- xmlNode("Con",
+                                  attrs=c(from=model$conn[wtsID],
+                                    weight=model$wts[wtsID]))
+        wtsID <- wtsID + 1
+        
+        neuronNode <- append.XMLNode(neuronNode, connectionNode)
+      }
+      neuralLayerNode <- append.XMLNode(neuralLayerNode, neuronNode)
     }
     
     previous.number.of.neurons <- number.of.neurons
@@ -466,118 +514,116 @@ pmml.nnet <- function(model,
   # The previous layer is assumed to have an output from 0 to 1 and so the
   # threshold is set to 0.5.
   
-  
   if (number.of.neurons == 1 && field$class[[field$name[1]]] == "factor")
-	{
-          neuralLayerNode <- xmlNode("NeuralLayer",
-                                     attrs=c(numberOfNeurons="2",
-                                       activationFunction="threshold",threshold = "0.5"))
+  {
+    neuralLayerNode <- xmlNode("NeuralLayer",
+                               attrs=c(numberOfNeurons="2",
+                                 activationFunction="threshold",threshold = "0.5"))
+    
+    neuronID <- neuronID + 1
+    first.outputNeuronID <- neuronID
+    
+    neuronNode <- xmlNode("Neuron",
+                          attrs=c(id=as.numeric(neuronID),
+                            bias="1.0"))
           
-          neuronID <- neuronID + 1
-          first.outputNeuronID <- neuronID
-          
-          neuronNode <- xmlNode("Neuron",
-                                attrs=c(id=as.numeric(neuronID),
-                                  bias="1.0"))
-          
-          connectionNode <- xmlNode("Con",
-                                    attrs=c(from=neuronID - 1,
-                                      weight="-1.0"))
-          
-          neuronNode <- append.XMLNode(neuronNode, connectionNode)
-          
-          neuralLayerNode <- append.XMLNode(neuralLayerNode, neuronNode)
-          
-          neuronID <- neuronID + 1
-          
-          neuronNode <- xmlNode("Neuron",
-                                attrs=c(id=as.numeric(neuronID),
-                                  bias="0.0"))
-          
-          connectionNode <- xmlNode("Con",
-                                    attrs=c(from=neuronID - 2,
+    connectionNode <- xmlNode("Con",
+                              attrs=c(from=neuronID - 1,
+                                weight="-1.0"))
+    
+    neuronNode <- append.XMLNode(neuronNode, connectionNode)
+    
+    neuralLayerNode <- append.XMLNode(neuralLayerNode, neuronNode)
+    
+    neuronID <- neuronID + 1
+    
+    neuronNode <- xmlNode("Neuron",
+                          attrs=c(id=as.numeric(neuronID),
+                            bias="0.0"))
+    
+    connectionNode <- xmlNode("Con",
+                              attrs=c(from=neuronID - 2,
                                       weight="1.0"))
-          
-          neuronNode <- append.XMLNode(neuronNode, connectionNode)
-          
-          neuralLayerNode <- append.XMLNode(neuralLayerNode, neuronNode)
-          
-          the.model <- append.XMLNode(the.model, neuralLayerNode)
-          
-          number.of.neurons <- number.of.neurons + 1
-          
-          previous.number.of.neurons <- number.of.neurons
-          
-	}
+    
+    neuronNode <- append.XMLNode(neuronNode, connectionNode)
+    
+    neuralLayerNode <- append.XMLNode(neuralLayerNode, neuronNode)
+    
+    the.model <- append.XMLNode(the.model, neuralLayerNode)
+    
+    number.of.neurons <- number.of.neurons + 1
+    
+    previous.number.of.neurons <- number.of.neurons
+    
+  }
   
   ##############################################################################
   # PMML -> NeuralNetwork -> NeuralOutputs
   
   neuralOutputs <- xmlNode("NeuralOutputs",
-				             attrs=c(numberOfOutputs=previous.number.of.neurons))
+                           attrs=c(numberOfOutputs=previous.number.of.neurons))
 		
-	for (i in 1:number.of.neurons)
-	{
-                neuralOutputNode <- xmlNode("NeuralOutput",
-				                    attrs=c(outputNeuron=first.outputNeuronID))
-							
-            first.outputNeuronID <- first.outputNeuronID + 1
-		
-		if (field$class[[field$name[1]]] == "factor")
-                {
-                  targetName=target
-                  temp = grep("as.factor", field$name[1], value = TRUE, fixed = TRUE)
-			if (length(temp) > 0)
-			{
-				target <- field$name[1]
-				tempName <- strsplit(field$name[1],"")
-				endPos <- (length(tempName[[1]]) - 1)
-				targetName <- substring(target,11,endPos)
-                        }
-
-			fieldName <- paste("derivedNO_",targetName,sep="")
-			
-			derivedFieldNode <- xmlNode("DerivedField",
-                                                                attrs=c(name=fieldName,
-								                optype="continuous",
-								                dataType="double"))
-			
-			normDiscreteNode <- xmlNode("NormDiscrete",
-				  						attrs=c(field=targetName,
-                                                                                                value=model$lev[i]))
-				
-                        derivedFieldNode <- append.XMLNode(derivedFieldNode,normDiscreteNode)
-			
-		}
-		else # regression
-		{
-			name <- field$name[1]
-			fieldName <- paste("derivedNO_",name,sep="")
-			
-			derivedFieldNode <- xmlNode("DerivedField",
-                                                            attrs=c(name=fieldName,
-							                  optype="continuous",
-							                  dataType="double"))
-		
-			fieldRefNode <- xmlNode("FieldRef",
-									attrs=c(field=field$name[1]))
-						
-	    	derivedFieldNode <- append.XMLNode(derivedFieldNode,fieldRefNode)
-		
-	    }
-		
-		neuralOutputNode <- append.XMLNode(neuralOutputNode, derivedFieldNode)
-		
-                neuralOutputs <- append.XMLNode(neuralOutputs, neuralOutputNode)
-		
-	}
-
-	the.model <- append.XMLNode(the.model, neuralOutputs)
-	
-	# Add to the top level structure.
-	
-	pmml <- append.XMLNode(pmml, the.model)
-	
-	return(pmml)
+  for (i in 1:number.of.neurons)
+  {
+    neuralOutputNode <- xmlNode("NeuralOutput",
+                                attrs=c(outputNeuron=first.outputNeuronID))
+    
+    first.outputNeuronID <- first.outputNeuronID + 1
+    
+    if (field$class[[field$name[1]]] == "factor")
+    {
+      targetName=target
+      temp = grep("as.factor", field$name[1], value = TRUE, fixed = TRUE)
+      if (length(temp) > 0)
+      {
+        target <- field$name[1]
+        tempName <- strsplit(field$name[1],"")
+        endPos <- (length(tempName[[1]]) - 1)
+        targetName <- substring(target,11,endPos)
+      }
+      
+      fieldName <- paste("derivedNO_",targetName,sep="")
+      
+      derivedFieldNode <- xmlNode("DerivedField",
+                                  attrs=c(name=fieldName,
+                                    optype="continuous",
+                                    dataType="double"))
+      
+      normDiscreteNode <- xmlNode("NormDiscrete",
+                                  attrs=c(field=targetName,
+                                    value=model$lev[i]))
+      
+      derivedFieldNode <- append.XMLNode(derivedFieldNode,normDiscreteNode)
+      
+    }
+    else # regression
+    {
+      name <- field$name[1]
+      fieldName <- paste("derivedNO_",name,sep="")
+      
+      derivedFieldNode <- xmlNode("DerivedField",
+                                  attrs=c(name=fieldName,
+                                    optype="continuous",
+                                    dataType="double"))
+      
+      fieldRefNode <- xmlNode("FieldRef",
+                              attrs=c(field=field$name[1]))
+      
+      derivedFieldNode <- append.XMLNode(derivedFieldNode,fieldRefNode)
+      
+    }
+    
+    neuralOutputNode <- append.XMLNode(neuralOutputNode, derivedFieldNode)
+    
+    neuralOutputs <- append.XMLNode(neuralOutputs, neuralOutputNode)
+    
+  }
+  
+  the.model <- append.XMLNode(the.model, neuralOutputs)
+  
+  # Add to the top level structure.
+  
+  pmml <- append.XMLNode(pmml, the.model)
+  
+  return(pmml)
 }
-

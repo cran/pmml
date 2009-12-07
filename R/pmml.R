@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-11-04 16:59:44 Graham Williams>
+# Time-stamp: <2009-12-07 06:36:20 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -105,7 +105,8 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   # Header
   
-  VERSION <- "1.2.20" # Support coxph as regression.
+  VERSION <- "1.2.21" # Fix bug in pmml export of TNM transform.
+  # "1.2.20" # Support coxph as regression.
   # "1.2.19" # Several fixes for PMML conformance.
   # "1.2.18" # Fix export of pmml for hclust with transforms.
   # "1.2.17" # Zementis: add Output node.
@@ -476,10 +477,15 @@ unifyTransforms <- function(field, transforms, keep.first=TRUE)
       # 090607 REMOVE oname <- sub("^([^_]*)_", "", field$name[index])
 
       # 090111 For the binning operations, be sure to change the class
-      # from categoric back to numeric.
+      # from categoric back to numeric. 091105 For TIN transform, be
+      # sure to change the class to categoric since the original
+      # variable will have been a categoric variable. Does this
+      # capture them all?
 
       if (type %in% .TRANSFORMS.BIN)
         field$class[index] <- "numeric"
+      else if (type %in% c("TIN", "TNM"))
+        field$class[index] <- "factor"
 
       # 090102 If the original variable (the untransformed variable)
       # for this transformed variable vname is already in the input
