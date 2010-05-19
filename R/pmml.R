@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-12-07 06:36:20 Graham Williams>
+# Time-stamp: <2010-05-19 09:45:20 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -36,6 +36,9 @@ pmml <- function(model,
 
 ########################################################################
 # UTILITY FUNCTIONS
+
+markupSpecials <- function(x)
+  gsub("<", "&lt;", gsub(">", "&gt;", gsub("&", "&amp;", x)))
 
 generateCopyright <- function()
 {
@@ -105,7 +108,8 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   # Header
   
-  VERSION <- "1.2.21" # Fix bug in pmml export of TNM transform.
+  VERSION <- "1.2.22" # Header extension must be fist elmt. lm NA coeff now 0
+  # "1.2.21" # Fix bug in pmml export of TNM transform.
   # "1.2.20" # Support coxph as regression.
   # "1.2.19" # Several fixes for PMML conformance.
   # "1.2.18" # Fix export of pmml for hclust with transforms.
@@ -152,6 +156,17 @@ pmmlHeader <- function(description, copyright, app.name)
   header <- xmlNode("Header",
                     attrs=c(copyright=copyright, description=description))
 
+  # Header -> User (Extension)
+  #
+  # 100519 wenching.lin@zementis.com pointed out that the DMG spec
+  # requires the Extension to be first.
+  
+  header <- append.XMLNode(header, xmlNode("Extension",
+                                           attrs=c(name="user",
+                                             value=sprintf("%s",
+                                               Sys.info()["user"]),
+                                             extender="Rattle")))
+
   # Header -> Application
 
   header <- append.XMLNode(header, xmlNode("Application",
@@ -162,15 +177,6 @@ pmmlHeader <- function(description, copyright, app.name)
 						   
   header <- append.XMLNode(header,
                            xmlNode("Timestamp", sprintf("%s", Sys.time())))
-
-  # Header -> User (Extension)
-  
-  header <- append.XMLNode(header, xmlNode("Extension",
-                                           attrs=c(name="user",
-                                             value=sprintf("%s",
-                                               Sys.info()["user"]),
-                                             extender="Rattle")))
-  
 
   return(header)
 }
@@ -238,7 +244,7 @@ pmmlDataDictionary <- function(field, dataset=NULL)
       for (j in seq_along(field$levels[[field$name[i]]]))
         data.fields[[i]][[j]] <- xmlNode("Value",
                                          attrs=c(value=
-                                           field$levels[[field$name[i]]][j]))
+                                           markupSpecials(field$levels[[field$name[i]]][j])))
   }
   data.dictionary$children <- data.fields
 

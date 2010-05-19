@@ -4,7 +4,7 @@
 #
 # Handle lm and glm models.
 #
-# Time-stamp: <2009-12-06 21:29:19 Graham Williams>
+# Time-stamp: <2010-05-19 09:32:19 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -190,6 +190,16 @@ pmml.lm <- function(model,
   # PMML -> RegressionModel -> RegressionTable
 
   coeff <- coefficients(model)
+
+  # 100519 From Wen of Zementis For singularities the coefficient is
+  # NA. From DMG the specification says:
+  #
+  # <xs:attribute name="coefficient" type="REAL-NUMBER" use="required" />
+  #
+  # So replace NAs with 0. The effect should be the same.
+  
+  coeff[is.na(coeff)] <- 0 
+
   coeffnames <- names(coeff)
 
   # 090306 Handle the case where the intercept is not in the
@@ -283,7 +293,7 @@ pmml.lm <- function(model,
                               as.numeric(coeff[which(coeffnames == tmp)]))
         predictorNode <- xmlNode("CategoricalPredictor",
                                  attrs=c(name=name,
-                                   value=l, coefficient=coefficient))
+                                   value=markupSpecials(l), coefficient=coefficient))
         regTable <- append.XMLNode(regTable, predictorNode)
       }
     }

@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-06-21 22:41:48 Graham Williams>
+# Time-stamp: <2010-03-25 06:54:14 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -30,9 +30,6 @@
 # Date: 
 #
 # Conform to PMML 3.2 Graham Williams 080622
-
-markup <- function(x)
-  gsub("<", "&lt;", gsub(">", "&gt;", gsub("&", "&amp;", x)))
 
 pmml.rules <- function(model,
                        model.name="arules_Model",
@@ -95,7 +92,7 @@ pmml.rules <- function(model,
 
   ## items
   items <- list()
-  il <- markup(itemLabels(model))
+  il <- markupSpecials(itemLabels(model))
   for (i in 1:length(il)) 
   items[[i]] <- xmlNode("Item", attrs = list(id = i, value = il[i]))
 
