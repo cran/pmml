@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2010-05-19 09:45:20 Graham Williams>
+# Time-stamp: <2010-08-06 05:43:07 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -108,7 +108,8 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   # Header
   
-  VERSION <- "1.2.22" # Header extension must be fist elmt. lm NA coeff now 0
+  VERSION <- "1.2.23" # Ensure pmml.ksvm at least runs
+  # "1.2.22" # Header extension must be fist elmt. lm NA coeff now 0
   # "1.2.21" # Fix bug in pmml export of TNM transform.
   # "1.2.20" # Support coxph as regression.
   # "1.2.19" # Several fixes for PMML conformance.

@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-10-25 20:59:17 Graham Williams>
+# Time-stamp: <2010-08-06 05:48:09 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -510,7 +510,7 @@ pmml.ksvm <- function(model,
   {
     if (field$class[[field$name[i+1]]] == "factor")
     {
-      for (j in 1:number.of.datasets)
+      for (j in 1:number.of.data.names)
         if (terms$term.labels[i] == names(dataset)[j])
         {
           number.of.values = length(levels(dataset[[j]]))
