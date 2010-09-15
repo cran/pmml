@@ -4,7 +4,7 @@
 #
 # Handle lm and glm models.
 #
-# Time-stamp: <2010-05-19 09:32:19 Graham Williams>
+# Time-stamp: <2010-09-15 13:00:45 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -144,7 +144,10 @@ pmml.lm <- function(model,
   {
     the.model <- xmlNode("RegressionModel",
                          attrs=c(modelName=model.name,
-                           functionName="regression",
+                           # 100915 Wen-Ching Lin of Zementis noted
+                           # this was regression but should be
+                           # classification.
+                           functionName="classification",
                            algorithmName="glm",
                            normalizationMethod="softmax",
                              targetFieldName=target)) 

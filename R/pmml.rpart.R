@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-10-03 08:12:04 Graham Williams>
+# Time-stamp: <2010-08-29 21:35:31 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -59,6 +59,14 @@ pmml.rpart <- function(model,
   field$name <- as.character(attr(model$terms, "variables"))[-1]
   field$class <- attr(model$terms, "dataClasses")
 
+  # 100829 Record the variable used for a weight, if there is one.
+
+  weights <- model$call$weights
+  if (! is.null(weights))
+    weights <- gsub("^\\(|\\)$", "",
+                    gsub("crs\\$dataset\\$|\\[.*\\]", "",
+                         capture.output(print(weights))))
+  
   # 090215 Remove from transforms any transforms that are not used in
   # the model. No point unneccessarily passing a transform on to the
   # PMML and then to the C code for calculating.
@@ -152,7 +160,7 @@ pmml.rpart <- function(model,
 
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, pmmlDataDictionary(field, dataset))
+  pmml <- append.XMLNode(pmml, pmmlDataDictionary(field, dataset, weights=weights))
 
   # PMML -> TreeModel
 

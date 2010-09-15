@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2010-08-06 05:43:07 Graham Williams>
+# Time-stamp: <2010-09-15 14:41:15 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -108,7 +108,8 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   # Header
   
-  VERSION <- "1.2.23" # Ensure pmml.ksvm at least runs
+  VERSION <- "1.2.24" # Bug fix glm regression - note as classification
+  # "1.2.23" # Ensure pmml.ksvm at least runs
   # "1.2.22" # Header extension must be fist elmt. lm NA coeff now 0
   # "1.2.21" # Fix bug in pmml export of TNM transform.
   # "1.2.20" # Support coxph as regression.
@@ -182,7 +183,7 @@ pmmlHeader <- function(description, copyright, app.name)
   return(header)
 }
 
-pmmlDataDictionary <- function(field, dataset=NULL)
+pmmlDataDictionary <- function(field, dataset=NULL, weights=NULL)
 {
   # 090806 Generate and return a DataDictionary element that incldues
   # each supplied field.
@@ -200,6 +201,7 @@ pmmlDataDictionary <- function(field, dataset=NULL)
 
   data.dictionary <- xmlNode("DataDictionary",
                              attrs=c(numberOfFields=number.of.fields))
+
   data.fields <- list()
   for (i in 1:number.of.fields)
   {
@@ -247,7 +249,13 @@ pmmlDataDictionary <- function(field, dataset=NULL)
                                          attrs=c(value=
                                            markupSpecials(field$levels[[field$name[i]]][j])))
   }
-  data.dictionary$children <- data.fields
+  if (! is.null(weights))
+    data.dictionary <-append.XMLNode(data.dictionary, xmlNode("Extension",
+                                                              attrs=c(name="Weights",
+                                                                value=weights,
+                                                                extender=crv$appname)))
+  
+  data.dictionary <- append.XMLNode(data.dictionary, data.fields)
 
   return(data.dictionary)
 }
