@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2010-10-07 21:34:47 Graham Williams>
+# Time-stamp: <2010-10-09 07:31:03 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -108,7 +108,8 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   # Header
   
-  VERSION <- "1.2.25" # Fix MapValues compliance
+  VERSION <- "1.2.26" # Bug fix glm models with weights
+  # "1.2.25" # Fix MapValues compliance
   # "1.2.24" # Bug fix glm regression - note as classification
   # "1.2.23" # Ensure pmml.ksvm at least runs
   # "1.2.22" # Header extension must be fist elmt. lm NA coeff now 0

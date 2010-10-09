@@ -4,7 +4,7 @@
 #
 # Handle lm and glm models.
 #
-# Time-stamp: <2010-09-15 13:00:45 Graham Williams>
+# Time-stamp: <2010-10-09 06:12:11 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -55,9 +55,17 @@ pmml.lm <- function(model,
   terms <- attributes(model$terms)
   
   field <- NULL
+
   field$name <- names(terms$dataClasses)
+  # 101009 Check for a "(weights)" data class and remove it. This
+  # arises in the glm models when a Weight variable is used. Not sure
+  # why the glm model records this here.
+  weights <- which(field$name == "(weights)")
+  if (length(weights)) field$name <- field$name[-weights]
   orig.names <- field$name
+
   field$class <- terms$dataClasses
+  if (length(weights)) field$class <- field$class[-weights]
   orig.class <- field$class
 
   # 090103 Support transforms if available.
