@@ -11,7 +11,8 @@
 }
 \usage{
 pmml(model, model.name="Rattle_Model", app.name="Rattle/PMML",
-     description=NULL, copyright=NULL, transforms=NULL, dataset=NULL, \dots)
+     description=NULL, copyright=NULL, transforms=NULL, dataset=NULL,
+     \dots)
 }
 \arguments{
   

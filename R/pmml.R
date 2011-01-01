@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2010-10-09 07:31:03 Graham Williams>
+# Time-stamp: <2011-01-01 11:40:57 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -108,7 +108,8 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   # Header
   
-  VERSION <- "1.2.26" # Bug fix glm models with weights
+  VERSION <- "1.2.27" # Bug fixes to ksvm model from Zementis and Graham
+  # "1.2.26" # Bug fix glm models with weights
   # "1.2.25" # Fix MapValues compliance
   # "1.2.24" # Bug fix glm regression - note as classification
   # "1.2.23" # Ensure pmml.ksvm at least runs
@@ -169,7 +170,7 @@ pmmlHeader <- function(description, copyright, app.name)
                                            attrs=c(name="user",
                                              value=sprintf("%s",
                                                Sys.info()["user"]),
-                                             extender="Rattle")))
+                                             extender=app.name)))
 
   # Header -> Application
 
@@ -251,7 +252,8 @@ pmmlDataDictionary <- function(field, dataset=NULL, weights=NULL)
                                          attrs=c(value=
                                            markupSpecials(field$levels[[field$name[i]]][j])))
   }
-  if (! is.null(weights))
+
+  if (! is.null(weights) && length(weights))
     data.dictionary <-append.XMLNode(data.dictionary, xmlNode("Extension",
                                                               attrs=c(name="Weights",
                                                                 value=weights,

@@ -4,7 +4,7 @@
 #
 # Dummy pmmltoc
 #
-# Time-stamp: <2009-02-01 09:23:30 Graham Williams>
+# Time-stamp: <2010-12-03 06:00:43 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -32,5 +32,9 @@ pmmltoc <- function(p,
                     includeMetaData=TRUE,
                     exportClass=TRUE)
 {
-  stop("The PMMLtoC fucntionality is not implemented.")
+  # 101203 Use stop() rather than warning() since it should be brought
+  # directly to the user's attention that the export to C is not
+  # functional.
+  
+  stop("The PMMLtoC functionality is not implemented.")
 }

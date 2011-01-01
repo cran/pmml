@@ -10,7 +10,8 @@
 }
 \usage{
 \method{pmml}{lm}(model, model.name="Linear_Regression_Model", app.name="Rattle/PMML",
-     description="Linear Regression Model", copyright=NULL, transforms=NULL, \dots)
+     description="Linear Regression Model", copyright=NULL,
+     transforms=NULL, dataset=NULL, weights=NULL, \dots)
 }
 \arguments{
   
@@ -26,6 +27,10 @@
 
   \item{transforms}{a coded list of transforms performed.}
 
+  \item{dataset}{the orginal training dataset, if available.}
+
+  \item{weights}{the weights used for building the model.}
+  
   \item{\dots}{further arguments passed to or from other methods.}
 }
 \details{

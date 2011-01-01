@@ -14,7 +14,7 @@
 \usage{
 \method{pmml}{ksvm}(model, model.name="SVM_model", app.name="Rattle/PMML",
      description="Support Vector Machine PMML Model", copyright=NULL,
-     transforms=NULL, dataset=NULL, \dots)
+     transforms=NULL, dataset=NULL, weights=NULL, \dots)
 }
 \arguments{
   
@@ -34,6 +34,8 @@
 
   \item{transforms}{a coded list of transforms performed.}
 
+  \item{weights}{the weights used for building the model.}
+  
   \item{\dots}{further arguments passed to or from other methods.}
 }
 \details{

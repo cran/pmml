@@ -2,9 +2,9 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2010-08-06 05:48:09 Graham Williams>
+# Time-stamp: <2011-01-01 11:35:23 Graham Williams>
 #
-# Copyright (c) 2009 Togaware Pty Ltd
+# Copyright (c) 2009-2010 Togaware Pty Ltd
 #
 # This files is part of the Rattle suite for Data Mining in R.
 #
@@ -33,7 +33,9 @@ pmml.ksvm.Header <- function(description, copyright, app.name)
 {
   # Header
 
-  KSVMVERSION <- "1.1.8"
+  KSVMVERSION <- "1.2.27"
+  # "1.2.27" Took care the case when using the default kernal
+  #          Took care the case when model$scaling is NULL
   # "1.1.8" Fixed dataField issues and REAL-SPARSE ARRAY n issue
   # "1.1.4" # Add pmml.ksvm. Fix extensions.
   # "1.1.3" Fixes for new version of randomSurvivalForest.
@@ -70,7 +72,7 @@ pmml.ksvm.Header <- function(description, copyright, app.name)
 ###################################################################
 # Function pmml.ksvm.DataDictionary
 
-pmml.ksvm.DataDictionary <- function(field, dataset)
+pmml.ksvm.DataDictionary <- function(field, dataset, weights=NULL)
 {
   # field$name is a vector of strings, and includes target
   # field$class is indexed by fields$names
@@ -82,6 +84,11 @@ pmml.ksvm.DataDictionary <- function(field, dataset)
   # DataDictionary
   data.dictionary <- xmlNode("DataDictionary",
                              attrs=c(numberOfFields=number.of.fields))
+  if (! is.null(weights))
+    data.dictionary <-append.XMLNode(data.dictionary, xmlNode("Extension",
+                                                              attrs=c(name="Weights",
+                                                                value=weights,
+                                                                extender=crv$appname)))
   data.fields <- list()
   for (i in 1:number.of.fields)
   {
@@ -102,6 +109,12 @@ pmml.ksvm.DataDictionary <- function(field, dataset)
       datype <- "string"
       
       temp = grep("as.factor", field$name[i], value = TRUE, fixed = TRUE)
+
+      # Deal with the target variable by removing the "as.factor(...)"
+      # from around the variable name. 110101 It appears that the
+      # strsplit is simply splitting the string into individual
+      # chars. Why is that so and is it correct?
+      
       if (i == 1 && length(temp) > 0)
       {
          target <- field$name[i]
@@ -113,7 +126,8 @@ pmml.ksvm.DataDictionary <- function(field, dataset)
     }
 
     # DataDictionary -> DataField
-    if(i==1) #for the target field
+    
+    if(i==1) # For the target field.
     {
       predictedFieldName = field$name[1];
       if(modified.target == TRUE)
@@ -122,11 +136,17 @@ pmml.ksvm.DataDictionary <- function(field, dataset)
       }
       data.dictionary <- getPredictedDataField(data.dictionary, field,
                                                predictedFieldName, optype, datype)
-    } else  # for the non-target fields
+    }
+    else  # For non-target fields.
     {
+      # 110101 Graham: We should really only pass through the field
+      # name and the levels, rahter than relying on indexing the
+      # dataset within the function with the field name etc.
+
       data.dictionary <- getInputDataField(data.dictionary,field,dataset,i,optype,datype)
     }
   }
+
   return(data.dictionary)
 }
 
@@ -164,6 +184,7 @@ pmml.ksvm <- function(model,
                       copyright=NULL,
                       transforms=NULL,
                       dataset=NULL,
+                      weights=NULL,
                       ...)
 {
   if (! inherits(model, "ksvm"))
@@ -185,7 +206,7 @@ pmml.ksvm <- function(model,
   number.of.labels <- length(terms$term.labels)
   number.of.fields <- length(field$name)
   number.of.SV <- model@nSV
-  
+
   #####################################################################
   # Regression Vs. Classification
   #
@@ -248,7 +269,7 @@ pmml.ksvm <- function(model,
 
   # PMML -> DataDictionary
   
-  pmml <- append.XMLNode(pmml, pmml.ksvm.DataDictionary(field, dataset))
+  pmml <- append.XMLNode(pmml, pmml.ksvm.DataDictionary(field, dataset, weights=weights))
   
   # PMML -> SupportVectorMachineModel
   
@@ -306,15 +327,18 @@ pmml.ksvm <- function(model,
   # compatible with ksvm's algorithm (pre-processing)
   
   number.of.data.names <- length(names(dataset))
-  number.of.scaled <- length(attributes.model$scaling$x.scale$`scaled:center`)
+
+  number.of.scaled <- 0  
+  if(length(model@scaling) > 0)
+  {
+    number.of.scaled <- length(attributes.model$scaling$x.scale$`scaled:center`)
+  }
   
   LocalTransformations <- xmlNode("LocalTransformations")
   for (i in 1:number.of.labels)
   {
-
     if (field$class[[field$name[i+1]]] == "factor")
     {
-
       for (j in 1:number.of.data.names)
       {
         if (terms$term.labels[i] == names(dataset)[j])
@@ -346,7 +370,7 @@ pmml.ksvm <- function(model,
     }
     else
     {
-      for (j in 1:number.of.scaled)
+      for (j in seq_len(number.of.scaled))
       {
         if (number.of.scaled == 1) break
         if (terms$term.labels[i] ==
@@ -391,36 +415,44 @@ pmml.ksvm <- function(model,
   ###########################################################################
   # Support PMML Kernel Functions
   # PMML -> SupportVectorMachineMode -> KernelTypeNode
-
-  if (model@kcall[[4]] == "rbfdot")
+  
+  if (length(model@kcall) < 4)
   {
     KernelTypeNode <- xmlNode("RadialBasisKernelType",
                               attrs=c(gamma=model@kernelf@kpar$sigma,
                                 description="Radial basis kernel type"))
   }
-  else if (model@kcall[[4]] == "polydot")
+  else
   {
-    KernelTypeNode <- xmlNode("PolynomialKernelType",
-                              attrs=c(gamma=model@kernelf@kpar$scale,
-                                coef0=model@kernelf@kpar$offset,
-                                degree=model@kernelf@kpar$degree,
-                                description="Polynomial kernel type"))
-  }
-  else if (model@kcall[[4]] == "vanilladot")
-  {
-    KernelTypeNode <- xmlNode("LinearKernelType",
-                              attrs=c(description="Linear kernel type"))
-  }
-  else if (model@kcall[4] == "tanhdot")
-  {
-    KernelTypeNode <- xmlNode("SigmoidKernelType",
-                              attrs=c(gamma=model@kernelf@kpar$scale,
-                                coef0=model@kernelf@kpar$offset,
-                                description="Sigmoid kernel type"))
+    if (model@kcall[[4]] == "rbfdot")
+    {
+      KernelTypeNode <- xmlNode("RadialBasisKernelType",
+                                attrs=c(gamma=model@kernelf@kpar$sigma,
+                                  description="Radial basis kernel type"))
+    }
+    else if (model@kcall[[4]] == "polydot")
+    {
+      KernelTypeNode <- xmlNode("PolynomialKernelType",
+                                attrs=c(gamma=model@kernelf@kpar$scale,
+                                  coef0=model@kernelf@kpar$offset,
+                                  degree=model@kernelf@kpar$degree,
+                                  description="Polynomial kernel type"))
+    }
+    else if (model@kcall[[4]] == "vanilladot")
+    {
+      KernelTypeNode <- xmlNode("LinearKernelType",
+                                attrs=c(description="Linear kernel type"))
+    }
+    else if (model@kcall[4] == "tanhdot")
+    {
+      KernelTypeNode <- xmlNode("SigmoidKernelType",
+                                attrs=c(gamma=model@kernelf@kpar$scale,
+                                  coef0=model@kernelf@kpar$offset,
+                                  description="Sigmoid kernel type"))
+    }
   }
   
   ksvm.model <- append.XMLNode(ksvm.model, KernelTypeNode)
-  
   
   # PMML -> SupportVectorMachineMode -> VectorDictionary
   
@@ -430,7 +462,8 @@ pmml.ksvm <- function(model,
   ##########################################################################
   # Allocate and initialize variables to make multi class problems possible
   
-  number.of.SV.entries <- length(attributes.model$scaling$scaled)
+  number.of.SV.entries <- length(model@xmatrix[[1]][1,])
+  # number.of.SV.entries <- length(attributes.model$scaling$scaled) #110101
   ix.matrix <- array(0, dim=c(number.of.SVMs, number.of.SV))
   supportVectorEntries <- array(0, dim=c(number.of.SV, number.of.SV.entries))
   all.coef <- array(0, dim=c(number.of.SVMs, number.of.SV))
@@ -710,30 +743,51 @@ getPredictedDataField <- function(dataDictionary,field,predictedFieldName,optype
     return(dataDictionary)
 }
 
-###############################################################################################
+########################################################################
 # function: getInputDataField
-#
 # goal: create the data field for the input data field
+# author: Zementis
+# refactored: June, 2008
 #
-# refactored in June, 2008
-##############################################################################################
+# modified: 110101 Graham: Fix bug where i is field$name index, not
+#           dataset column index. Result was that factors were getting
+#           the next variable's levels, not its own levels.
+#
+########################################################################
+
+# 110101 Graham: We should really only pass through the field name and
+# the levels, rather than relying on indexing the dataset within the
+# function with the field name etc.
+
 getInputDataField <- function(dataDictionary,field,dataset,i,optype,datatype)
 {
-    inputDataField <- xmlNode("DataField", attrs=c(name = field$name[i], optype=optype, dataType=datatype))
+  field.name <- field$name[i]
+  
+  inputDataField <- xmlNode("DataField",
+                            attrs=c(name=field.name,
+                              optype=optype,
+                              dataType=datatype))
 
-    if(optype == "categorical") # for categorical data field
+  if(optype == "categorical") # For categorical data field.
+  {
+    field.levels <- levels(dataset[[field.name]])
+    for (j in 1:length(field.levels))
+      inputDataField <- append.XMLNode(inputDataField,
+                                       xmlNode("Value",
+                                               attrs=c(value=field.levels[j])))
+  }
+  else  # For a continuous data field.
+  {
+    if (length (field$levels[[field.name]]) == 2)
     {
-        for (j in 1:length(levels(dataset[[i]]))){
-             inputDataField <- append.XMLNode(inputDataField,xmlNode("Value", attrs=c(value=levels(dataset[[i]])[j] )))
-        }
-    } else  # for continuous data field
-    {
-        if (length (field$levels[[field$name[i]]]) == 2)
-        {
-             inputDataField <- append.XMLNode(inputDataField, xmlNode("Interval", attrs=c(closure="closedClosed",
-                                 leftMargin=field$levels[[field$name[i]]][1], rightMargin=field$levels[[field$name[i]]][2])))
-        }
-     }
-     dataDictionary <- append.XMLNode(dataDictionary,inputDataField)
-     return(dataDictionary)
+      inputDataField <-
+        append.XMLNode(inputDataField,
+                       xmlNode("Interval",
+                               attrs=c(closure="closedClosed",
+                                 leftMargin=field$levels[[field.name]][1],
+                                 rightMargin=field$levels[[field.name]][2])))
+    }
+  }
+  dataDictionary <- append.XMLNode(dataDictionary,inputDataField)
+  return(dataDictionary)
 }
