@@ -4,7 +4,7 @@
 #
 # Handle lm and glm models.
 #
-# Time-stamp: <2011-01-01 11:42:53 Graham Williams>
+# Time-stamp: <2011-01-13 19:48:25 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -90,7 +90,17 @@ pmml.lm <- function(model,
   inactive <- names(which(is.na(coef(model))))
   active <- names(which(!is.na(coef(model))))
 
-  # These are the actual variable names.
+  # 110113 For the following grep, with certain Japanes characters we
+  # see the string including a "[" in some encoding and causes the
+  # grep to fail. We can't do the usual Encoding<- "UTF-8" trick since
+  # the characters already look like UTF-8. But using enc2utf8 works -
+  # does it hurt doing it always, or just when we have Japanese? Needs
+  # testing.
+
+  field$name <- enc2utf8(field$name)
+  
+  # These are the actual variable names. 110113 Should be using grepl
+  # rather than grep and then tmp>0!
   
   tmp <- sapply(sapply(field$name, grep, inactive), length)
   inactive.vars <- names(tmp[tmp>0])

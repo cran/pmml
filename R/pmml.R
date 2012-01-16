@@ -2,9 +2,9 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2011-01-01 11:40:57 Graham Williams>
+# Time-stamp: <2012-01-16 06:42:09 Graham Williams>
 #
-# Copyright (c) 2009 Togaware Pty Ltd
+# Copyright (c) 2009-2012 Togaware Pty Ltd
 #
 # This files is part of the Rattle suite for Data Mining in R.
 #
@@ -94,13 +94,20 @@ pmmlRootNode <- function(version)
                     attrs=c(version="3.1",
                       xmlns="http://www.dmg.org/PMML-3_1",
                       "xmlns:xsi"="http://www.w3.org/2001/XMLSchema-instance"))
-  else
+  else if (version == "3.2")
     node <- xmlNode("PMML",
                     attrs=c(version="3.2",
                       xmlns="http://www.dmg.org/PMML-3_2",
                       "xmlns:xsi"="http://www.w3.org/2001/XMLSchema-instance", 
                       "xsi:schemaLocation"=paste("http://www.dmg.org/PMML-3_2",
                         "http://www.dmg.org/v3-2/pmml-3-2.xsd")))
+  else
+    node <- xmlNode("PMML",
+                    attrs=c(version="4.0",
+                      xmlns="http://www.dmg.org/PMML-4_0",
+                      "xmlns:xsi"="http://www.w3.org/2001/XMLSchema-instance", 
+                      "xsi:schemaLocation"=paste("http://www.dmg.org/PMML-3_2",
+                        "http://www.dmg.org/v4-0/pmml-4-0.xsd")))
   return(node)
 }
 
@@ -108,54 +115,7 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   # Header
   
-  VERSION <- "1.2.27" # Bug fixes to ksvm model from Zementis and Graham
-  # "1.2.26" # Bug fix glm models with weights
-  # "1.2.25" # Fix MapValues compliance
-  # "1.2.24" # Bug fix glm regression - note as classification
-  # "1.2.23" # Ensure pmml.ksvm at least runs
-  # "1.2.22" # Header extension must be fist elmt. lm NA coeff now 0
-  # "1.2.21" # Fix bug in pmml export of TNM transform.
-  # "1.2.20" # Support coxph as regression.
-  # "1.2.19" # Several fixes for PMML conformance.
-  # "1.2.18" # Fix export of pmml for hclust with transforms.
-  # "1.2.17" # Zementis: add Output node.
-  # "1.2.16" # Support TJN (joincat).
-  # "1.2.15" # Update documentation
-  # "1.2.14" # Support mult transforms for rpart
-  # "1.2.13" # Change strcutre used to record transforms.
-  # "1.2.12" # Fix pmml.lm handling of singularities -> inactive
-  # "1.2.11" # Fix categroics with one singularity in lm were marked inactive.
-  # "1.2.10" # Fix typo in pmml.lm
-  # "1.2.9" # Further fix a pmml.lm bug.
-  # "1.2.8" # Fix a pmml.lm bug.
-  # "1.2.7" # Export logistic classes
-  # "1.2.6" # Support RMA transforms.
-  # "1.2.5" # Include .TRANSFORM constants within pmml package.
-  # "1.2.4" # Include collection of utility transform functions.
-  # "1.2.3" # Bug fixes
-  # "1.2.2" # Add test for transform support.
-  # "1.2.1" # Streamline conditional handling of transforms.
-  # "1.2.0" # Fix documentation and packaing and release to CRAN
-  # "1.1.20" # Bug - fix rpart var names with transforms
-  # "1.1.19" # Tidyup and update ClusterField
-  # "1.1.18" # Include pmml.hclust in NAMESPACE
-  # "1.1.17" # Export hclust as kmeans.
-  # "1.1.16" # export pmml.multinom
-  # "1.1.15" # Handle multinomial model.
-  # "1.1.14" # Handle singularities in lm/glm better.
-  # "1.1.13" # Support export of poisson(log)
-  # "1.1.12" # Tree Array have quoted values. 0 for base in regression
-  # "1.1.11" # Bug fix for pmml.lm - continuing to fix below problem
-  # "1.1.10" # Bug fix for pmml.lm with categorical logistic target
-  # "1.1.9" # Update rpart/nnet/ksvm from Zementis + many improvements
-  # "1.1.8" # Increase number of digits extracted for rpart tests.
-  # "1.1.7" # Add arules.
-  # "1.1.6"
-  # "1.1.5" # Add pmml.nnet.
-  # "1.1.4" # Add pmml.ksvm. Fix extensions. 
-  # "1.1.3" # Fixes for new version of randomSurvivalForest.
-  # "1.1.2" Expose pmml.lm in NAMESPACE - woops.
-  # "1.1.1" Add pmml.lm
+  VERSION <- "1.2.28" # Fixes for pmml.arules from Michael Hahsler
 
   if (is.null(copyright)) copyright <- generateCopyright()
   header <- xmlNode("Header",
@@ -383,7 +343,7 @@ pmmlOutput <- function(field, target=NULL, optype=NULL)
 .TRANSFORMS.BIN <- c("BQ", "BK", "BE", "TFC")
 .TRANSFORMS.INDICATOR <- c("TIN")
 
-.TRANSFORMS.OTHER.NUM <- c("RRK")
+.TRANSFORMS.OTHER.NUM <- c("RRK", "RIN", "BGC", "BG1", "BGD", "BGK")
 .TRANSFORMS.OTHER.CAT <- c("TJN", "TNM")
 .TRANSFORMS.OTHER <- c(.TRANSFORMS.OTHER.NUM, .TRANSFORMS.OTHER.CAT)
 
