@@ -33,8 +33,11 @@ pmml.rsf <- function(model,
   # Original by Hemant Ishwaran and Udaya B. Kogalur
   # Unified with the pmml package by Graham Williams
   
-  if (sum(inherits(model, c("rsf", "forest"), TRUE) == c(1, 2)) != 2)
-    stop("Not a legitimate (rsf, forest) object")
+  # Tridi 1/15/12
+  # although seems logical, the constructed rsf model in R doesnt seem to require this.
+  # remove this rather than force modeller to cast rsf object into a rsf,forest object  
+  #  if (sum(inherits(model, c("rsf", "forest"), TRUE) == c(1, 2)) != 2)
+  #    stop("Not a legitimate (rsf, forest) object")
 
   require(XML, quietly=TRUE)
   require(randomSurvivalForest, quietly=TRUE)
@@ -51,7 +54,7 @@ pmml.rsf <- function(model,
   field$class <- rep("numeric", number.of.fields) # All fields are numeric? 
   names(field$class) <- field$name
 
-  nativeArray <- model$nativeArray
+  nativeArray <- model$forest$nativeArray
   if (is.null(nativeArray))
     stop("RSF nativeArray content is NULL. Please ensure object is valid.")
     
@@ -65,7 +68,7 @@ pmml.rsf <- function(model,
   if (is.null(formula))
     stop("RSF formula is NULL.  Please ensure the object is valid.")
 
-  forestSeed = model$seed
+  forestSeed = model$forest$seed
   if (is.null(forestSeed))
     stop("RSF forestSeed content is NULL.  Please ensure object is valid.")
 
@@ -113,7 +116,7 @@ pmml.rsf <- function(model,
   
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, pmmlDataDictionary(field))
+  pmml <- append.XMLNode(pmml, pmmlDataDictionarySurv(field, model$predictedName))
   
   # Create a dummy XML node object to insert into the recursive
   # output object.
@@ -130,31 +133,51 @@ pmml.rsf <- function(model,
 
   recursiveOutput <- list(internalNode = internalNode,
                           offset = offset, leafCount = leafCount)
+
+  # <MiningModel>
+  miningModelNode <- xmlNode("MiningModel", attrs=c(modelName="RrsfModel",functionName="regression")) 
+
+  # MiningModel -> MiningSchema
+  miningModelNode <- append.XMLNode(miningModelNode, pmmlMiningSchemaSurv(field, model$predictedName))
+
+  # ensemble method
+  segmentationNode <- xmlNode("Segmentation",
+			attrs=c(multipleModelMethod="average"))
+#  miningModelNode <- append.XMLNode(miningModelNode,segmentationNode)
   
   # Loop through all trees in the forest and extract the data.
 
   for (b in 1:numTrees)
   {
-    treeModelNode <- xmlNode("TreeModel",
-                             attrs=c(modelName=b, functionName="prediction",
-                               algorithmName="rsf",
-                               splitCharacteristic="binary"))
+#    out1 <- "Converting Tree"
+#    out2 <- paste(out1,b,sep="")
+#    out3 <- paste(out2," to PMML",sep="")
+    out <- paste("Converting Tree",b," to PMML",sep="")
+    print(out)
+    segmentNode <- xmlNode("Segment",attrs=c(id=b))
+    predicateNode <- xmlNode("True")
+    segmentNode <- append.XMLNode(segmentNode, predicateNode)
 
-    # PMML -> TreeModel [b] -> MiningSchema
+    treeName <- paste("Tree",b,sep="")
+    treeModelNode <- xmlNode("TreeModel",
+                             attrs=c(modelName=treeName, functionName="regression",
+                               algorithmName="rsf",
+                               splitCharacteristic="multiSplit"))
+
+    # PMML --> TreeModel [b] -> MiningSchema
     
-    treeModelNode <- append.XMLNode(treeModelNode, pmmlMiningSchema(field))
+    treeModelNode <- append.XMLNode(treeModelNode, pmmlMiningSchemaSurv(field, model$predictedName))
     
     # Global dependencies: (field$name, forest)
     
     # Initialize the root node.  This differs from the rest of the
     # internal nodes in the PMML structure.
 
-    treeRoot <- xmlNode("Node", attrs=c(score=0, id=1))
+    treeRoot <- xmlNode("Node", attrs=c(score=0,id=recursiveOutput$offset))
     treeRoot <- append.XMLNode(treeRoot, xmlNode("True"))
     
     rootParmID <- nativeArray$parmID[recursiveOutput$offset] 
-    rootSpltPT <- nativeArray$spltPT[recursiveOutput$offset]
-    
+    rootSpltPT <- nativeArray$contPT[recursiveOutput$offset] 
     recursiveOutput$offset <- recursiveOutput$offset + 1
     recursiveOutput$leafCount <- 1
     
@@ -178,7 +201,7 @@ pmml.rsf <- function(model,
       recursiveOutput$internalNode <- NULL
       recursiveOutput <- rsfMakeTree(recursiveOutput, nativeArray,
                                      field$name, b, -1, rootParmID,
-                                     rootSpltPT)
+                                     rootSpltPT,model)
       
       treeRoot <- append.XMLNode(treeRoot, recursiveOutput$internalNode)
       
@@ -190,7 +213,7 @@ pmml.rsf <- function(model,
       recursiveOutput$internalNode <- NULL
       recursiveOutput <- rsfMakeTree(recursiveOutput, nativeArray,
                                      field$name, b, +1, rootParmID,
-                                     rootSpltPT)
+                                     rootSpltPT,model)
       
       treeRoot <- append.XMLNode(treeRoot, recursiveOutput$internalNode)
       
@@ -199,14 +222,17 @@ pmml.rsf <- function(model,
     # Add the current tree to the PMML data structure.
 
     treeModelNode <- append.XMLNode(treeModelNode, treeRoot)
-    pmml <- append.XMLNode(pmml, treeModelNode)
+    segmentNode <- append.XMLNode(segmentNode, treeModelNode)
+    segmentationNode <- append.XMLNode(segmentationNode, segmentNode)
   }
+  miningModelNode <- append.XMLNode(miningModelNode, segmentationNode)
   
+  pmml <- append.XMLNode(pmml, miningModelNode)  
   return (pmml)
 }
 
 rsfMakeTree <- function(recursiveObject, nativeArray, predictorNames,
-                        b, daughter, splitParameter, splitValue)
+                        b, daughter, splitParameter, splitValue, model)
 {
   # Node information encoded in a PMML TreeModel follows a slightly
   # different protocol than that encoded in our RSF matrix
@@ -233,22 +259,19 @@ rsfMakeTree <- function(recursiveObject, nativeArray, predictorNames,
   # a terminal node.
 
   fwdSplitParameter <- nativeArray$parmID[recursiveObject$offset]
-  fwdSplitValue <- nativeArray$spltPT[recursiveObject$offset]
+  fwdSplitValue <- nativeArray$contPT[recursiveObject$offset]
 
   # Create the node that will be returned on this call.
-
+  ident <- recursiveObject$offset
   if (fwdSplitParameter == 0)
   {
-    rsfNode <- xmlNode("Node",
-                       attrs=c(score=1,
-                         id=nativeArray$nodeID[recursiveObject$offset]))
+    rsfNode <- xmlNode("Node",attrs=c(id=ident))
     terminalFlag <- TRUE
   }
   else if (fwdSplitParameter != 0)
   {
-    rsfNode <- xmlNode("Node",
-                       attrs=c(score=0,
-                         id=nativeArray$nodeID[recursiveObject$offset])) 
+    rsfNode <- xmlNode("Node",attrs=c(id=ident))
+ 
     terminalFlag <- FALSE
   }
    
@@ -274,6 +297,45 @@ rsfMakeTree <- function(recursiveObject, nativeArray, predictorNames,
 
   recursiveObject$offset <- recursiveObject$offset + 1
 
+  # Add nodes with time information
+
+  if (terminalFlag == TRUE)
+  {
+    timeIntLength <- length(model$timeInterest)
+    leafMaxLength <- length(model$time)
+    treeJump <- timeIntLength * leafMaxLength
+    node <- nativeArray$nodeID[ident]
+    for(t in 1:timeIntLength)
+    {
+      nident <- paste(ident,t,sep="")
+      if(t == 1)
+      {
+        nNode <- xmlNode("Node",attrs=c(score=model$cumHazard[((b-1)*treeJump)+node],id=nident))
+        sPred <- xmlNode("SimplePredicate",attrs=c(field=model$predictedName,operator="lessOrEqual",value=model$timeInterest[t]))
+        nNode <- append.XMLNode(nNode,sPred)
+        rsfNode <- append.XMLNode(rsfNode,nNode)
+      }
+      else if(t == timeIntLength)
+      {
+        nNode <- xmlNode("Node",attrs=c(score=model$cumHazard[((b-1)*treeJump)+((t-1)*leafMaxLength)+node],id=nident))
+        sPred <- xmlNode("SimplePredicate",attrs=c(field=model$predictedName,operator="greaterThan",value=model$timeInterest[t-1]))
+        nNode <- append.XMLNode(nNode,sPred)
+        rsfNode <- append.XMLNode(rsfNode,nNode)
+      }
+      else
+      { 
+        nNode <- xmlNode("Node",attrs=c(score=model$cumHazard[((b-1)*treeJump)+((t-1)*leafMaxLength)+node],id=nident))
+        cPred <- xmlNode("CompoundPredicate",attrs=c(booleanOperator="and"))
+        sPred1 <- xmlNode("SimplePredicate",attrs=c(field=model$predictedName,operator="greaterThan",value=model$timeInterest[t-1]))
+        sPred2 <- xmlNode("SimplePredicate",attrs=c(field=model$predictedName,operator="lessOrEqual",value=model$timeInterest[t]))
+        cPred <- append.XMLNode(cPred,sPred1)
+        cPred <- append.XMLNode(cPred,sPred2)
+        nNode <- append.XMLNode(nNode,cPred)
+        rsfNode <- append.XMLNode(rsfNode,nNode)
+      }
+    }
+  }
+
   # Parse left and then right, if this is not a terminal node.
 
   if (terminalFlag == FALSE)
@@ -285,7 +347,7 @@ rsfMakeTree <- function(recursiveObject, nativeArray, predictorNames,
     recursiveObject$internalNode <- NULL
     recursiveObject <- rsfMakeTree(recursiveObject, nativeArray,
                                    predictorNames, b, daughter = -1,
-                                   fwdSplitParameter, fwdSplitValue)
+                                   fwdSplitParameter, fwdSplitValue, model)
     
     rsfNode <- append.XMLNode(rsfNode, recursiveObject$internalNode)
     
@@ -297,7 +359,7 @@ rsfMakeTree <- function(recursiveObject, nativeArray, predictorNames,
     recursiveObject$internalNode <- NULL
     recursiveObject <- rsfMakeTree(recursiveObject, nativeArray,
                                    predictorNames, b, daughter = +1,
-                                   fwdSplitParameter, fwdSplitValue)
+                                   fwdSplitParameter, fwdSplitValue, model)
     
     rsfNode <- append.XMLNode(rsfNode, recursiveObject$internalNode)
     

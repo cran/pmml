@@ -1,24 +1,23 @@
-\name{pmml.rsf}
-\alias{pmml.rsf}
-\title{Generate PMML for a Random Survival Forest (rsf) object}
+\name{pmml.randomForest}
+\alias{pmml.randomForest}
+\title{Generate PMML for a randomForest object}
 \description{
   
   Generate the Predictive Model Markup Language (PMML) representation of
-  a \pkg{randomSurvivalForest} forest object.  In particular, this
+  a \pkg{randomForest} forest object.  In particular, this
   function gives the user the ability to save the geometry of a forest
   as a PMML XML document.
 
 }
 \usage{
-\method{pmml}{rsf}(model, model.name="rsfForest_Model", app.name="Rattle/PMML",
-     description="Random Survival Forest Tree Model", copyright, ...)
+\method{pmml}{randomForest}(model, model.name="randomForest_Model", app.name="Rattle/PMML",
+     description="randomForest model", copyright, ...)
 }
 \arguments{
   
   \item{model}{the \code{forest} object contained in an object of class
-      \pkg{randomSurvivalForest}, as that contained in the object
-      returned by the function \code{rsf} with the parameter
-      \dQuote{forest=TRUE}.}
+      \pkg{randomForest}, as that contained in the object returned by
+      the function \code{randomForest}.}
 
   \item{model.name}{a name to give to the model in the PMML.}
 
@@ -38,17 +37,15 @@
   information about PMML and the Data Mining Group can be found at
   http://www.dmg.org.  
 
-  Use of PMML and \code{pmml.rsf} requires the \pkg{XML} package.  Be
+  Use of PMML and \code{pmml.randomForest} requires the \pkg{XML} package.  Be
   aware that XML is a very verbose data format.  Reasonably sized trees
   and data sets can lead to extremely large text files.  XML, while
   achieving interoperability, is not an efficient data storage mechanism
   in this case.
 
-  This function is used to export the geometry of the forest to other
+  This function is used to export the structure of the forest to other
   PMML compliant applications, including graphics packages that are
-  capable of printing binary trees.  In addition, the user may wish to
-  save the geometry of the forest for later retrieval and prediction on
-  new data sets using \code{pmml.rsf} together with \code{pmml_to_rsf}.
+  capable of printing binary trees.
 
 }    
 \value{
@@ -58,17 +55,6 @@
   document and is of type PMML. It can be written to file with
   \code{saveXML}.
   
-}
-\note{
-  
-  One cautionary note is in order.  The PMML representation of the
-  \pkg{randomSurvivalForest} forest object is incomplete, in that the
-  object needs to be massaged in order for prediction to be possible.
-  This will be clear in the examples.  This deficiency will be addressed
-  in future releases of this package.  However, it was felt that the
-  current functionality was important enough and mature enough to
-  warrant release in this version of the product.
-
 }
 \references{
 
@@ -87,17 +73,5 @@
 \seealso{
   \code{\link{pmml}}.
 }
-\examples{
-# Until the rsf package is updated, do not run this.
-# library(randomSurvivalForest)
-# data(veteran, package = "randomSurvivalForest")
-# veteran.out <- rsf(Survrsf(time, status)~.,
-#         data = veteran,
-#         ntree = 5,
-#         forest = TRUE)
-# veteran.forest <- veteran.out$forest
-# pmml(veteran.forest)
-}
 \keyword{interface}
-\keyword{survival}
 \keyword{tree}

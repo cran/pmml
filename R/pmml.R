@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2012-01-16 06:42:09 Graham Williams>
+# Time-stamp: <2012-02-19 17:53:33 Graham Williams>
 #
 # Copyright (c) 2009-2012 Togaware Pty Ltd
 #
@@ -115,7 +115,7 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   # Header
   
-  VERSION <- "1.2.28" # Fixes for pmml.arules from Michael Hahsler
+  VERSION <- "1.2.29" # Major random forest updates from Tridivesh (Zemantis)
 
   if (is.null(copyright)) copyright <- generateCopyright()
   header <- xmlNode("Header",
@@ -224,6 +224,92 @@ pmmlDataDictionary <- function(field, dataset=NULL, weights=NULL)
   return(data.dictionary)
 }
 
+pmmlDataDictionarySurv <- function(field, timeName, dataset=NULL, weights=NULL)
+{
+  # Tridi 012712
+  # modify for a survival model. Survival forests do not typically have
+  # a predicted field. Add a generic predicted field.If a predicted
+  # field is included, this field will just be ignored by the model. 
+  # 090806 Generate and return a DataDictionary element that incldues
+  # each supplied field.
+  #
+  # field$name is a vector of strings, and includes target
+  # field$class is indexed by fields$name
+  # field$levels is indexed by fields$name
+  #
+  # 091003 If the dataset is supplied then also include an Interval
+  # element within the DataField for each numeric variable.
+
+  number.of.fields <- length(field$name)
+
+  # DataDictionary
+
+  data.dictionary <- xmlNode("DataDictionary",
+                             attrs=c(numberOfFields=number.of.fields+1))
+
+  data.fields <- list()
+  for (i in 1:number.of.fields)
+  {
+    # Determine the operation type
+
+    optype <- "UNKNOWN"
+    datype <- "UNKNOWN"
+    values <- NULL
+
+    if (field$class[[field$name[i]]] == "numeric")
+    {
+      optype <- "continuous"
+      datype <- "double"
+    }
+    else if (field$class[[field$name[i]]] == "factor")
+    {
+      optype <- "categorical"
+      datype <- "string"
+    }
+
+    # DataDictionary -> DataField
+
+     data.fields[[i]] <- xmlNode("DataField", attrs=c(name=field$name[i],
+                                                optype=optype,
+                                                dataType=datype))
+
+    # DataDictionary -> DataField -> Interval
+    if (optype == "continuous" && ! is.null(dataset))
+    {
+      interval <-  xmlNode("Interval",
+                           attrs=c(closure="closedClosed",
+                             leftMargin=min(dataset[[field$name[i]]],
+                               na.rm=TRUE), # 091025 Handle missing values
+                             rightMargin=max(dataset[[field$name[i]]],
+                               na.rm=TRUE))) # 091025 Handle missing values
+      data.fields[[i]] <- append.XMLNode(data.fields[[i]], interval)
+    }
+
+    # DataDictionary -> DataField -> Value
+
+    if (optype == "categorical")
+      for (j in seq_along(field$levels[[field$name[i]]]))
+        data.fields[[i]][[j]] <- xmlNode("Value",
+                                         attrs=c(value=
+                                           markupSpecials(field$levels[[field$name[i]]][j])))
+  }
+
+  if (! is.null(weights) && length(weights))
+    data.dictionary <-append.XMLNode(data.dictionary, xmlNode("Extension",
+                                                              attrs=c(name="Weights",
+                                                                value=weights,
+                                                                extender=crv$appname)))
+  data.fields[[number.of.fields+1]] <- xmlNode("DataField", attrs=c(name="predictedField",
+                                                optype="continuous",dataType="double"))
+  data.fields[[number.of.fields+2]] <- xmlNode("DataField", attrs=c(name=timeName,
+                                                optype="continuous",dataType="double"))
+  data.dictionary <- append.XMLNode(data.dictionary, data.fields)
+
+
+  return(data.dictionary)
+}
+
+
 pmmlMiningSchema <- function(field, target=NULL, inactive=NULL)
 {
   # Generate the PMML for the MinimgSchema element.
@@ -276,6 +362,78 @@ pmmlMiningSchema <- function(field, target=NULL, inactive=NULL)
                                   attrs=c(name=field$name[i],
                                     usageType=usage))
   }
+  mining.schema <- xmlNode("MiningSchema")
+  mining.schema$children <- mining.fields
+  return(mining.schema)
+}
+
+pmmlMiningSchemaSurv <- function(field, timeName, target=NULL, inactive=NULL)
+{
+  # Tridi 012712
+  # Generate the PMML for the MinimgSchema element for a survival model.
+  # A survival forest has an output not usually in the input field names.
+  # Just add an extra mining field of type predicted.
+
+  # 091003 Currently we only include the name and usageType
+  # attributes. We could also include relative importance (like a
+  # correlation between 0 and 1), invalidValueTreatment (returnInvalid
+  # to return a value indicating an invalid result; asis to return a
+  # value without modification; asMissing to treat it as a missing
+  # value and return the missingValueReplacement value instead),
+  # missingValueReplacement, and outliers (asis, asMisingValues,
+  # asExtremeValues).
+
+  # 081103 Add inactive to list (as supplementary) those variables
+  # that should be marked as inactive in the model. This was added so
+  # that singularities can be identified as inactive for a linear
+  # model. It could also be used to capture ignored variables, if they
+  # were to ever be included in the variable list.
+
+  number.of.fields <- length(field$name)
+  mining.fields <- list()
+  targetExists <- 0
+  for (i in 1:number.of.fields)
+  {
+    if (is.null(target))
+      usage <- "active"
+    else
+      usage <- ifelse(field$name[i] == target, "predicted", "active")
+
+    if (usage == "predicted")
+     targetExists = 1
+
+    # 081103 Find out which variables should be marked as
+    # inactive. Currently the inactive list is often supplied from
+    # lm/glm as the variables which result in singularities in the
+    # model. However, for categorics, this is the indicator variable,
+    # like GenderMale. The test for %in% fails! So as a quick fix use
+    # grep. This is not a solution (because the variable Test is a
+    # substring of TestAll, etc).
+
+    # 090328 Revert to the exact test. We need to be cleverer in what
+    # we pass through in the inactive vector. Whilst GenderMale might
+    # be NA and thus is the only value included for this categoric,
+    # for a categoric with more levels we need to no treat the others
+    # as inactive so the whole categroic itself should not be
+    # inactive. For now, the simple reversion works. 090808 Move from
+    # the use of inactive to supplementary to be in line with the DTD.
+
+    if (field$name[i] %in% inactive) usage <- "supplementary"
+    # 090328 if (length(grep(field$name[i], inactive))) usage <- "inactive"
+
+    mining.fields[[i]] <- xmlNode("MiningField",
+                                  attrs=c(name=field$name[i],
+                                    usageType=usage))
+  }
+  # add a predicted mining field if none exist
+  if (targetExists == 0)
+   mining.fields[[number.of.fields + 1]] <- xmlNode("MiningField",
+                                              attrs=c(name="predictedField",
+                                               usageType="predicted"))
+   mining.fields[[number.of.fields + 2]] <- xmlNode("MiningField",
+                                              attrs=c(name=timeName,
+                                               usageType="active"))
+
   mining.schema <- xmlNode("MiningSchema")
   mining.schema$children <- mining.fields
   return(mining.schema)
@@ -339,7 +497,7 @@ pmmlOutput <- function(field, target=NULL, optype=NULL)
 
 .TRANSFORMS.NORM.CONTINUOUS <- c("RRC", "R01", "RMD", "RMA")
 .TRANSFORMS.IMPUTE <- c("IZR", "IMN", "IMD", "IMO", "ICN")
-.TRANSFORMS.APPLY <- c("RLG")
+.TRANSFORMS.APPLY <- c("RLG", "R10")
 .TRANSFORMS.BIN <- c("BQ", "BK", "BE", "TFC")
 .TRANSFORMS.INDICATOR <- c("TIN")
 

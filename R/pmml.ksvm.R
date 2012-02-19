@@ -260,7 +260,7 @@ pmml.ksvm <- function(model,
   
   # PMML
 
-  pmml <- pmmlRootNode("3.2")
+  pmml <- pmmlRootNode("4.1")
 
   # PMML -> Header
   
@@ -378,29 +378,30 @@ pmml.ksvm <- function(model,
           break
       }
       
-      normValue <- (attributes.model$scaling$x.scale$`scaled:center`[[j]] * -1) /
-        attributes.model$scaling$x.scale$`scaled:scale`[[j]]
+      centerValue <- attributes.model$scaling$x.scale$`scaled:center`[[j]]
+      scaleValue <- attributes.model$scaling$x.scale$`scaled:scale`[[j]]
+      normValue <- (centerValue * -1) / scaleValue
       
-      fieldName <- paste("derived_",terms$term.labels[i],sep="")
-     
+      fieldName <- paste("derived_",terms$term.labels[i],sep="")  
       derivedFieldNode <- xmlNode("DerivedField",
                                   attrs=c(name=fieldName,
                                     optype="continuous",
                                     dataType="double"))
       normContinuousNode <- xmlNode("NormContinuous",
                                     attrs=c(field=terms$term.labels[i]))
+      linearNormNode1 <- xmlNode("LinearNorm", attrs=c(orig="0", norm=normValue))
+      linearNormNode2 <- xmlNode("LinearNorm", attrs=c(orig=centerValue,norm="0")) 
       
-      linearNormNode <- xmlNode("LinearNorm",
-                                attrs=c(orig="0",
-                                  norm=normValue))
-      
-      normContinuousNode <- append.XMLNode(normContinuousNode, linearNormNode)
-      
-      linearNormNode <- xmlNode("LinearNorm",
-                                attrs=c(orig=attributes.model$scaling$x.scale$`scaled:center`[[j]],
-                                  norm="0"))
-      
-      normContinuousNode <- append.XMLNode(normContinuousNode, linearNormNode)
+      if(centerValue > 0)
+      {
+        normContinuousNode <- append.XMLNode(normContinuousNode, linearNormNode1)
+        normContinuousNode <- append.XMLNode(normContinuousNode, linearNormNode2)
+      }
+      else
+      {
+        normContinuousNode <- append.XMLNode(normContinuousNode, linearNormNode2)
+        normContinuousNode <- append.XMLNode(normContinuousNode, linearNormNode1)
+      }
       
       derivedFieldNode <- append.XMLNode(derivedFieldNode, normContinuousNode)
       
@@ -462,7 +463,14 @@ pmml.ksvm <- function(model,
   ##########################################################################
   # Allocate and initialize variables to make multi class problems possible
   
+  if (field$function.name == "classification")
+  {
   number.of.SV.entries <- length(model@xmatrix[[1]][1,])
+  } 
+  else
+  {
+    number.of.SV.entries <- length(model@xmatrix[1,])
+  }
   # number.of.SV.entries <- length(attributes.model$scaling$scaled) #110101
   ix.matrix <- array(0, dim=c(number.of.SVMs, number.of.SV))
   supportVectorEntries <- array(0, dim=c(number.of.SV, number.of.SV.entries))

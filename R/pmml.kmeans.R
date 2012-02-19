@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-08-13 22:24:55 Graham Williams>
+# Time-stamp: <2012-02-19 17:54:22 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -29,6 +29,8 @@ pmml.kmeans <- function(model,
                         description="KMeans cluster model",
                         copyright=NULL,
                         transforms=NULL,
+                        dataset=NULL,
+                        algorithm.name="KMeans: Hartigan and Wong",
                         ...)
 {
   if (! inherits(model, "kmeans")) stop("Not a legitimate kmeans object")
@@ -77,7 +79,7 @@ pmml.kmeans <- function(model,
   the.model <- xmlNode("ClusteringModel",
                       attrs=c(modelName=model.name,
                         functionName="clustering", # Required
-                        algorithmName="KMeans: Hartigan and Wong",
+                        algorithmName=algorithm.name,
                         modelClass="centerBased", # Required
                         numberOfClusters=number.of.clusters)) # Required
 
