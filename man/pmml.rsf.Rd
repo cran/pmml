@@ -59,31 +59,17 @@
   \code{saveXML}.
   
 }
-\note{
-  
-  One cautionary note is in order.  The PMML representation of the
-  \pkg{randomSurvivalForest} forest object is incomplete, in that the
-  object needs to be massaged in order for prediction to be possible.
-  This will be clear in the examples.  This deficiency will be addressed
-  in future releases of this package.  However, it was felt that the
-  current functionality was important enough and mature enough to
-  warrant release in this version of the product.
-
-}
 \references{
 
   H. Ishwaran and Udaya B. Kogalur (2006).  Random Survival Forests.
   \emph{Cleveland Clinic Technical Report}.
 
+  A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), /emph{PMML: An Open Standard for
+     Sharing Models}. The R journal, Volume 1/1, 60-65
+
   PMML home page: \url{http://www.dmg.org}
 }	
-\author{
-
-  Hemant Ishwaran \email{hemant.ishwaran@gmail.com} and Udaya B. Kogalur
-  \email{ubk2101@columbia.edu} with incorporation into the pmml package
-  by \email{Graham.Williams@togaware.com}
-
-}
+\author{\email{info@zementis.com}}
 \seealso{
   \code{\link{pmml}}.
 }

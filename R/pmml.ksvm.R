@@ -260,7 +260,7 @@ pmml.ksvm <- function(model,
   
   # PMML
 
-  pmml <- pmmlRootNode("4.1")
+  pmml <- pmmlRootNode("4.0")
 
   # PMML -> Header
   

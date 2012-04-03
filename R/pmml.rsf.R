@@ -74,7 +74,7 @@ pmml.rsf <- function(model,
 
   # PMML
 
-  pmml <- pmmlRootNode("3.2")
+  pmml <- pmmlRootNode("4.0")
 
   # PMML -> Header
 
@@ -149,11 +149,7 @@ pmml.rsf <- function(model,
 
   for (b in 1:numTrees)
   {
-#    out1 <- "Converting Tree"
-#    out2 <- paste(out1,b,sep="")
-#    out3 <- paste(out2," to PMML",sep="")
-    out <- paste("Converting Tree",b," to PMML",sep="")
-    print(out)
+    print(paste("Converting Tree",b," to PMML",sep=""))
     segmentNode <- xmlNode("Segment",attrs=c(id=b))
     predicateNode <- xmlNode("True")
     segmentNode <- append.XMLNode(segmentNode, predicateNode)
@@ -169,6 +165,28 @@ pmml.rsf <- function(model,
     treeModelNode <- append.XMLNode(treeModelNode, pmmlMiningSchemaSurv(field, model$predictedName))
     
     # Global dependencies: (field$name, forest)
+  
+    ltNode <- xmlNode("LocalTransformations")
+    interact <- FALSE 
+    for(fld in 1:number.of.fields){
+      if(length(grep(":",field$name[fld])) == 1){
+       interact <- TRUE
+       drvnode <- xmlNode("DerivedField",attrs=c(name=field$name[fld],optype="continuous",
+                                                                 dataType="double"))
+       applyNode <- xmlNode("Apply",attrs=c("function"="*"))
+       for(fac in 1:length(strsplit(field$name[fld],":")[[1]])){
+         fldNode <- xmlNode("FieldRef",attrs=c(field=strsplit(field$name[fld],":")[[1]][fac]))
+         if(length(grep("as\\.factor\\(",fldNode)) == 1)
+           fldNode <- gsub("as.factor\\((\\w*)\\)","\\1", fldNode, perl=TRUE)
+         applyNode <- append.XMLNode(applyNode, fldNode) 
+       } 
+       drvnode <- append.XMLNode(drvnode, applyNode)
+      }
+      if(interact)
+        ltNode <- append.XMLNode(ltNode, drvnode)
+    }
+    if(interact)
+      treeModelNode <- append.XMLNode(treeModelNode, ltNode) 
     
     # Initialize the root node.  This differs from the rest of the
     # internal nodes in the PMML structure.
@@ -287,10 +305,12 @@ rsfMakeTree <- function(recursiveObject, nativeArray, predictorNames,
          "Please contact Technical Support.")
 
   # Add the split information to this node via the look back.
-
+  pName <- predictorNames[splitParameter]
+  if(length(grep("as\\.factor\\(",predictorNames[splitParameter])) == 1)
+    pName <- gsub("as.factor\\((\\w*)\\)","\\1", predictorNames[splitParameter], perl=TRUE)
   rsfNode <- append.XMLNode(rsfNode,
                             xmlNode("SimplePredicate",
-                                  attrs=c(field=predictorNames[splitParameter],
+                                  attrs=c(field=pName,
                                     operator=parseString, value=splitValue)))
 
   # Increment the offset, always.

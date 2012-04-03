@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2012-02-19 17:53:33 Graham Williams>
+# Time-stamp: <2012-03-29 20:06:09 Graham Williams>
 #
 # Copyright (c) 2009-2012 Togaware Pty Ltd
 #
@@ -106,7 +106,7 @@ pmmlRootNode <- function(version)
                     attrs=c(version="4.0",
                       xmlns="http://www.dmg.org/PMML-4_0",
                       "xmlns:xsi"="http://www.w3.org/2001/XMLSchema-instance", 
-                      "xsi:schemaLocation"=paste("http://www.dmg.org/PMML-3_2",
+                      "xsi:schemaLocation"=paste("http://www.dmg.org/PMML-4_0",
                         "http://www.dmg.org/v4-0/pmml-4-0.xsd")))
   return(node)
 }
@@ -115,7 +115,7 @@ pmmlHeader <- function(description, copyright, app.name)
 {
   # Header
   
-  VERSION <- "1.2.29" # Major random forest updates from Tridivesh (Zemantis)
+  VERSION <- "1.2.30" # Further random forest updates from Tridivesh (Zemantis)
 
   if (is.null(copyright)) copyright <- generateCopyright()
   header <- xmlNode("Header",
@@ -241,7 +241,7 @@ pmmlDataDictionarySurv <- function(field, timeName, dataset=NULL, weights=NULL)
   # element within the DataField for each numeric variable.
 
   number.of.fields <- length(field$name)
-
+  ii<-0
   # DataDictionary
 
   data.dictionary <- xmlNode("DataDictionary",
@@ -250,6 +250,9 @@ pmmlDataDictionarySurv <- function(field, timeName, dataset=NULL, weights=NULL)
   data.fields <- list()
   for (i in 1:number.of.fields)
   {
+    if(length(grep(":",field$name[i])) == 1){
+    } else {
+    ii<-ii+1 
     # Determine the operation type
 
     optype <- "UNKNOWN"
@@ -268,8 +271,11 @@ pmmlDataDictionarySurv <- function(field, timeName, dataset=NULL, weights=NULL)
     }
 
     # DataDictionary -> DataField
-
-     data.fields[[i]] <- xmlNode("DataField", attrs=c(name=field$name[i],
+     if(length(grep("as\\.factor\\(",field$name[ii])) == 1)
+        fName <- gsub("as.factor\\((\\w*)\\)","\\1", field$name[ii], perl=TRUE)
+     else
+        fName <- field$name[ii]
+     data.fields[[ii]] <- xmlNode("DataField", attrs=c(name=fName,
                                                 optype=optype,
                                                 dataType=datype))
 
@@ -282,16 +288,17 @@ pmmlDataDictionarySurv <- function(field, timeName, dataset=NULL, weights=NULL)
                                na.rm=TRUE), # 091025 Handle missing values
                              rightMargin=max(dataset[[field$name[i]]],
                                na.rm=TRUE))) # 091025 Handle missing values
-      data.fields[[i]] <- append.XMLNode(data.fields[[i]], interval)
+      data.fields[[ii]] <- append.XMLNode(data.fields[[ii]], interval)
     }
 
     # DataDictionary -> DataField -> Value
 
     if (optype == "categorical")
       for (j in seq_along(field$levels[[field$name[i]]]))
-        data.fields[[i]][[j]] <- xmlNode("Value",
+        data.fields[[ii]][[j]] <- xmlNode("Value",
                                          attrs=c(value=
                                            markupSpecials(field$levels[[field$name[i]]][j])))
+  }
   }
 
   if (! is.null(weights) && length(weights))
@@ -299,10 +306,12 @@ pmmlDataDictionarySurv <- function(field, timeName, dataset=NULL, weights=NULL)
                                                               attrs=c(name="Weights",
                                                                 value=weights,
                                                                 extender=crv$appname)))
-  data.fields[[number.of.fields+1]] <- xmlNode("DataField", attrs=c(name="predictedField",
+
+  data.fields[[ii+1]] <- xmlNode("DataField", attrs=c(name="predictedField",
                                                 optype="continuous",dataType="double"))
-  data.fields[[number.of.fields+2]] <- xmlNode("DataField", attrs=c(name=timeName,
+  data.fields[[ii+2]] <- xmlNode("DataField", attrs=c(name=timeName,
                                                 optype="continuous",dataType="double"))
+
   data.dictionary <- append.XMLNode(data.dictionary, data.fields)
 
 
@@ -392,8 +401,12 @@ pmmlMiningSchemaSurv <- function(field, timeName, target=NULL, inactive=NULL)
   number.of.fields <- length(field$name)
   mining.fields <- list()
   targetExists <- 0
+  ii <- 0
   for (i in 1:number.of.fields)
   {
+    if(length(grep(":",field$name[i])) == 1){
+   } else {
+    ii <- ii+1
     if (is.null(target))
       usage <- "active"
     else
@@ -420,17 +433,21 @@ pmmlMiningSchemaSurv <- function(field, timeName, target=NULL, inactive=NULL)
 
     if (field$name[i] %in% inactive) usage <- "supplementary"
     # 090328 if (length(grep(field$name[i], inactive))) usage <- "inactive"
-
-    mining.fields[[i]] <- xmlNode("MiningField",
-                                  attrs=c(name=field$name[i],
+    if(length(grep("as\\.factor\\(",field$name[i])) == 1)
+        fName <- gsub("as.factor\\((\\w*)\\)","\\1", field$name[i], perl=TRUE)
+    else
+        fName <- field$name[i]
+    mining.fields[[ii]] <- xmlNode("MiningField",
+                                  attrs=c(name=fName,
                                     usageType=usage))
+  }
   }
   # add a predicted mining field if none exist
   if (targetExists == 0)
-   mining.fields[[number.of.fields + 1]] <- xmlNode("MiningField",
+   mining.fields[[ii + 1]] <- xmlNode("MiningField",
                                               attrs=c(name="predictedField",
                                                usageType="predicted"))
-   mining.fields[[number.of.fields + 2]] <- xmlNode("MiningField",
+   mining.fields[[ii + 2]] <- xmlNode("MiningField",
                                               attrs=c(name=timeName,
                                                usageType="active"))
 
