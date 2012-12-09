@@ -83,18 +83,31 @@ pmml.randomForest <- function(model,
 
   # PMML
 
-  pmml <- pmmlRootNode("4.0")
+  pmml <- .pmmlRootNode("4.1")
 
   # PMML -> Header
 
-  pmml <- append.XMLNode(pmml, pmmlHeader(description, copyright, app.name))
+  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
 
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, pmmlDataDictionary(field))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field))
 
   mmodel <- xmlNode("MiningModel",attrs=c(modelName=model.name,functionName=model$type))
-  mmodel <- append.XMLNode(mmodel,pmmlMiningSchema(field, target))
+  mmodel <- append.XMLNode(mmodel,.pmmlMiningSchema(field, target))
+
+  # Tridi Zementis: Add output fields
+#  output <- xmlNode("Output")
+
+#  out<-xmlNode("OutputField",attrs=c(name=gsub(" ","",paste("Predicted_",target)), feature="predictedValue"))
+#  output <- append.XMLNode(output, out)
+#  if(model$type == "classification")
+#  {
+#    out2 <- xmlNode("OutputField",attrs=c(name=, feature="probability"))
+#    output <- append.XMLNode(output, out2) 
+#  }
+  mmodel <- append.XMLNode(mmodel, .pmmlOutput(field, target))
+
 
   #Tridi: If interaction terms do exist, define a product in LocalTransformations and use
   # it as a model variable. This step is rare as randomForest seems to avoid multiplicative
@@ -163,7 +176,7 @@ pmml.randomForest <- function(model,
 
   # Basic algorithm: Given node, add left leaf and then right leaf. Recursive algorithm as
   # at each leaf, again add left leaf and then right leaf.
-     recursiveOutput <- getRFTreeNodes2(recursiveOutput, model, -1, tree, 1, 1)
+     recursiveOutput <- .getRFTreeNodes2(recursiveOutput, model, -1, tree, 1, 1)
   # skip if split var for categorical variable is negative....cannot convert negative values
   #  to binary. Not sure why this happens sometimes...for now, just skip the tree where 
   #  this happens.
@@ -195,7 +208,7 @@ pmml.randomForest <- function(model,
 
   # PMML -> TreeModel -> MiningSchema
 
-  tree.model <- append.XMLNode(tree.model, pmmlMiningSchema(field, target))
+  tree.model <- append.XMLNode(tree.model, .pmmlMiningSchemaRF(field, target))
 
     ltNode <- xmlNode("LocalTransformations")
     interact <- FALSE
@@ -213,7 +226,7 @@ pmml.randomForest <- function(model,
          if(length(grep("as\\.factor\\(",fldNode)) == 1)
            fldNode <- gsub("as.factor\\((\\w*)\\)","\\1", fldNode, perl=TRUE)
          applyNode <- append.XMLNode(applyNode, fldNode)
-    }
+       }
        drvnode <- append.XMLNode(drvnode, applyNode)
       }
       if(interact)
@@ -240,7 +253,7 @@ pmml.randomForest <- function(model,
   return(pmml)
 }
 
-getRFTreeNodes2 <- function(recursiveObject, model, side, tinf, rowfrom, rownext)
+.getRFTreeNodes2 <- function(recursiveObject, model, side, tinf, rowfrom, rownext)
 {
   if(!((model$type == "regression") || (model$type == "classification")))
      print("Model type not supported")
@@ -295,7 +308,7 @@ getRFTreeNodes2 <- function(recursiveObject, model, side, tinf, rowfrom, rownext
             if(tinf[rowfrom,4] >= 0)
             {
   # split if var is categorical
-            binary <- sdecimal2binary(tinf[rowfrom,4])
+            binary <- .sdecimal2binary(tinf[rowfrom,4])
             ssp <- xmlNode("SimpleSetPredicate",attrs=c(field=fname,booleanOperator="isIn"))
             num1 <- 0
             scat <- NULL
@@ -373,7 +386,7 @@ getRFTreeNodes2 <- function(recursiveObject, model, side, tinf, rowfrom, rownext
             if(tinf[rowfrom,4] >= 0)
             {  
   # split if var is categorical
-            binary <- sdecimal2binary(tinf[rowfrom,4])
+            binary <- .sdecimal2binary(tinf[rowfrom,4])
             ssp <- xmlNode("SimpleSetPredicate",attrs=c(field=fname,booleanOperator="isIn"))
             num1 <- 0
             scat <- NULL
@@ -425,7 +438,7 @@ getRFTreeNodes2 <- function(recursiveObject, model, side, tinf, rowfrom, rownext
   {
 
     recursiveObject$internalNode <- NULL
-    recursiveObject <- getRFTreeNodes2(recursiveObject,model,-1,tinf,rownext,tinf[rownext,1])
+    recursiveObject <- .getRFTreeNodes2(recursiveObject,model,-1,tinf,rownext,tinf[rownext,1])
     if(!is.null(recursiveObject$internalNode) && (recursiveObject$internalNode == "skip")[[1]])
     {
       return(recursiveObject)
@@ -437,7 +450,7 @@ getRFTreeNodes2 <- function(recursiveObject, model, side, tinf, rowfrom, rownext
 
 
     recursiveObject$internalNode <- NULL
-    recursiveObject <- getRFTreeNodes2(recursiveObject,model,1,tinf,rownext,tinf[rownext,2])
+    recursiveObject <- .getRFTreeNodes2(recursiveObject,model,1,tinf,rownext,tinf[rownext,2])
     if(!is.null(recursiveObject$internalNode) && (recursiveObject$internalNode == "skip")[[1]])
     {
       return(recursiveObject)
@@ -458,7 +471,7 @@ getRFTreeNodes2 <- function(recursiveObject, model, side, tinf, rowfrom, rownext
   }
 }
 
-genBinaryRFTreeNodes <- function(model, n=1, root=1)
+.genBinaryRFTreeNodes <- function(model, n=1, root=1)
 {
   cassign <- "<-"
   cif <- "if"
@@ -467,7 +480,7 @@ genBinaryRFTreeNodes <- function(model, n=1, root=1)
   cendif <- ""
   cin <- "%in%"
 
-  # Model this on treeset.randomForest in Rattle.
+  # Model this on .treeset.randomForest in Rattle.
   
   tree <- getTree(model, n)
   tr.vars <- attr(model$terms, "dataClasses")[-1]
@@ -492,7 +505,7 @@ genBinaryRFTreeNodes <- function(model, n=1, root=1)
       # Convert the binary split point to a 0/1 list for the levels.
       
       var.levels <- levels(eval(model$call$data)[[tree[root,'split var']]])
-      bins <- sdecimal2binary(tree[root, 'split point'])
+      bins <- .sdecimal2binary(tree[root, 'split point'])
       bins <- c(bins, rep(0, length(var.levels)-length(bins)))
       node.value <- var.levels[bins==1]
       node.value <- sprintf('("%s")', paste(node.value, collapse='", "'))
@@ -517,13 +530,13 @@ genBinaryRFTreeNodes <- function(model, n=1, root=1)
 
     condition <- sprintf("%s (%s)", cif, condition)
     
-    lresult <- treeset.randomForest(model, n, tree[root,'left daughter'],
+    lresult <- .treeset.randomForest(model, n, tree[root,'left daughter'],
                                     format=format)
     if (cthen == "")
       lresult <- c(condition, lresult)
     else
       lresult <- c(condition, cthen, lresult)
-    rresult <- treeset.randomForest(model, n, tree[root,'right daughter'],
+    rresult <- .treeset.randomForest(model, n, tree[root,'right daughter'],
                                     format=format)
     rresult <- c(celse, rresult)
     result <- c(lresult, rresult)
@@ -533,7 +546,7 @@ genBinaryRFTreeNodes <- function(model, n=1, root=1)
 }
 
 ########################################################################
-treeset.randomForest <- function(model, n=1, root=1, format="R")
+.treeset.randomForest <- function(model, n=1, root=1, format="R")
 {
   # Return a string listing the decision tree form of the chosen tree
   # from the random forest.
@@ -575,7 +588,7 @@ treeset.randomForest <- function(model, n=1, root=1, format="R")
     {
       # Convert the binary split point to a 0/1 list for the levels.
       var.levels <- levels(eval(model$call$data)[[tree[root,'split var']]])
-      bins <- sdecimal2binary(tree[root, 'split point'])
+      bins <- .sdecimal2binary(tree[root, 'split point'])
       bins <- c(bins, rep(0, length(var.levels)-length(bins)))
       node.value <- var.levels[bins==1]
       node.value <- sprintf('("%s")', paste(node.value, collapse='", "'))
@@ -598,13 +611,13 @@ treeset.randomForest <- function(model, n=1, root=1, format="R")
     }
 
     condition <- sprintf("%s (%s)", cif, condition)
-    lresult <- treeset.randomForest(model, n, tree[root,'left daughter'],
+    lresult <- .treeset.randomForest(model, n, tree[root,'left daughter'],
                                     format=format)
     if (cthen == "")
       lresult <- c(condition, lresult)
     else
       lresult <- c(condition, cthen, lresult)
-    rresult <- treeset.randomForest(model, n, tree[root,'right daughter'],
+    rresult <- .treeset.randomForest(model, n, tree[root,'right daughter'],
                                     format=format)
     rresult <- c(celse, rresult)
     result <- c(lresult, rresult)

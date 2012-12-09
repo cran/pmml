@@ -72,10 +72,10 @@ pmml.lm <- function(model,
 
   # 090103 Support transforms if available.
 
-  if (supportTransformExport(transforms))
+  if (.supportTransformExport(transforms))
   {
-    field <- unifyTransforms(field, transforms)
-    transforms <- activateDependTransforms(transforms)
+    field <- .unifyTransforms(field, transforms)
+    transforms <- .activateDependTransforms(transforms)
   }
   number.of.fields <- length(field$name)
 
@@ -132,15 +132,15 @@ pmml.lm <- function(model,
 
   # PMML
 
-  pmml <- pmmlRootNode("3.2")
+  pmml <- .pmmlRootNode("4.1")
 
   # PMML -> Header
 
-  pmml <- append.XMLNode(pmml, pmmlHeader(description, copyright, app.name))
+  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
 
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, pmmlDataDictionary(field, weights=weights))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, weights=weights))
 
   # PMML -> RegressionModel
 
@@ -203,12 +203,16 @@ pmml.lm <- function(model,
 
   # PMML -> RegressionModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target, inactive))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, inactive))
 
   # PMML -> TreeModel -> LocalTransforms
 
-  if (supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, pmml.transforms(transforms))
+  if (.supportTransformExport(transforms))
+    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
+
+  # PMML -> TreeModel -> Output
+
+  the.model <- append.XMLNode(the.model, .pmmlOutput(field, target))
   
   # PMML -> RegressionModel -> RegressionTable
 
@@ -316,7 +320,7 @@ pmml.lm <- function(model,
                               as.numeric(coeff[which(coeffnames == tmp)]))
         predictorNode <- xmlNode("CategoricalPredictor",
                                  attrs=c(name=name,
-                                   value=markupSpecials(l), coefficient=coefficient))
+                                   value=.markupSpecials(l), coefficient=coefficient))
         regTable <- append.XMLNode(regTable, predictorNode)
       }
     }

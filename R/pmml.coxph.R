@@ -4,7 +4,7 @@
 #
 # Handle coxph regression model.
 #
-# Time-stamp: <2009-11-23 20:15:16 Graham Williams>
+# Time-stamp: <2012-12-04 06:06:58 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -42,6 +42,20 @@ pmml.coxph <- function(model,
 
   # Collect the required information.
 
+  # Tridi Zementis: detect if special terms exist which are not supported 
+  vars <- names(attributes(model$terms)$dataClasses)
+  coefs <- names(coefficients(model))
+  for(i in 1:length(vars))
+  {
+    if(grepl("cluster\\(",vars[i]) || grepl("tt\\(",vars[i]))
+      stop("Special model equation terms 'cluster' and 'tt' not yet supported in PMML")
+  }
+  for(i in 1:length(coefs))
+  {
+    if(grepl(":strata\\(",coefs[i]))
+      stop("Multiplicative strata variables not yet supported in PMML")
+  }
+ 
   # For a regression, all variables will have been used except those
   # with a NA coefficient indicating singularities. We mark
   # singularities as inactive shortly.
@@ -49,9 +63,23 @@ pmml.coxph <- function(model,
   terms <- attributes(model$terms)
   
   field <- NULL
-  field$name <- names(terms$dataClasses)
-  field$class <- terms$dataClasses
-  
+  field2<-NULL
+  numFields <- length(terms$dataClasses)
+  numFields2 <- 0
+  for(i in 1:numFields)
+  {
+    if(!grepl("strata",names(terms$dataClasses)[i]) && !grepl("Surv",names(terms$dataClasses)[i]) )
+    {
+      field$name[i] <- names(terms$dataClasses)[i]
+      field$class[i] <- terms$dataClasses[i]
+      names(field$class)[i] <- field$name[i]
+
+      field2$name[i] <- names(terms$dataClasses)[i]
+      field2$class[i] <- terms$dataClasses[i]
+      names(field2$class)[i] <- field2$name[i]
+      numFields2 <- numFields2 + 1
+    }
+  } 
   # 091020 The target field is actually "risk" of the event, and it is
   # not an actual supplied variable. Notice that in pmml.lm we get the
   # target from field$name[1], which in our case here is "Surv(time,
@@ -59,21 +87,58 @@ pmml.coxph <- function(model,
   # the probability of the event occuring in comparison to the
   # population. But let's introduce a new variable, "risk" as numeric,
   # as the predicted variable.
-  
+  # 11/13/12 Since the output calculated is survival, call the predicted field survival 
   # field$name[1] <- sub(')', '', sub('Surv\\([^,]*, *', '', field$name[1]))
-  field$name[1] <- 'risk'
+  field$name[1] <- 'survival'
   field$class[1] <- "numeric"
   names(field$class)[1] <- field$name[1]
+  field2$name[1] <- 'survival'
+  field2$class[1] <- "numeric"
+  names(field2$class)[1] <- field2$name[1]
+  numFields2 <- numFields2 + 1
+
+  # Tridi Zementis: Include startTime, endTime, status and strata variable if present
+  isStrata <- FALSE
+  starttimeVar <- FALSE
+  endtimeVar <- 0
+  statusVar <- NULL 
+  model.type <- "coxph"
+
+  survObject <- names(terms$dataClasses)[1]
+  survObject0 <- gsub("Surv\\(","",survObject)
+  survObject1 <- gsub("\\)","",survObject0) 
+  survList <- strsplit(survObject1,",")
+  if(length(survList[[1]]) == 2)
+  {
+    endtimeVar <- gsub(" ","",survList[[1]][1])
+    statusVar <- gsub(" ","",survList[[1]][2])
+  } else 
+  {
+    starttimeVar <- gsub(" ","",survList[[1]][1])
+    endtimeVar <- gsub(" ","",survList[[1]][2])
+    statusVar <- gsub(" ","",survList[[1]][3])
+  }
+
+  for(i in 1:length(attributes(model$terms)$term.labels))
+  {
+    termVar <- attributes(model$terms)$term.labels[i]
+    if(grepl("strata",termVar) != 0)
+    {
+      isStrata <- TRUE
+      strataVar0 <- gsub("strata\\(","",termVar)
+      strataVar <- gsub("\\)","",strataVar0)
+    }
+  }
 
   # 090103 Support transforms if available.
   
   orig.names <- field$name
   orig.class <- field$class
 
-  if (supportTransformExport(transforms))
+  if (.supportTransformExport(transforms))
   {
-    field <- unifyTransforms(field, transforms)
-    transforms <- activateDependTransforms(transforms)
+    field <- .unifyTransforms(field, transforms)
+    transforms <- .activateDependTransforms(transforms)
   }
   number.of.fields <- length(field$name)
 
@@ -102,9 +167,12 @@ pmml.coxph <- function(model,
   inactive <- setdiff(inactive.vars, active.vars)
 
   # 091020 Do we need to modify this for coxph?
-  
+  numfac <- 0 
   for (i in 1:number.of.fields)
+  {
     if (field$class[[field$name[i]]] == "factor")
+    {
+      numfac <- numfac + 1
       # 081004 gjw Test if the data is available in the model, as it
       # would be for a glm (but not an lm), since if the target
       # variable is categoric then the levels are not recorded in
@@ -115,113 +183,308 @@ pmml.coxph <- function(model,
       else
         field$levels[[field$name[i]]] <- levels(model$data[[field$name[i]]])
 
-  # PMML
-
-  pmml <- pmmlRootNode("3.2")
-
-  # PMML -> Header
-
-  pmml <- append.XMLNode(pmml, pmmlHeader(description, copyright, app.name))
-
-  # PMML -> DataDictionary
-
-  pmml <- append.XMLNode(pmml, pmmlDataDictionary(field))
-
-  # PMML -> RegressionModel
-
-  model.type <- "coxph"
-  
-  the.model <- xmlNode("RegressionModel",
-                       attrs=c(modelName=model.name,
-                         functionName="regression",
-                         algorithmName="coxph",
-                         targetFieldName=target))
-
-  # PMML -> RegressionModel -> MiningSchema
-
-  the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target, inactive))
-
-  # PMML -> TreeModel -> LocalTransforms
-
-  if (supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, pmml.transforms(transforms))
-  
-  # PMML -> RegressionModel -> RegressionTable
-
-  coeff <- coefficients(model)
-  coeffnames <- names(coeff)
-  means <- model$means
-
-  intercept <- 0
-  
-  regTable <- xmlNode("RegressionTable",
-                      attrs=c(intercept=intercept))
-  
-  # 080620 gjw The PMML spec (at least the Zementis validator)
-  # requires NumericPredictors first and then
-  # CategoricalPredictors. Simplest approach is to loop twice!!
-  # Hopefully, this is not a significant computational expense.
-
-  # For the coxph regression, we need to record the means. This is
-  # then used to subtract from supplied value before multiplying by
-  # the coefficient in the regression formula.
-
-  for (i in 1:length(orig.names))
-  {
-    name <- orig.names[[i]]
-    if (name == target) next
-    klass <- orig.class[[name]]
-    if (klass == 'numeric')
-    {
-      predictorNode <- xmlNode("NumericPredictor",
-                               attrs=c(name=name,
-                                 exponent="1",
-                                 coefficient=as.numeric(coeff[which(coeffnames==name)]),
-                                 mean=as.numeric(means[which(coeffnames==name)])))
-      regTable <- append.XMLNode(regTable, predictorNode)
-    }
-  }
-
-  for (i in 1:length(orig.names))
-  {
-    name <- orig.names[[i]]
-    if (name == target) next
-    klass <- orig.class[[name]]
-    if (klass == 'factor')
-    {
-      levs <- model$xlevels[[name]]
-      # 081019 gjw Add in a zero coefficient for the base level. In
-      # this way, we communicate through the PMML which level is the
-      # base. Can be useful in then comparing with the full list of
-      # levels available for this variable and determining levels that
-      # are just missing from the training. Note that xlevels does not
-      # include any levels that were not modelled (i.e., missing
-      # levels from the training data). We do this by iterating over
-      # all the modelled levels (levs, i.e., all values in xlevels)
-      # instead of all but the first level (levs[-1], i.e., the base
-      # level). When we have the first level, we simply note the
-      # coefficient as 0. 090306 This was updated to remove the
-      # assumption that the first level has a 0 coefficient. This is
-      # not the case in simple lm models (e.g., exampe(lm);
-      # pmml(lm.D90)).
-      for (l in levs)
+      #Tridi 11/1/12: remove any 'as.factor' from field names
+      if (length(grep("^as.factor\\(", field$name[i])))
       {
-        tmp <- paste(name, l, sep='')
-        # 090306 Change this test from one that assumes a 0
-        # coefficient for the first level, to one that has a 0
-        # coefficient for any missing level.
-        coefficient <- ifelse(!length(which(coeffnames == tmp)), 0.00,
-                              as.numeric(coeff[which(coeffnames == tmp)]))
-        predictorNode <- xmlNode("CategoricalPredictor",
-                                 attrs=c(name=name,
-                                   value=l, coefficient=coefficient))
-        regTable <- append.XMLNode(regTable, predictorNode)
+        field$name[i] <- sub("^as.factor\\((.*)\\)", "\\1", field$name[i])
+        names(field$class)[i] <- sub("^as.factor\\((.*)\\)", "\\1", names(field$class)[i])
+        names(field$levels)[numfac] <- sub("^as.factor\\((.*)\\)", "\\1", names(field$levels)[numfac])
       }
     }
   }
-  
-  the.model <- append.XMLNode(the.model, regTable)
-  
+
+  # PMML
+
+  pmml <- .pmmlRootNode("4.1")
+
+  # PMML -> Header
+
+  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
+
+  # PMML -> RegressionModel
+
+
+  # Zementis: Different start node depending on existence of startTimeVariable 
+  # or baselineStrataVariable attributes 
+  if(isStrata)
+  {
+    if(starttimeVar==FALSE)
+    { 
+      the.model <- xmlNode("GeneralRegressionModel",
+                       attrs=c(modelType="CoxRegression",
+                         modelName=model.name,
+                         functionName="regression",
+                         algorithmName="coxph",
+                         endTimeVariable=endtimeVar,
+                         statusVariable=statusVar,
+			 baselineStrataVariable=strataVar))
+        field2$name[numFields2+1] <- endtimeVar
+        field2$class[numFields2+1] <- "numeric"
+        names(field2$class)[numFields2+1] <- field2$name[numFields2+1]
+        field2$name[numFields2+2] <- statusVar
+        field2$class[numFields2+2] <- "numeric"
+        names(field2$class)[numFields2+2] <- field2$name[numFields2+2]
+        field2$name[numFields2+3] <- strataVar
+        field2$class[numFields2+3] <- "numeric"
+        names(field2$class)[numFields2+3] <- field2$name[numFields2+3]
+    } else
+    {
+      the.model <- xmlNode("GeneralRegressionModel",
+                       attrs=c(modelType="CoxRegression",
+                         modelName=model.name,
+                         functionName="regression",
+                         algorithmName="coxph",
+                         endTimeVariable=endtimeVar,
+			 startTimeVariable=starttimeVar,
+                         statusVariable=statusVar,
+                         baselineStrataVariable=strataVar))
+        field2$name[numFields2+1] <- endtimeVar
+        field2$class[numFields2+1] <- "numeric"
+        names(field2$class)[numFields2+1] <- field2$name[numFields2+1]
+        field2$name[numFields2+2] <- starttimeVar
+        field2$class[numFields2+2] <- "numeric"
+        names(field2$class)[numFields2+2] <- field2$name[numFields2+2]
+        field2$name[numFields2+3] <- statusVar
+        field2$class[numFields2+3] <- "numeric"
+        names(field2$class)[numFields2+3] <- field2$name[numFields2+3]
+        field2$name[numFields2+4] <- strataVar
+        field2$class[numFields2+4] <- "numeric"
+        names(field2$class)[numFields2+4] <- field2$name[numFields2+4]
+
+    }
+  } else
+  {
+    if(starttimeVar==FALSE)
+    {
+      the.model <- xmlNode("GeneralRegressionModel",
+                       attrs=c(modelType="CoxRegression",
+                         modelName=model.name,
+                         functionName="regression",
+                         algorithmName="coxph",
+                         endTimeVariable=endtimeVar,
+                         statusVariable=statusVar))
+        field2$name[numFields2+1] <- endtimeVar
+        field2$class[numFields2+1] <- "numeric"
+        names(field2$class)[numFields2+1] <- field2$name[numFields2+1]
+        field2$name[numFields2+2] <- statusVar
+        field2$class[numFields2+2] <- "numeric"
+        names(field2$class)[numFields2+2] <- field2$name[numFields2+2]
+
+    } else
+    {
+      the.model <- xmlNode("GeneralRegressionModel",
+                       attrs=c(modelType="CoxRegression",
+                         modelName=model.name,
+                         functionName="regression",
+                         algorithmName="coxph",
+			 startTimeVariable=starttimeVar,
+                         endTimeVariable=endtimeVar,
+                         statusVariable=statusVar))
+        field2$name[numFields2+1] <- starttimeVar
+        field2$class[numFields2+1] <- "numeric"
+        names(field2$class)[numFields2+1] <- field2$name[numFields2+1]
+        field2$name[numFields2+2] <- endtimeVar
+        field2$class[numFields2+2] <- "numeric"
+        names(field2$class)[numFields2+2] <- field2$name[numFields2+2]
+        field2$name[numFields2+3] <- statusVar
+        field2$class[numFields2+3] <- "numeric"
+        names(field2$class)[numFields2+3] <- field2$name[numFields2+3]
+
+    }
+  }
+
+  # PMML -> DataDictionary
+
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field2))
+
+  # PMML -> RegressionModel -> MiningSchema
+
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field2, target, inactive))
+
+  # Tridi Zementis: Add output fields to output both hazard and survival
+
+  output <- xmlNode("Output")
+
+  out1 <- xmlNode("OutputField",attrs=c(name="Predicted_survival", feature="predictedValue"))
+  output <- append.XMLNode(output, out1)
+
+  out2 <- xmlNode("OutputField",attrs=c(name="cumulativeHazard",feature="transformedValue"))
+  applyMult <- xmlNode("Apply",attrs=c("function"="*"))
+  const <- xmlNode("Constant","-1.0")
+  applyLn <- xmlNode("Apply",attrs=c("function"="ln"))
+  fieldref <- xmlNode("FieldRef",attrs=c(field="Predicted_survival"))
+
+  applyLn <- append.XMLNode(applyLn, fieldref)
+  applyMult <- append.XMLNode(applyMult, const)
+  applyMult <- append.XMLNode(applyMult, applyLn)
+  out2 <- append.xmlNode(out2, applyMult)
+
+  output <- append.XMLNode(output, out2)
+  the.model <- append.XMLNode(the.model, output)
+ 
+  # PMML -> TreeModel -> LocalTransforms
+
+  if (.supportTransformExport(transforms))
+    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
+
+ plNode <- xmlNode("ParameterList")
+ num <- 0
+ for(i in 1:length(names(coefficients(model)))){
+   pname <- paste("p",num)
+   pname <- gsub(" ","",pname)
+   num <- num + 1
+   pnode <- xmlNode("Parameter",attrs=c(name=pname,label=names(coefficients(model))[i],
+					referencePoint=model$means[i]))
+   plNode <- append.XMLNode(plNode,pnode)
+ }
+
+ the.model <- append.XMLNode(the.model,plNode)
+
+  flNode <- xmlNode("FactorList")
+  for(i in 2:number.of.fields)
+  {
+    if(field$class[i] == "factor")
+    {
+      pdNode <- xmlNode("Predictor",attrs=c(name=field$name[i]))
+      flNode <- append.XMLNode(flNode,pdNode)
+    } 
+  } 
+
+  the.model <- append.XMLNode(the.model,flNode)
+
+  cvNode <- xmlNode("CovariateList")
+  for(i in 2:number.of.fields)
+  {
+    if(field$class[i] == "numeric")
+    {
+      pdNode <- xmlNode("Predictor",attrs=c(name=field$name[i]))
+      cvNode <- append.XMLNode(cvNode,pdNode)
+    }
+  }
+
+  the.model <- append.XMLNode(the.model,cvNode)
+
+  ppm <- xmlNode("PPMatrix")
+  # for each variable name 
+  for(j in 1:length(model$coefficients)){
+    # interactive terms 
+    if(length(grep(".+:.+",names(coefficients(model))[j])) == 1){
+       # for each multiplicative variable name 
+       for(k in 1:length(strsplit(names(coefficients(model))[j],":")[[1]])){
+         # go through all the fields and find the one matching the field name
+         for(f in 2:number.of.fields){
+           if(field$class[[field$name[f]]] == "factor"){
+             if(length(grep(field$name[f],strsplit(names(coefficients(model))[j],":")[[1]][k])) == 1){
+               modfield <- gsub(field$name[f],"",strsplit(names(coefficients(model))[j],":")[[1]][k])
+               ppcell <- xmlNode("PPCell",attrs=c(value=modfield,predictorName=field$name[f],
+                                                             parameterName=gsub(" ","",paste("p",j-1))))
+               ppm <- append.XMLNode(ppm,ppcell) 
+             } 
+           } else{
+              if(length(grep(field$name[f],strsplit(names(coefficients(model))[j],":")[[1]][k])) == 1){
+              ppcell <- xmlNode("PPCell",attrs=c(value="1",predictorName=field$name[f],
+                                                             parameterName=gsub(" ","",paste("p",j-1))))
+              ppm <- append.XMLNode(ppm,ppcell)
+           }
+         }
+       }
+     }
+   } else {
+# categorical terms
+       for(f in 2:number.of.fields){
+
+         if(field$class[[field$name[f]]] == "factor"){
+           if(length(grep(field$name[f],names(coefficients(model))[j])) == 1){
+            if (length(grep("^as.factor\\(", names(coefficients(model))[j]))==1)
+            {
+             modfield <- sub("^as.factor\\((.*)\\)", "\\1", names(coefficients(model))[j])
+             modfield <- gsub(field$name[f],"",modfield)
+            } else {
+              modfield <- gsub(field$name[f],"",names(coefficients(model))[j])
+            }
+            ppcell <- xmlNode("PPCell",attrs=c(value=modfield,predictorName=field$name[f],
+                                                          parameterName=gsub(" ","",paste("p",j-1))))
+            ppm <- append.XMLNode(ppm,ppcell)
+           }
+         } else{
+# numerical terms
+
+             if(length(grep(field$name[f],names(coefficients(model))[j])) == 1){
+             ppcell <- xmlNode("PPCell",attrs=c(value="1",predictorName=field$name[f],
+                                                           parameterName=gsub(" ","",paste("p",j-1))))
+             ppm <- append.XMLNode(ppm,ppcell)
+         }
+       }
+     }
+   }
+  }
+  the.model <- append.XMLNode(the.model,ppm)
+
+  pmNode <- xmlNode("ParamMatrix")
+  for(i in 1:length(model$coefficients))
+  {
+   if( !is.na(coefficients(model)[i]) )
+   {
+     pcNode <- xmlNode("PCell",attrs=c(parameterName=gsub(" ","",paste("p",i-1)), df="1",
+                                        beta=as.numeric(coefficients(model)[i])))
+     pmNode <- append.XMLNode(pmNode,pcNode)
+   } else
+   {
+     stop("Model coefficients did not converge and resulted in sungular values")
+   }
+  }
+  the.model <- append.XMLNode(the.model,pmNode)
+
+  # Zementis: value which represents an event taking place is not given in the R object, so cannot 
+  # make the EventValue node 
+  #eventNode<-xmlCommentNode("EventValues expected by R are either [0,1] or [1,2] or [TRUE,FALSE]")
+  #the.model <- append.XMLNode(the.model,eventNode)
+
+  # Zementis: call the R basehaz function to get the baselineHazard values 
+  CumHazard <- survival:::basehaz(model)
+  numTime <- length(CumHazard$time)
+  levl <- NULL
+  baselineNode <- NULL
+  maxTim <- 0
+ 
+  if(isStrata)
+  {
+    baseTable <- xmlNode("BaseCumHazardTables")
+    for(i in 1:length(levels(CumHazard$strata)))
+    {
+      name <- levels(CumHazard$strata)[i]
+      for(j in 1:length(CumHazard$hazard))
+      {
+        if(CumHazard$strata[j]==name)
+        {
+          levl <- gsub(strataVar,"",name)
+          levl <- gsub("=","",levl)
+          maxTim <- CumHazard$time[j]
+        }
+      }
+      stratumNode <- xmlNode("BaselineStratum",attrs=c(value=levl,maxTime=maxTim))
+      for(j in 1:length(CumHazard$hazard))
+      {
+	if(CumHazard$strata[j]==name)
+	{
+	  baseCell <- xmlNode("BaseLineCell",attrs=c(time=CumHazard$time[j],cumHazard=CumHazard$hazard[j]))
+	  stratumNode <- append.XMLNode(stratumNode,baseCell) 
+	}
+      }
+      baseTable <- append.XMLNode(baseTable,stratumNode) 
+    }
+  } else
+  {
+    baseTable <- xmlNode("BaseCumHazardTables",attrs=c(maxTime=CumHazard$time[numTime]))
+    for(i in 1:length(CumHazard$time))
+    {
+      baseCell <- xmlNode("BaselineCell",attrs=c(time=CumHazard$time[i],
+                                               cumHazard=CumHazard$hazard[i]))
+      baseTable <- append.XMLNode(baseTable,baseCell)
+    }
+  }
+  the.model<- append.XMLNode(the.model,baseTable) 
+ 
   # Add to the top level structure.
   
   pmml <- append.XMLNode(pmml, the.model)

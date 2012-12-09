@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2011-01-01 11:35:23 Graham Williams>
+# Time-stamp: <2012-12-03 22:26:40 Graham Williams>
 #
 # Copyright (c) 2009-2010 Togaware Pty Ltd
 #
@@ -29,7 +29,7 @@
 # E-mail: info@zementis.com
 # Date: 17 Jan 2008
 
-pmml.ksvm.Header <- function(description, copyright, app.name)
+.ksvm.Header <- function(description, copyright, app.name)
 {
   # Header
 
@@ -43,7 +43,7 @@ pmml.ksvm.Header <- function(description, copyright, app.name)
   # "1.1.1" Add pmml.lm
 
   if (is.null(copyright))
-    copyright <- generateCopyright()
+    copyright <- .generateCopyright()
   header <- xmlNode("Header",
                     attrs=c(copyright=copyright, description=description))
 
@@ -70,9 +70,9 @@ pmml.ksvm.Header <- function(description, copyright, app.name)
 }
 
 ###################################################################
-# Function pmml.ksvm.DataDictionary
+# Function .ksvm.DataDictionary
 
-pmml.ksvm.DataDictionary <- function(field, dataset, weights=NULL)
+.ksvm.DataDictionary <- function(field, dataset, weights=NULL)
 {
   # field$name is a vector of strings, and includes target
   # field$class is indexed by fields$names
@@ -88,7 +88,7 @@ pmml.ksvm.DataDictionary <- function(field, dataset, weights=NULL)
     data.dictionary <-append.XMLNode(data.dictionary, xmlNode("Extension",
                                                               attrs=c(name="Weights",
                                                                 value=weights,
-                                                                extender=crv$appname)))
+                                                                extender="Rattle")))
   data.fields <- list()
   for (i in 1:number.of.fields)
   {
@@ -134,7 +134,7 @@ pmml.ksvm.DataDictionary <- function(field, dataset, weights=NULL)
       {
         field$name[1] <- target
       }
-      data.dictionary <- getPredictedDataField(data.dictionary, field,
+      data.dictionary <- .getPredictedDataField(data.dictionary, field,
                                                predictedFieldName, optype, datype)
     }
     else  # For non-target fields.
@@ -143,7 +143,7 @@ pmml.ksvm.DataDictionary <- function(field, dataset, weights=NULL)
       # name and the levels, rahter than relying on indexing the
       # dataset within the function with the field name etc.
 
-      data.dictionary <- getInputDataField(data.dictionary,field,dataset,i,optype,datype)
+      data.dictionary <- .getInputDataField(data.dictionary,field,dataset,i,optype,datype)
     }
   }
 
@@ -151,9 +151,9 @@ pmml.ksvm.DataDictionary <- function(field, dataset, weights=NULL)
 }
 
 ###################################################################
-# Function pmml.ksvm.MiningSchema
+# Function .ksvm.MiningSchema
 
-pmml.ksvm.MiningSchema <- function(field, target=NULL)
+.ksvm.MiningSchema <- function(field, target=NULL)
 {
   number.of.fields <- length(field$name)
   mining.fields <- list()
@@ -260,16 +260,15 @@ pmml.ksvm <- function(model,
   
   # PMML
 
-  pmml <- pmmlRootNode("4.0")
+  pmml <- .pmmlRootNode("4.1")
 
   # PMML -> Header
   
-  pmml <- append.XMLNode(pmml, pmml.ksvm.Header(description,
-                                                copyright, app.name))
+  pmml <- append.XMLNode(pmml, .ksvm.Header(description, copyright, app.name))
 
   # PMML -> DataDictionary
   
-  pmml <- append.XMLNode(pmml, pmml.ksvm.DataDictionary(field, dataset, weights=weights))
+  pmml <- append.XMLNode(pmml, .ksvm.DataDictionary(field, dataset, weights=weights))
   
   # PMML -> SupportVectorMachineModel
   
@@ -295,8 +294,10 @@ pmml.ksvm <- function(model,
 
   field$name[1] <- target
   ksvm.model <- append.XMLNode(ksvm.model,
-                               pmml.ksvm.MiningSchema(field, target))
-  
+                               .ksvm.MiningSchema(field, target))
+
+  # Output 
+  ksvm.model <- append.XMLNode(ksvm.model, .pmmlOutput(field, target))  
   
   ##########################################################################
   # PMML -> SupportVectorMachineModel -> Targets
@@ -719,13 +720,13 @@ pmml.ksvm <- function(model,
 }
 
 ###############################################################################################
-# function: getPredictedDataField
+# function: .getPredictedDataField
 #
 # goal: create the data field for the predicted field
 #
 # refactored in June, 2008 
 ##############################################################################################
-getPredictedDataField <- function(dataDictionary,field,predictedFieldName,optype,datatype)
+.getPredictedDataField <- function(dataDictionary,field,predictedFieldName,optype,datatype)
 {
     target <- field$name[1]
     predictedDataField <- xmlNode("DataField", attrs=c(name = predictedFieldName, optype=optype, dataType=datatype))
@@ -752,7 +753,7 @@ getPredictedDataField <- function(dataDictionary,field,predictedFieldName,optype
 }
 
 ########################################################################
-# function: getInputDataField
+# function: .getInputDataField
 # goal: create the data field for the input data field
 # author: Zementis
 # refactored: June, 2008
@@ -767,7 +768,7 @@ getPredictedDataField <- function(dataDictionary,field,predictedFieldName,optype
 # the levels, rather than relying on indexing the dataset within the
 # function with the field name etc.
 
-getInputDataField <- function(dataDictionary,field,dataset,i,optype,datatype)
+.getInputDataField <- function(dataDictionary,field,dataset,i,optype,datatype)
 {
   field.name <- field$name[i]
   

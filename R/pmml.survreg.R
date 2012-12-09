@@ -28,7 +28,7 @@
 #
 # Implemented: 091015 Graham Williams based on pmml.lm
 
-pmml.survreg <- function(model,
+.pmml.survreg <- function(model,
                          model.name="Survival_Regression_Model",
                          app.name="Rattle/PMML",
                          description="Survival Regression Model",
@@ -70,10 +70,10 @@ pmml.survreg <- function(model,
   orig.names <- field$name
   orig.class <- field$class
 
-  if (supportTransformExport(transforms))
+  if (.supportTransformExport(transforms))
   {
-    field <- unifyTransforms(field, transforms)
-    transforms <- activateDependTransforms(transforms)
+    field <- .unifyTransforms(field, transforms)
+    transforms <- .activateDependTransforms(transforms)
   }
   number.of.fields <- length(field$name)
 
@@ -117,15 +117,15 @@ pmml.survreg <- function(model,
 
   # PMML
 
-  pmml <- pmmlRootNode("3.2")
+  pmml <- .pmmlRootNode("4.1")
 
   # PMML -> Header
 
-  pmml <- append.XMLNode(pmml, pmmlHeader(description, copyright, app.name))
+  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
 
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, pmmlDataDictionary(field))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field))
 
   # PMML -> RegressionModel
 
@@ -139,12 +139,12 @@ pmml.survreg <- function(model,
 
   # PMML -> RegressionModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target, inactive))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, inactive))
 
   # PMML -> TreeModel -> LocalTransforms
 
-  if (supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, pmml.transforms(transforms))
+  if (.supportTransformExport(transforms))
+    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
   
   # PMML -> RegressionModel -> RegressionTable
 

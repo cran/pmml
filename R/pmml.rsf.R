@@ -74,11 +74,11 @@ pmml.rsf <- function(model,
 
   # PMML
 
-  pmml <- pmmlRootNode("4.0")
+  pmml <- .pmmlRootNode("4.1")
 
   # PMML -> Header
 
-  pmml <- append.XMLNode(pmml, pmmlHeader(description, copyright, app.name))
+  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
 
   # PMML -> MiningBuildTask
 
@@ -116,7 +116,7 @@ pmml.rsf <- function(model,
   
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, pmmlDataDictionarySurv(field, model$predictedName))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionarySurv(field, model$predictedName))
   
   # Create a dummy XML node object to insert into the recursive
   # output object.
@@ -138,7 +138,7 @@ pmml.rsf <- function(model,
   miningModelNode <- xmlNode("MiningModel", attrs=c(modelName="RrsfModel",functionName="regression")) 
 
   # MiningModel -> MiningSchema
-  miningModelNode <- append.XMLNode(miningModelNode, pmmlMiningSchemaSurv(field, model$predictedName))
+  miningModelNode <- append.XMLNode(miningModelNode, .pmmlMiningSchemaSurv(field, model$predictedName))
 
   # ensemble method
   segmentationNode <- xmlNode("Segmentation",
@@ -162,7 +162,7 @@ pmml.rsf <- function(model,
 
     # PMML --> TreeModel [b] -> MiningSchema
     
-    treeModelNode <- append.XMLNode(treeModelNode, pmmlMiningSchemaSurv(field, model$predictedName))
+    treeModelNode <- append.XMLNode(treeModelNode, .pmmlMiningSchemaSurv(field, model$predictedName))
     
     # Global dependencies: (field$name, forest)
   
@@ -217,7 +217,7 @@ pmml.rsf <- function(model,
       # content is irrelevant as input.
 
       recursiveOutput$internalNode <- NULL
-      recursiveOutput <- rsfMakeTree(recursiveOutput, nativeArray,
+      recursiveOutput <- .rsfMakeTree(recursiveOutput, nativeArray,
                                      field$name, b, -1, rootParmID,
                                      rootSpltPT,model)
       
@@ -229,7 +229,7 @@ pmml.rsf <- function(model,
       # content is irrelevant as input.
 
       recursiveOutput$internalNode <- NULL
-      recursiveOutput <- rsfMakeTree(recursiveOutput, nativeArray,
+      recursiveOutput <- .rsfMakeTree(recursiveOutput, nativeArray,
                                      field$name, b, +1, rootParmID,
                                      rootSpltPT,model)
       
@@ -249,7 +249,7 @@ pmml.rsf <- function(model,
   return (pmml)
 }
 
-rsfMakeTree <- function(recursiveObject, nativeArray, predictorNames,
+.rsfMakeTree <- function(recursiveObject, nativeArray, predictorNames,
                         b, daughter, splitParameter, splitValue, model)
 {
   # Node information encoded in a PMML TreeModel follows a slightly
@@ -365,7 +365,7 @@ rsfMakeTree <- function(recursiveObject, nativeArray, predictorNames,
     # is irrelevant as input.
 
     recursiveObject$internalNode <- NULL
-    recursiveObject <- rsfMakeTree(recursiveObject, nativeArray,
+    recursiveObject <- .rsfMakeTree(recursiveObject, nativeArray,
                                    predictorNames, b, daughter = -1,
                                    fwdSplitParameter, fwdSplitValue, model)
     
@@ -377,7 +377,7 @@ rsfMakeTree <- function(recursiveObject, nativeArray, predictorNames,
     
     recursiveObject$leafCount <- recursiveObject$leafCount + 1
     recursiveObject$internalNode <- NULL
-    recursiveObject <- rsfMakeTree(recursiveObject, nativeArray,
+    recursiveObject <- .rsfMakeTree(recursiveObject, nativeArray,
                                    predictorNames, b, daughter = +1,
                                    fwdSplitParameter, fwdSplitValue, model)
     

@@ -6,7 +6,7 @@ library(pmml)
 
 iris.lm <- lm(Sepal.Length ~ ., data=iris)
 iris.lm.pmml <- pmml(iris.lm)
-stopifnot(identical(xmlGetAttr(iris.lm.pmml[[3]][[2]], "intercept"),
+stopifnot(identical(xmlGetAttr(iris.lm.pmml[[3]][[3]], "intercept"),
                     coefficients(iris.lm)["(Intercept)"][[1]]))
 
 # This example comes from lm which in turn comes from Annette Dobson
@@ -20,4 +20,4 @@ group <- gl(2,10,20, labels=c("Ctl","Trt"))
 weight <- c(ctl, trt)
 d90.lm <- lm(weight ~ group - 1)
 d90.lm.pmml <- pmml(d90.lm)
-stopifnot(identical(xmlGetAttr(d90.lm.pmml[[3]][[2]], "intercept"), 0.0))
+stopifnot(identical(xmlGetAttr(d90.lm.pmml[[3]][[3]], "intercept"), 0.0))

@@ -161,7 +161,73 @@ pmml.nnet <- function(model,
   
   number.of.neural.layers <- length(model$n) - 1
 
+  # models built with formulae have 3 main pieces of information missing 
+  # from the model description of models built with matrices: the categorical
+  # varable levels, the name and the dataTypes of the input variables. Add 
+  # those information by hand below, set the model to the appropriate class
+  # and it will be as if model$call[[1]] is always nnet.formula  
   field <- NULL
+  numerical <- NULL
+  if (model$call[[1]] != "nnet.formula")
+  {
+    # is it numerical or categorical predictor
+    if(is.null(attributes(model$fitted.values)$dimnames[[2]][1]))
+    {
+      numerical <- TRUE
+    }
+    else
+    {
+      numerical <- FALSE
+      # find the levels of the categorical predictor
+      tmp<-c()
+      for(i in 1:length(attributes(model$fitted.values)$dimnames[[2]]))
+      {
+        tmp <- c(tmp,attributes(model$fitted.values)$dimnames[[2]][i])
+      }
+      levels <- list(tmp)
+      names(levels) <- "lev"
+      model <- c(model,levels)
+
+    # variable information is encoded in 'terms' list
+    trms <- list("terms",name="Variable Information")
+    names(trms) <- "terms"
+
+    number.of.inputs <- model$n[1]
+    allnames <- c("y")
+    input.names <- c()
+    if(numerical)
+    {
+      classes <- c("numeric")
+    }
+    else
+    {
+      classes <- c("factor")
+    }
+    for(i in 1:number.of.inputs)
+    {
+      tmp <- paste("x",i,sep="")
+      allnames <- c(allnames,tmp)
+      input.names <- c(input.names,tmp)
+      classes <- c(classes,"numeric")
+    }
+
+    trms <- list(name="variable information")
+    names(trms) <- "terms"
+
+    # input variable names
+    attr(trms$terms,"term.labels") <- input.names
+    # dataTypes
+    attr(trms$terms,"dataClasses") <- classes
+    # names of variables the dataTypes above refer to
+    names(attributes(trms$terms)$dataClasses) <- allnames
+
+    model$call[[1]] <- "nnet.formula" 
+    model <- c(model,trms)
+    attr(model,"class") <- c("nnet.formula","nnet")
+    }
+
+  }
+
   if (model$call[[1]] == "nnet.formula")
   {
     terms <- attributes(model$terms)
@@ -200,10 +266,10 @@ pmml.nnet <- function(model,
   
   # 090820 Support transforms if available.
 
-  if (supportTransformExport(transforms))
+  if (.supportTransformExport(transforms))
   {
-    field <- unifyTransforms(field, transforms)
-    transforms <- activateDependTransforms(transforms)
+    field <- .unifyTransforms(field, transforms)
+    transforms <- .activateDependTransforms(transforms)
   }
   number.of.fields <- length(field$name)
   
@@ -283,15 +349,15 @@ pmml.nnet <- function(model,
   ##############################################################################
   # PMML
   
-  pmml <- pmmlRootNode("3.2")
+  pmml <- .pmmlRootNode("4.1")
   
   # PMML -> Header
   
-  pmml <- append.XMLNode(pmml, pmmlHeader(description, copyright, app.name))
+  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
   
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, pmmlDataDictionary(field))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field))
   #091206 REMOVE pmml <- append.XMLNode(pmml, pmml.nnet.DataDictionary(field))
 
   # PMML -> NeuralNetwork
@@ -333,17 +399,17 @@ pmml.nnet <- function(model,
 #    target <- substring(target,11,endPos)
 #  }
 
-  the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target))
   #091206 REMOVE the.model <- append.XMLNode(the.model, pmml.nnet.MiningSchema(field, target))
   
   #  PMML -> NeuralNetwork -> Output
 
-  the.model <- append.XMLNode(the.model, pmmlOutput(field, target))
+  the.model <- append.XMLNode(the.model, .pmmlOutput(field, target))
 
   # PMML -> NeuralNetwork -> LocalTransforms
 
-  if (supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, pmml.transforms(transforms))
+  if (.supportTransformExport(transforms))
+    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
   
   # PMML -> NeuralNetwork -> NeuralInputs
   

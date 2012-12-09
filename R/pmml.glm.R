@@ -4,7 +4,7 @@
 #
 # Handle glm models.
 #
-# Time-stamp: <2012-03-29 20:41:58 Graham Williams>
+# Time-stamp: <2012-12-04 05:35:09 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -69,18 +69,20 @@ pmml.glm <- function(model,
 
   # 090103 Support transforms if available.
 
-  if (supportTransformExport(transforms))
+  if (.supportTransformExport(transforms))
   {
-    field <- unifyTransforms(field, transforms)
-    transforms <- activateDependTransforms(transforms)
+    field <- .unifyTransforms(field, transforms)
+    transforms <- .activateDependTransforms(transforms)
   }
   number.of.fields <- length(field$name)
 
   target <- field$name[1]
   if (length(grep("^as.factor\\(", field$name[1])))
   {
-    stop("predicted variable cast into categorical dataType using the as.factor()
-           function not supported by PMML")
+    field$name[1] <- sub("^as.factor\\((.*)\\)", "\\1", field$name[1])
+    target <- field$name[1]
+    names(field$class)[1] <- target
+    levels(model$data[[target]]) <- levels(model$model[[1]]) 
   }
 
   # 090501 Identify those who are singularities. For numerics, this is
@@ -147,15 +149,15 @@ pmml.glm <- function(model,
 
   # PMML
 
-  pmml <- pmmlRootNode("4.0")
+  pmml <- .pmmlRootNode("4.1")
 
   # PMML -> Header
 
-  pmml <- append.XMLNode(pmml, pmmlHeader(description, copyright, app.name))
+  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
 
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, pmmlDataDictionary(field, weights=weights))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, weights=weights))
 
 # determine the distribution and link function to add. quasi distributions cannot be
 #  listed. Certain link functions are not supported and an error must be thrown. Certain
@@ -284,24 +286,28 @@ pmml.glm <- function(model,
 
   # PMML -> RegressionModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target, inactive))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, inactive))
 
   if(categ)
   {
     outn <- xmlNode("Output")
     pname <- gsub(" ","",paste("Probability_",levels(model$data[[field$name[1]]])[2]))
     outpn <- xmlNode("OutputField",attrs=c(name=pname,targetField=target,feature="probability",value=levels(model$data[[field$name[1]]])[2]))
-    outpn2 <- xmlNode("OutputField",attrs=c(name="predictedValue",feature="predictedValue"))
+    outpn2 <- xmlNode("OutputField",attrs=c(name=gsub(" ","",paste("Predicted_",target)),feature="predictedValue"))
     outn <- append.XMLNode(outn,outpn)
     outn <- append.XMLNode(outn,outpn2)
-
-    the.model <- append.XMLNode(the.model, outn)
+  } else {
+    outn <- xmlNode("Output")
+    out <- xmlNode("OutputField",attrs=c(name=gsub(" ","",paste("Predicted_",target)),feature="predictedValue"))
+    outn <- append.XMLNode(outn, out) 
   }
+  the.model <- append.XMLNode(the.model, outn)
+
 
   # PMML -> TreeModel -> LocalTransforms
 
-  if (supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, pmml.transforms(transforms))
+  if (.supportTransformExport(transforms))
+    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
 
 
  plNode <- xmlNode("ParameterList")
@@ -410,6 +416,9 @@ pmml.glm <- function(model,
 					beta=as.numeric(coefficients(model)[i])))
      pmNode <- append.XMLNode(pmNode,pcNode)
     }
+   } else
+   {
+     stop("Model coefficients did not converge")
    }
   }
   the.model <- append.XMLNode(the.model,pmNode)

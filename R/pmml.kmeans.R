@@ -53,10 +53,10 @@ pmml.kmeans <- function(model,
                   .TRANSFORMS.TO.CATEGORIC))
     transforms[[i]]$status <- "inactive"
   
-  if (supportTransformExport(transforms))
+  if (.supportTransformExport(transforms))
   {
-    field <- unifyTransforms(field, transforms, keep.first=FALSE)
-    transforms <- activateDependTransforms(transforms)
+    field <- .unifyTransforms(field, transforms, keep.first=FALSE)
+    transforms <- .activateDependTransforms(transforms)
   }
   
   number.of.clusters <- length(model$size)
@@ -64,15 +64,15 @@ pmml.kmeans <- function(model,
 
   # PMML
 
-  pmml <- pmmlRootNode("3.2")
+  pmml <- .pmmlRootNode("4.1")
 
   # PMML -> Header
 
-  pmml <- append.XMLNode(pmml, pmmlHeader(description, copyright, app.name))
+  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
 
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, pmmlDataDictionary(field))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field))
 
   # PMML -> ClusteringModel
 
@@ -85,12 +85,18 @@ pmml.kmeans <- function(model,
 
   # PMML -> ClusteringModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, pmmlMiningSchema(field))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field))
+
+  # Outputs
+  output <- xmlNode("Output")
+  out <- xmlNode("OutputField",attrs=c(name="predictedValue", feature="predictedValue"))
+  output <- append.XMLNode(output, out)
+  the.model <- append.XMLNode(the.model, output)
 
   # PMML -> ClusteringModel -> LocalTransformations -> DerivedField -> NormContiuous
 
-  if (supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, pmml.transforms(transforms))
+  if (.supportTransformExport(transforms))
+    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
   
   # PMML -> ClusteringModel -> ComparisonMeasure
   

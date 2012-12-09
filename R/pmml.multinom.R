@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2009-08-18 19:45:31 Graham Williams>
+# Time-stamp: <2012-12-04 06:09:04 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -44,6 +44,20 @@ pmml.multinom <- function(model,
   require(XML, quietly=TRUE)
   require(nnet, quietly=TRUE)
 
+  # models built with formulae have 2 main pieces of information missing 
+  # from the model description of models built with matrices: the categorical
+  # variable levels, the dataType of the target variable. Add 
+  # those information by hand below
+  field <- NULL
+  if (is.null(model$lev) && length(grep("matrix",attributes(model$terms)$dataClasses[1][1]))==1)
+  {
+    # since this is a multinomial model, assume target is categorical
+    attributes(model$terms)$dataClasses[1] <- "factor"
+
+    # the target levels are already stored as 'lab'
+    model$lev <- model$lab
+  }
+
   # Collect the required variables information.
 
   terms <- attributes(model$terms)
@@ -56,10 +70,10 @@ pmml.multinom <- function(model,
 
    # 090216 Support transforms if available.
   
-  if (supportTransformExport(transforms))
+  if (.supportTransformExport(transforms))
   {
-    field <- unifyTransforms(field, transforms)
-    transforms <- activateDependTransforms(transforms)
+    field <- .unifyTransforms(field, transforms)
+    transforms <- .activateDependTransforms(transforms)
   }
   number.of.fields <- length(field$name)
  
@@ -88,15 +102,15 @@ pmml.multinom <- function(model,
   target <- field$name[1]
   # PMML
 
-  pmml <- pmmlRootNode("4.0")
+  pmml <- .pmmlRootNode("4.1")
 
   # PMML -> Header
 
-  pmml <- append.XMLNode(pmml, pmmlHeader(description, copyright, app.name))
+  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
   
   # PMML -> DataDictionary
   
-  pmml <- append.XMLNode(pmml, pmmlDataDictionary(field))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field))
 
   # PMML -> RegressionModel
 
@@ -110,17 +124,17 @@ pmml.multinom <- function(model,
 
   # PMML -> RegressionModel -> MiningSchema
   
-  the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target))
 
   #########################################
   #  OUTPUT
-  the.model <- append.XMLNode(the.model, pmmlOutput(field,target))
+  the.model <- append.XMLNode(the.model, .pmmlOutput(field,target))
 
 
   # PMML -> TreeModel -> LocalTransformations -> DerivedField -> NormContiuous
 
-  if (supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, pmml.transforms(transforms))
+  if (.supportTransformExport(transforms))
+    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
 
   LTNode <- xmlNode("LocalTransformations")
   
@@ -160,8 +174,8 @@ pmml.multinom <- function(model,
                          dataType="double"))
           dvNode <- xmlNode("NormDiscrete",attrs=c(field=strsplit(oname,")")[[1]][1],
                             value=strsplit(oname,")")[[1]][2]))
-          dvf <- append.XMLNode(dvf,dvfNode)
-          LTNode <- append.xmlNode(LTNode,dvf)
+          dvf <- append.XMLNode(dvf, dvNode)
+          LTNode <- append.xmlNode(LTNode, dvf)
         }
         for (k in 2:length(orig.names))
         {

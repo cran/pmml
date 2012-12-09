@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2010-08-29 21:35:31 Graham Williams>
+# Time-stamp: <2012-12-03 18:13:13 Graham Williams>
 #
 # Copyright (c) 2009 Togaware Pty Ltd
 #
@@ -71,12 +71,12 @@ pmml.rpart <- function(model,
   # the model. No point unneccessarily passing a transform on to the
   # PMML and then to the C code for calculating.
 
-  if (supportTransformExport(transforms))
+  if (.supportTransformExport(transforms))
   {
     frame <- model$frame
     leaves <- frame$var == "<leaf>"
     # 090607 This is no longer required?
-    #used<-unlist(lapply(as.character(unique(frame$var[!leaves])), transformToBasename))
+    #used<-unlist(lapply(as.character(unique(frame$var[!leaves])), .transformToBasename))
     used <- as.character(unique(frame$var[!leaves]))
 
     # 090617 Make sure we include any transforms that don't appear in
@@ -99,7 +99,7 @@ pmml.rpart <- function(model,
 
     # 090813 Ensure transforms that remain are made active.
 
-    transforms <- activateTransforms(transforms)
+    transforms <- .activateTransforms(transforms)
   }
   
   # 081229 Our names and types get out of sync for multiple transforms
@@ -112,8 +112,8 @@ pmml.rpart <- function(model,
   # the transforms. By this stage the transforms should have removed
   # from it any that are not needed in the model.
 
-  if (supportTransformExport(transforms))
-    field <- unifyTransforms(field, transforms)
+  if (.supportTransformExport(transforms))
+    field <- .unifyTransforms(field, transforms)
   number.of.fields <- length(field$name)
 
   target <- field$name[1]
@@ -152,15 +152,15 @@ pmml.rpart <- function(model,
   
   # PMML
 
-  pmml <- pmmlRootNode("3.2")
+  pmml <- .pmmlRootNode("4.1")
 
   # PMML -> Header
 
-  pmml <- append.XMLNode(pmml, pmmlHeader(description, copyright, app.name))
+  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
 
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, pmmlDataDictionary(field, dataset, weights=weights))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, dataset, weights=weights))
 
   # PMML -> TreeModel
 
@@ -172,20 +172,20 @@ pmml.rpart <- function(model,
 
   # PMML -> TreeModel -> MiningSchema
   
-  the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target, inactive))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, inactive))
 
   # PMML -> TreeModel -> Output
   
   the.model <- append.XMLNode(the.model,
-                              pmmlOutput(field, target,
+                              .pmmlOutput(field, target,
                                          switch(function.name,
                                                 classification="categorical",
                                                 regression="continuous")))
 
   # PMML -> TreeModel -> LocalTransformations -> DerivedField -> NormContiuous
 
-  if (supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, pmml.transforms(transforms))
+  if (.supportTransformExport(transforms))
+    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
   
   # PMML -> TreeModel -> Node
 
@@ -236,12 +236,12 @@ pmml.rpart <- function(model,
         value <- c(value, substr(label[i], nchar(fieldLabel[i])+2, nchar(label[i])))
       }
     }
-    node <- genBinaryTreeNodes(depth, id, count, score, fieldLabel, operator, value,
+    node <- .genBinaryTreeNodes(depth, id, count, score, fieldLabel, operator, value,
                                model, parent_ii, rows,"right")
   }
   else
   {
-    node <- genBinaryTreeNodes(depth, id, count, score, fieldLabel, operator, value,
+    node <- .genBinaryTreeNodes(depth, id, count, score, fieldLabel, operator, value,
                                model, parent_ii, rows,"right")
   }
 
@@ -255,11 +255,11 @@ pmml.rpart <- function(model,
 }
 
 ############################################################################
-# FUNCTION: genBinaryTreeNodes
+# FUNCTION: .genBinaryTreeNodes
 #
 # Goal: create nodes for the tree (a recursive function)
 
-genBinaryTreeNodes <- function(depths, ids, counts, scores, fieldLabels,
+.genBinaryTreeNodes <- function(depths, ids, counts, scores, fieldLabels,
                                ops, values, model, parent_ii, rows,position)
 {
   depth <- depths[1]
@@ -305,17 +305,17 @@ genBinaryTreeNodes <- function(depths, ids, counts, scores, fieldLabels,
 
     # Add the primary predicate
     
-    predicate <- append.XMLNode(predicate,getPrimaryPredicates(fieldLabel,op,value))
+    predicate <- append.XMLNode(predicate,.getPrimaryPredicates(fieldLabel,op,value))
 
     # Add the surrogate predicates
     
-    predicate <- getSurrogatePredicates(predicate, model, parent_ii, position)
+    predicate <- .getSurrogatePredicates(predicate, model, parent_ii, position)
   }
   else # When the node does not have surrogate predicates
   {
      # Add the primary predicate
     
-     predicate <- getPrimaryPredicates(fieldLabel, op, value)
+     predicate <- .getPrimaryPredicates(fieldLabel, op, value)
   }
   node <- append.XMLNode(node, predicate) 
 
@@ -324,7 +324,7 @@ genBinaryTreeNodes <- function(depths, ids, counts, scores, fieldLabels,
   if(model$method == "class")
   {
     ylevel <- attr(model,'ylevels')
-    node <- getScoreDistributions(node, ylevel, ff, ii)
+    node <- .getScoreDistributions(node, ylevel, ff, ii)
   }
 
   # The recursive function to create child nodes.
@@ -339,9 +339,9 @@ genBinaryTreeNodes <- function(depths, ids, counts, scores, fieldLabels,
     split.point <- which(depths[c(-1,-2)] == depths[2]) + 1 # Binary tree
     lb <- 2:split.point
     rb <- (split.point + 1):length(depths)
-    left <- genBinaryTreeNodes(depths[lb], ids[lb], counts[lb], scores[lb], fieldLabels[lb],
+    left <- .genBinaryTreeNodes(depths[lb], ids[lb], counts[lb], scores[lb], fieldLabels[lb],
                                ops[lb], values[lb], model, ii, rows[lb], "left")
-    right <- genBinaryTreeNodes(depths[rb], ids[rb],counts[rb], scores[rb], fieldLabels[rb],
+    right <- .genBinaryTreeNodes(depths[rb], ids[rb],counts[rb], scores[rb], fieldLabels[rb],
                                 ops[rb], values[rb], model, ii, rows[rb], "right")  
   }
  
@@ -355,11 +355,11 @@ genBinaryTreeNodes <- function(depths, ids, counts, scores, fieldLabels,
 }
 
 #############################################################################
-# FUNCTION: getPrimaryPredicates
+# FUNCTION: .getPrimaryPredicates
 #
 # Goal: add the primary predicate for the node
 
-getPrimaryPredicates <- function(field,op,value)
+.getPrimaryPredicates <- function(field,op,value)
 {
   if (op %in% c("greaterOrEqual", "lessThan"))
   {
@@ -368,14 +368,14 @@ getPrimaryPredicates <- function(field,op,value)
   }
   else if (op == "isIn")
   {
-    predicate <- getSimpleSetPredicate(field,op,value)
+    predicate <- .getSimpleSetPredicate(field,op,value)
   }
 
   return(predicate)
 }
 
 ##############################################################################
-# function: getSurrogatePredicates
+# function: .getSurrogatePredicates
 #
 # goal: add the surrogate predicates to take care of the missing value cases
 #
@@ -383,7 +383,7 @@ getPrimaryPredicates <- function(field,op,value)
 #
 # date: June, 2008
 ##############################################################################
-getSurrogatePredicates <- function(predicate, model,i,position)
+.getSurrogatePredicates <- function(predicate, model,i,position)
 {
     ff <- model$frame
     is.leaf <- (ff$var=='<leaf>')
@@ -476,7 +476,7 @@ getSurrogatePredicates <- function(predicate, model,i,position)
                      value <- paste(value,",",sep="") 
                  }
              }
-             predicate <-  append.XMLNode(predicate,getSimpleSetPredicate(currentNodePredicateNameList[k],op,value))
+             predicate <-  append.XMLNode(predicate,.getSimpleSetPredicate(currentNodePredicateNameList[k],op,value))
          } else if( op =="isIn" && position == "right")
          {
              # simple set predicate for a right node
@@ -488,7 +488,7 @@ getSurrogatePredicates <- function(predicate, model,i,position)
                   value <- paste(value,",",sep="")
                 }
              }
-             predicate <-  append.XMLNode(predicate,getSimpleSetPredicate(currentNodePredicateNameList[k],op,value))
+             predicate <-  append.XMLNode(predicate,.getSimpleSetPredicate(currentNodePredicateNameList[k],op,value))
          } else
          {
              predicate<- append.XMLNode(predicate,xmlNode("SimplePredicate",attrs=c(field=currentNodePredicateNameList[k], operator=op,
@@ -499,7 +499,7 @@ getSurrogatePredicates <- function(predicate, model,i,position)
 }
 
 ########################################################################
-# Function: getSimpleSetPredicate
+# Function: .getSimpleSetPredicate
 #
 # Goal: refactor the original code, which creates the simple set predicate
 # 
@@ -507,7 +507,7 @@ getSurrogatePredicates <- function(predicate, model,i,position)
 # Refactored by: Zementis, Inc.
 # Refactored date: June, 2008
 
-getSimpleSetPredicate <- function(field, op, value)
+.getSimpleSetPredicate <- function(field, op, value)
 {
   predicate <- xmlNode("SimpleSetPredicate", attrs=c(field=field,
                                                booleanOperator=op))
@@ -544,7 +544,7 @@ getSimpleSetPredicate <- function(field, op, value)
 }
 
 #######################################################################
-# function: getScoreDistributions
+# function: .getScoreDistributions
 #
 # goal: extract the probability for each category (only for classification case)
 #
@@ -552,7 +552,7 @@ getSimpleSetPredicate <- function(field, op, value)
 #
 # date: June, 2008
 #######################################################################
-getScoreDistributions <- function(node, ylevel, ff, ii)
+.getScoreDistributions <- function(node, ylevel, ff, ii)
 {
    # ii: the sequential oreder of the current node
 
@@ -570,7 +570,7 @@ getScoreDistributions <- function(node, ylevel, ff, ii)
    return(node)
 }
 
-pmml.rpart.as.rules <- function(model,
+.as.rules.rpart <- function(model,
                                 model.name="RPart_Model",
                                 app.name="RPart",
                                 description="RPart model as rules",
@@ -600,15 +600,15 @@ pmml.rpart.as.rules <- function(model,
 
   # PMML
   
-  pmml <- pmmlRootNode("3.2")
+  pmml <- .pmmlRootNode("3.2")
 
   # PMML -> Header
 
-  pmml <- append.XMLNode(pmml, pmmlHeader(description, copyright, app.name))
+  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
   
   # PMML -> DataDictionary
   
-  pmml <- append.XMLNode(pmml, pmmlDataDictionary(field))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field))
 
   # PMML -> RuleSetModel
   
@@ -620,7 +620,7 @@ pmml.rpart.as.rules <- function(model,
 
   # PMML -> MiningSchema
   
-  the.model <- append.XMLNode(the.model, pmmlMiningSchema(field, target))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target))
 
   # Add in actual tree nodes.
 
