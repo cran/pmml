@@ -125,7 +125,7 @@
 
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field,transformed=transforms))
 
   # PMML -> RegressionModel
 
@@ -139,12 +139,18 @@
 
   # PMML -> RegressionModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, inactive))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, inactive, transformed=transforms))
 
   # PMML -> TreeModel -> LocalTransforms
 
   if (.supportTransformExport(transforms))
     the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
+
+  # test of Zementis xform functions
+  if(!is.null(transforms))
+  {
+    the.model <- append.XMLNode(the.model, pmmlLocalTransformations(field, transforms, NULL))
+  }
   
   # PMML -> RegressionModel -> RegressionTable
 

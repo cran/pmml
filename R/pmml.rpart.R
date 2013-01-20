@@ -160,7 +160,7 @@ pmml.rpart <- function(model,
 
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, dataset, weights=weights))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, dataset, weights=weights,transformed=transforms))
 
   # PMML -> TreeModel
 
@@ -172,7 +172,7 @@ pmml.rpart <- function(model,
 
   # PMML -> TreeModel -> MiningSchema
   
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, inactive))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, inactive,transformed=transforms))
 
   # PMML -> TreeModel -> Output
   
@@ -186,6 +186,12 @@ pmml.rpart <- function(model,
 
   if (.supportTransformExport(transforms))
     the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
+
+  # test of Zementis xform functions
+  if(!is.null(transforms))
+  {
+    the.model <- append.XMLNode(the.model, pmmlLocalTransformations(field, transforms, NULL))
+  }
   
   # PMML -> TreeModel -> Node
 

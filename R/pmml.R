@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2012-12-08 20:22:11 Graham Williams>
+# Time-stamp: <2013-01-19 17:16:35 Graham Williams>
 #
 # Copyright (c) 2009-2012 Togaware Pty Ltd
 #
@@ -123,7 +123,9 @@ pmml <- function(model,
 {
   # Header
   
-  VERSION <- "1.2.32"
+  VERSION <- "1.2.33"
+  DATE <- "2013-01-20"
+  REVISION <- "22"
 
   if (is.null(copyright)) copyright <- .generateCopyright()
   header <- xmlNode("Header",
@@ -144,7 +146,7 @@ pmml <- function(model,
 
   header <- append.XMLNode(header, xmlNode("Application",
                                            attrs=c(name=app.name,
-                                             version=VERSION)))
+                                             version=paste0(VERSION, "r", REVISION))))
 
   # Header -> Timestamp
 						   
@@ -154,7 +156,7 @@ pmml <- function(model,
   return(header)
 }
 
-.pmmlDataDictionary <- function(field, dataset=NULL, weights=NULL)
+.pmmlDataDictionary <- function(field, dataset=NULL, weights=NULL, transformed=NULL)
 {
   # 090806 Generate and return a DataDictionary element that incldues
   # each supplied field.
@@ -168,15 +170,60 @@ pmml <- function(model,
 
   number.of.fields <- length(field$name)
 
-  # DataDictionary
-
-  data.dictionary <- xmlNode("DataDictionary",
-                             attrs=c(numberOfFields=number.of.fields))
-
-  data.fields <- list()
-  for (i in 1:number.of.fields)
+  if(field$name[1] == "ZementisClusterIDPlaceHolder")
   {
-    # Determine the operation type
+   begin<-2
+  } else 
+  {
+   begin <- 1
+  }
+
+  namelist <- list()
+  optypelist <- list()
+  datypelist <- NULL
+  fname <- NULL
+  data.fields <- list()
+
+
+  if(!is.null(transformed))
+  {
+   for(i in 1:nrow(transformed$fieldData))
+   {
+     # Determine the operation type
+
+      type <- as.character(transformed$fieldData[i,"dataType"])
+      if(type == "numeric")
+      {
+        datypelist[[row.names(transformed$fieldData)[i]]] <- "double"
+      } else
+      {
+        datypelist[[row.names(transformed$fieldData)[i]]] <- "string"
+      }
+
+      if(type == "numeric")
+      {
+        optypelist[[row.names(transformed$fieldData)[i]]] <- "continuous"
+      } else
+      {
+	optypelist[[row.names(transformed$fieldData)[i]]] <- "categorical"
+      }
+
+   }
+   if(field$name[1] == "survival")
+   {
+    datypelist[[field$name[1]]] <- "double"
+    optypelist[[field$name[1]]] <- "continuous"
+   }
+  } else
+  {
+   for(i in begin:number.of.fields)
+   {
+   fname <- field$name[i]
+   if(length(grep("as\\.factor\\(",field$name[i])) == 1)
+   {
+        fname <- gsub("as.factor\\((\\w*)\\)","\\1", field$name[i], perl=TRUE)
+   }
+     # Determine the operation type
 
     optype <- "UNKNOWN"
     datype <- "UNKNOWN"
@@ -184,55 +231,170 @@ pmml <- function(model,
 
     if (field$class[[field$name[i]]] == "numeric")
     {
-      optype <- "continuous"
-      datype <- "double"
+      optypelist[[fname]] <- "continuous"
+      datypelist[[fname]] <- "double"
     }
     else if (field$class[[field$name[i]]] == "factor")
     {
-      optype <- "categorical"
-      datype <- "string"
+      optypelist[[fname]] <- "categorical"
+      datypelist[[fname]] <- "string"
     }
+   }
+  }
 
+  for (i in begin:number.of.fields)
+  {
     # DataDictionary -> DataField
 
-     data.fields[[i]] <- xmlNode("DataField", attrs=c(name=field$name[i],
-                                                optype=optype,
-                                                dataType=datype))
+     if(!is.null(transformed) && i!=1)
+     {
+       if(is.na(transformed$fieldData[field$name[i],"origFieldName"]))
+       {
+	if(is.na(transformed$fieldData[field$name[i],"transform"]))
+	{
+	 if(!(field$name[i] %in% namelist))
+         {
+          namelist <- c(namelist,field$name[i])
+         }
+	}
+       } else
+       {
+	  if(transformed$fieldData[field$name[i],"transform"] == "MapValues")
+	  {
+	   ofname <- transformed$fieldData[field$name[i],"origFieldName"][[1]]
+	   for(j in 1:length(ofname))
+	   {
+	    if(!(ofname[j] %in% namelist))
+	    {
+	     namelist <- c(namelist,ofname[j])
+	    }
+	   }
+	   fname <- NA
+	  }
+	  else
+	  {
+           ofname <- transformed$fieldData[field$name[i],"origFieldName"][[1]]
+# following for loop not needed as multiple parents via mapvalues dealt with above
+	   for(j in 1:length(ofname))
+	   {
+            fname <- ofname[j]
+            while(!is.na(ofname[j]))
+            {
+             fname <- ofname[j]
+	     xvalue <- transformed$fieldData[fname,"transform"]
+	     if(!is.na(xvalue) && xvalue == "MapValues")
+	     {
+	      parents <- transformed$fieldData[fname,"origFieldName"][[1]]
+	      for(j in 1:length(parents))
+              {
+               if(!(parents[j] %in% namelist))
+               {
+                namelist <- c(namelist,parents[j])
+               }
+              }
+	      fname <- NA
+	      break 
+	     }
+             ofname[j] <- transformed$fieldData[ofname[j],"origFieldName"][[1]]
+            }
+	    if(!(fname %in% namelist))
+            {
+             namelist <- c(namelist,fname)
+            }
+	   }
+	  }
 
-    # DataDictionary -> DataField -> Interval
+       }
 
-    if (optype == "continuous" && ! is.null(dataset))
-    {
-      interval <-  xmlNode("Interval",
-                           attrs=c(closure="closedClosed",
-                             leftMargin=min(dataset[[field$name[i]]],
-                               na.rm=TRUE), # 091025 Handle missing values
-                             rightMargin=max(dataset[[field$name[i]]],
-                               na.rm=TRUE))) # 091025 Handle missing values
-      data.fields[[i]] <- append.XMLNode(data.fields[[i]], interval)
-    }
-    
-    # DataDictionary -> DataField -> Value
+     } else
+     {
 
-    if (optype == "categorical")
-      for (j in seq_along(field$levels[[field$name[i]]]))
-        data.fields[[i]][[j]] <- xmlNode("Value",
-                                         attrs=c(value=
-                                           .markupSpecials(field$levels[[field$name[i]]][j])))
+      fName <- field$name[i]
+      if(!is.na(field$class[fName]) && field$class[fName] == "factor")
+      {
+       optypelist[[fName]] <- "categorical"
+      }
+
+      if(length(grep("as\\.factor\\(",field$name[i])) == 1)
+        fName <- gsub("as.factor\\((\\w*)\\)","\\1", field$name[i], perl=TRUE)
+
+      if(!is.na(field$class[fName]) && field$class[fName] == "factor")
+      {
+       optypelist[[fName]] <- "categorical"
+      }
+
+
+      if(!(fName %in% namelist) && fName != "ZementisClusterIDPlaceHolder")
+      {
+       namelist <- c(namelist,fName)
+      }
+
+
+     }
   }
+
+  # DataDictionary
+
+  data.dictionary <- xmlNode("DataDictionary",
+                             attrs=c(numberOfFields=length(namelist)))
 
   if (! is.null(weights) && length(weights))
     data.dictionary <-append.XMLNode(data.dictionary, xmlNode("Extension",
                                                               attrs=c(name="Weights",
-                                                                value=weights,
-                                                                extender="Rattle")))
-  
-  data.dictionary <- append.XMLNode(data.dictionary, data.fields)
+                                                              value=weights, extender="Rattle")))
+
+
+
+  nmbr <- 1
+  for(ndf2 in 1:length(namelist))
+  {
+   if(!is.na(namelist[ndf2]))
+   {
+    optype <- optypelist[[namelist[ndf2][[1]]]]
+    datype <- datypelist[[namelist[ndf2][[1]]]]
+    data.fields[[nmbr]] <- xmlNode("DataField", attrs=c(name=namelist[ndf2],
+                                             optype=optype, dataType=datype))
+
+   }
+
+   # DataDictionary -> DataField -> Interval
+
+   fname <- namelist[ndf2][[1]]
+   if (optypelist[[fname]] == "continuous" && !is.null(dataset) && fname != "survival")
+   {
+    dataval <- NULL
+    for(j in 1:length(dataset[[fname]]))
+    {
+     dataval<-c(dataval,as.numeric(dataset[[fname]][j]))
+    }
+
+    interval <-  xmlNode("Interval",
+                           attrs=c(closure="closedClosed", 
+			     leftMargin=min(dataval, na.rm=TRUE), # 091025 Handle missing values
+                             rightMargin=max(dataval, na.rm=TRUE))) # 091025 Handle missing values
+    data.fields[[nmbr]] <- append.XMLNode(data.fields[[nmbr]], interval)
+   }
+
+   # DataDictionary -> DataField -> Value
+   if (optypelist[[namelist[nmbr][[1]]]] == "categorical")
+   {
+     for (j in seq_along(field$levels[[namelist[nmbr][[1]]]]))
+     {
+       data.fields[[nmbr]][[j]] <- xmlNode("Value",
+                          attrs=c(value=.markupSpecials(field$levels[[namelist[nmbr][[1]]]][j])))
+     }
+   }
+
+   data.dictionary <- append.XMLNode(data.dictionary, data.fields[[nmbr]])
+
+   nmbr <- nmbr + 1
+  }
+
 
   return(data.dictionary)
 }
 
-.pmmlDataDictionarySurv <- function(field, timeName, dataset=NULL, weights=NULL)
+.pmmlDataDictionarySurv <- function(field, timeName, dataset=NULL, weights=NULL, transformed=NULL)
 {
   # Tridi 012712
   # modify for a survival model. Survival forests do not typically have
@@ -250,18 +412,52 @@ pmml <- function(model,
 
   number.of.fields <- length(field$name)
   ii<-0
-  # DataDictionary
 
-  data.dictionary <- xmlNode("DataDictionary",
-                             attrs=c(numberOfFields=number.of.fields+1))
-
+  optypelist <- list()
+  namelist <- list()
   data.fields <- list()
-  for (i in 1:number.of.fields)
+
+  if(field$name[1] == "ZementisClusterIDPlaceHolder")
   {
-    if(length(grep(":",field$name[i])) == 1){
-    } else {
-    ii<-ii+1 
-    # Determine the operation type
+   begin <- 2
+  } else 
+  {
+   begin <- 1
+  }
+
+  if(!is.null(transformed))
+  {
+   for(i in 1:nrow(transformed$fieldData))
+   {
+     # Determine the operation type
+
+      type <- as.character(transformed$fieldData[i,"dataType"])
+      if(type == "numeric")
+      {
+        datypelist[[row.names(transformed$fieldData)[i]]] <- "double"
+      } else
+      {
+        datypelist[[row.names(transformed$fieldData)[i]]] <- "string"
+      }
+
+      if(type == "numeric")
+      {
+        optypelist[[row.names(transformed$fieldData)[i]]] <- "continuous"
+      } else
+      {
+        optypelist[[row.names(transformed$fieldData)[i]]] <- "categorical"
+      }
+   }
+   if(field$name[1] == "survival")
+   {
+    datypelist[[field$name[1]]] <- "double"
+    optypelist[[field$name[1]]] <- "continuous"
+   }
+  } else
+  {
+   for(i in begin:number.of.fields)
+   {
+     # Determine the operation type
 
     optype <- "UNKNOWN"
     datype <- "UNKNOWN"
@@ -269,44 +465,127 @@ pmml <- function(model,
 
     if (field$class[[field$name[i]]] == "numeric")
     {
-      optype <- "continuous"
-      datype <- "double"
+      optypelist[[field$name[i]]] <- "continuous"
+      datypelist[[field$name[i]]] <- "double"
     }
     else if (field$class[[field$name[i]]] == "factor")
     {
-      optype <- "categorical"
-      datype <- "string"
+      optypelist[[field$name[i]]] <- "categorical"
+      datypelist[[field$name[i]]] <- "string"
     }
+   }
+  }
+
+  for (i in 1:number.of.fields)
+  {
+    if(length(grep(":",field$name[i])) == 1){
+    } else 
+    {
+    ii<-ii+1 
 
     # DataDictionary -> DataField
-     if(length(grep("as\\.factor\\(",field$name[ii])) == 1)
+     if(!is.null(transformed))
+     {
+       if(is.na(transformed$fieldData[field$name[i],"origFieldName"]))
+       {
+        if(is.na(transformed$fieldData[field$name[i],"transform"]))
+        {
+         if(!(field$name[i] %in% namelist))
+         {
+          namelist <- c(namelist,field$name[i])
+         }
+        }
+       } else
+       {
+          if(transformed$fieldData[field$name[i],"transform"] == "MapValues")
+          {
+           ofname <- transformed$fieldData[field$name[i],"origFieldName"][[1]]
+           for(j in 1:length(ofname))
+           {
+            if(!(ofname[j] %in% namelist))
+            {
+             namelist <- c(namelist,ofname[j])
+            }
+           }
+           fname <- NA
+          }
+          else
+          {
+           ofname <- transformed$fieldData[field$name[i],"origFieldName"][[1]]
+# following for loop not needed as multiple parents via mapvalues dealt with above
+           for(j in 1:length(ofname))
+           {
+            fname <- ofname[j]
+            while(!is.na(ofname[j]))
+            {
+             fname <- ofname[j]
+	     xvalue <- transformed$fieldData[fname,"transform"]
+             if(!is.na(xvalue) && xvalue == "MapValues")
+             {
+              parents <- transformed$fieldData[fname,"origFieldName"][[1]]
+              for(j in 1:length(parents))
+              {
+               if(!(parents[j] %in% namelist))
+               {
+                namelist <- c(namelist,parents[j])
+               }
+              }
+              fname <- NA
+              break
+             }
+             ofname[j] <- transformed$fieldData[ofname[j],"origFieldName"][[1]]
+            }
+            if(!(fname %in% namelist))
+            {
+             namelist <- c(namelist,fname)
+            }
+           }
+          }
+
+       }
+     } else
+     {
+      if(length(grep("as\\.factor\\(",field$name[ii])) == 1)
         fName <- gsub("as.factor\\((\\w*)\\)","\\1", field$name[ii], perl=TRUE)
-     else
+      else
         fName <- field$name[ii]
-     data.fields[[ii]] <- xmlNode("DataField", attrs=c(name=fName,
-                                                optype=optype,
-                                                dataType=datype))
+
+      data.fields[[ii]] <- xmlNode("DataField", attrs=c(name=fName,
+                                                optype=optypelist[[fName]],
+                                                dataType=datypelist[[fName]]))
+
+      if(!(fName %in% namelist))
+      {
+       namelist <- c(namelist,fName)
+      }
+
+     }
 
     # DataDictionary -> DataField -> Interval
-    if (optype == "continuous" && ! is.null(dataset))
+    nmbr <- 1
+    for(ndf2 in 1:length(namelist))
     {
+     fname <- namelist[ndf2]
+     if (optypelist[[fname]] == "continuous" && ! is.null(dataset))
+     {
       interval <-  xmlNode("Interval",
                            attrs=c(closure="closedClosed",
-                             leftMargin=min(dataset[[field$name[i]]],
+                             leftMargin=min(dataset[[namelist[ndf2]]],
                                na.rm=TRUE), # 091025 Handle missing values
-                             rightMargin=max(dataset[[field$name[i]]],
+                             rightMargin=max(dataset[[namelist[nmbr]]],
                                na.rm=TRUE))) # 091025 Handle missing values
       data.fields[[ii]] <- append.XMLNode(data.fields[[ii]], interval)
-    }
-
+     }
+    
     # DataDictionary -> DataField -> Value
 
-    if (optype == "categorical")
-      for (j in seq_along(field$levels[[field$name[i]]]))
-        data.fields[[ii]][[j]] <- xmlNode("Value",
+    if (optypelist[[fname]] == "categorical")
+      for (j in seq_along(field$levels[[fname]]))
+        data.fields[[ii]][j] <- xmlNode("Value",
                                          attrs=c(value=
-                                           .markupSpecials(field$levels[[field$name[i]]][j])))
-  }
+                                           .markupSpecials(field$levels[[fname]][j])))
+    }
+   }
   }
 
   if (! is.null(weights) && length(weights))
@@ -320,6 +599,8 @@ pmml <- function(model,
   data.fields[[ii+2]] <- xmlNode("DataField", attrs=c(name=timeName,
                                                 optype="continuous",dataType="double"))
 
+  data.dictionary <- xmlNode("DataDictionary",
+                             attrs=c(numberOfFields=length(namelist)))
   data.dictionary <- append.XMLNode(data.dictionary, data.fields)
 
 
@@ -327,7 +608,7 @@ pmml <- function(model,
 }
 
 
-.pmmlMiningSchema <- function(field, target=NULL, inactive=NULL)
+.pmmlMiningSchema <- function(field, target=NULL, inactive=NULL, transformed=NULL)
 {
   # Generate the PMML for the MinimgSchema element.
 
@@ -345,17 +626,23 @@ pmml <- function(model,
   # that singularities can be identified as inactive for a linear
   # model. It could also be used to capture ignored variables, if they
   # were to ever be included in the variable list.
-  
+
+
   number.of.fields <- length(field$name)
   mining.fields <- list()
 
-  for (i in 1:number.of.fields)
+  if(field$name[1] == "ZementisClusterIDPlaceHolder")
   {
-    if (is.null(target))
-      usage <- "active"
-    else
-      usage <- ifelse(field$name[i] == target, "predicted", "active")
+   begin <- 2
+  } else
+  {
+   begin <- 1
+  }
 
+  mining.schema <- xmlNode("MiningSchema")
+  namelist <- NULL
+  for (i in begin:number.of.fields)
+  {
     # 081103 Find out which variables should be marked as
     # inactive. Currently the inactive list is often supplied from
     # lm/glm as the variables which result in singularities in the
@@ -371,26 +658,119 @@ pmml <- function(model,
     # as inactive so the whole categroic itself should not be
     # inactive. For now, the simple reversion works. 090808 Move from
     # the use of inactive to supplementary to be in line with the DTD.
-    
-    if (field$name[i] %in% inactive) usage <- "supplementary"
+   
+    # Once we allow transformed fields, fields not used directly may not
+    # be supplementary as fields derived from them are active. Just output
+    # all fields as active. 
+    #if (field$name[i] %in% inactive) usage <- "supplementary"
     # 090328 if (length(grep(field$name[i], inactive))) usage <- "inactive"
-      
-    mining.fields[[i]] <- xmlNode("MiningField",
-                                  attrs=c(name=field$name[i],
-                                    usageType=usage))
+     
+    if(!is.null(transformed) && i!=1)
+    {
+       if(is.na(transformed$fieldData[field$name[i],"origFieldName"]))
+       {
+        if(is.na(transformed$fieldData[field$name[i],"transform"]))
+        {
+         if(!(field$name[i] %in% namelist))
+         {
+          namelist <- c(namelist,field$name[i])
+         }
+        }
+       } else
+       {
+          if(transformed$fieldData[field$name[i],"transform"] == "MapValues")
+          {
+           ofname <- transformed$fieldData[field$name[i],"origFieldName"][[1]]
+           for(j in 1:length(ofname))
+           {
+            if(!(ofname[j] %in% namelist))
+            {
+             namelist <- c(namelist,ofname[j])
+            }
+           }
+           fname <- NA
+          }
+          else
+          {
+           ofname <- transformed$fieldData[field$name[i],"origFieldName"][[1]]
+# following for loop not needed as multiple parents via mapvalues dealt with above
+           for(j in 1:length(ofname))
+           {
+            fname <- ofname[j]
+            while(!is.na(ofname[j]))
+            {
+             fname <- ofname[j]
+	     xvalue <- transformed$fieldData[fname,"transform"]
+             if(!is.na(xvalue) && xvalue == "MapValues")
+             {
+              parents <- transformed$fieldData[fname,"origFieldName"][[1]]
+              for(j in 1:length(parents))
+              {
+               if(!(parents[j] %in% namelist))
+               {
+                namelist <- c(namelist,parents[j])
+               }
+              }
+              fname <- NA
+              break
+             }
+             ofname[j] <- transformed$fieldData[ofname[j],"origFieldName"][[1]]
+            }
+            if(!(fname %in% namelist))
+            {
+             namelist <- c(namelist,fname)
+            }
+           }
+          }
+
+       }
+    } else
+    {
+      fName <- field$name[i]
+
+      if(length(grep("as\\.factor\\(",field$name[i])) == 1)
+        fName <- gsub("as.factor\\((\\w*)\\)","\\1", field$name[i], perl=TRUE)
+
+      if(!(fName %in% namelist) && fName != "ZementisClusterIDPlaceHolder")
+      {
+       namelist <- c(namelist,fName)
+      }
+
+    }
+ 
   }
-  mining.schema <- xmlNode("MiningSchema")
-  mining.schema$children <- mining.fields
+
+  for(j in 1:length(namelist))
+  {
+   if(!is.na(namelist[j]))
+   {
+
+    if (is.null(target))
+    {
+      usage <- "active"
+    } 
+    else
+    {
+      usage <- ifelse(namelist[j] == target, "predicted", "active")
+    }
+
+    mf <- xmlNode("MiningField", attrs=c(name=namelist[j],
+                                                usageType=usage))
+    mining.schema <- append.XMLNode(mining.schema, mf)
+   }
+  }
+
   return(mining.schema)
 }
 
-.pmmlMiningSchemaRF <- function(field, target=NULL, inactive=NULL)
+.pmmlMiningSchemaRF <- function(field, target=NULL, inactive=NULL, transformed=NULL)
 {
   # Generate the PMML for the MinimgSchema element.
 
   number.of.fields <- length(field$name)
   mining.fields <- list()
 
+  namelist <- NULL
   for (i in 1:number.of.fields)
   {
     if (is.null(target))
@@ -400,16 +780,90 @@ pmml <- function(model,
 
     if (field$name[i] %in% inactive) usage <- "supplementary"
 
-    mining.fields[[i]] <- xmlNode("MiningField",
+    if(!is.null(transformed))
+    {
+       if(is.na(transformed$fieldData[field$name[i],"origFieldName"]))
+       {
+        if(is.na(transformed$fieldData[field$name[i],"transform"]))
+        {
+         if(!(field$name[i] %in% namelist))
+         {
+          namelist <- c(namelist,field$name[i])
+         }
+        }
+       } else
+       {
+          if(transformed$fieldData[field$name[i],"transform"] == "MapValues")
+          {
+           ofname <- transformed$fieldData[field$name[i],"origFieldName"][[1]]
+           for(j in 1:length(ofname))
+           {
+            if(!(ofname[j] %in% namelist))
+            {
+             namelist <- c(namelist,ofname[j])
+            }
+           }
+           fname <- NA
+          }
+          else
+          {
+           ofname <- transformed$fieldData[field$name[i],"origFieldName"][[1]]
+# following for loop not needed as multiple parents via mapvalues dealt with above
+           for(j in 1:length(ofname))
+           {
+            fname <- ofname[j]
+            while(!is.na(ofname[j]))
+            {
+             fname <- ofname[j]
+	     xvalue <- transformed$fieldData[fname,"transform"]
+             if(!is.na(xvalue) && xvalue == "MapValues")
+             {
+              parents <- transformed$fieldData[fname,"origFieldName"][[1]]
+              for(j in 1:length(parents))
+              {
+               if(!(parents[j] %in% namelist))
+               {
+                namelist <- c(namelist,parents[j])
+               }
+              }
+              fname <- NA
+              break
+             }
+             ofname[j] <- transformed$fieldData[ofname[j],"origFieldName"][[1]]
+            }
+            if(!(fname %in% namelist))
+            {
+             namelist <- c(namelist,fname)
+            }
+           }
+          }
+
+       }
+      nmbr <- 1
+      for(ndf2 in 1:length(namelist))
+      {
+       if(!is.na(namelist[ndf2]))
+       {
+        mining.fields[[nmbr]] <- xmlNode("MiningField", attrs=c(name=namelist[ndf2],
+                                                usageType=usage))
+        nmbr <- nmbr + 1
+       }
+      }
+    } else
+    { 
+      mining.fields[[i]] <- xmlNode("MiningField",
                                   attrs=c(name=field$name[i],
-                                    usageType=usage, invalidValueTreatment="asIs"))
+                                    usageType=usage))
+    }
+
+
   }
   mining.schema <- xmlNode("MiningSchema")
   mining.schema$children <- mining.fields
   return(mining.schema)
 }
 
-.pmmlMiningSchemaSurv <- function(field, timeName, target=NULL, inactive=NULL)
+.pmmlMiningSchemaSurv <- function(field, timeName, target=NULL, inactive=NULL, transformed=NULL)
 {
   # Tridi 012712
   # Generate the PMML for the MinimgSchema element for a survival model.
@@ -431,6 +885,7 @@ pmml <- function(model,
   # model. It could also be used to capture ignored variables, if they
   # were to ever be included in the variable list.
 
+  namelist <- NULL
   number.of.fields <- length(field$name)
   mining.fields <- list()
   targetExists <- 0
@@ -466,14 +921,89 @@ pmml <- function(model,
 
     if (field$name[i] %in% inactive) usage <- "supplementary"
     # 090328 if (length(grep(field$name[i], inactive))) usage <- "inactive"
-    if(length(grep("as\\.factor\\(",field$name[i])) == 1)
+
+    if(!is.null(transformed))
+    {
+       if(is.na(transformed$fieldData[field$name[i],"origFieldName"]))
+       {
+        if(is.na(transformed$fieldData[field$name[i],"transform"]))
+        {
+         if(!(field$name[i] %in% namelist))
+         {
+          namelist <- c(namelist,field$name[i])
+         }
+        }
+       } else
+       {
+          if(transformed$fieldData[field$name[i],"transform"] == "MapValues")
+          {
+           ofname <- transformed$fieldData[field$name[i],"origFieldName"][[1]]
+           for(j in 1:length(ofname))
+           {
+            if(!(ofname[j] %in% namelist))
+            {
+             namelist <- c(namelist,ofname[j])
+            }
+           }
+           fname <- NA
+          }
+          else
+          {
+           ofname <- transformed$fieldData[field$name[i],"origFieldName"][[1]]
+# following for loop not needed as multiple parents via mapvalues dealt with above
+           for(j in 1:length(ofname))
+           {
+            fname <- ofname[j]
+            while(!is.na(ofname[j]))
+            {
+             fname <- ofname[j]
+	     xvalue <- transformed$fieldData[fname,"transform"]
+             if(!is.na(xvalue) && xvalue == "MapValues")
+             {
+              parents <- transformed$fieldData[fname,"origFieldName"][[1]]
+              for(j in 1:length(parents))
+              {
+               if(!(parents[j] %in% namelist))
+               {
+                namelist <- c(namelist,parents[j])
+               }
+              }
+              fname <- NA
+              break
+             }
+             ofname[j] <- transformed$fieldData[ofname[j],"origFieldName"][[1]]
+            }
+            if(!(fname %in% namelist))
+            {
+             namelist <- c(namelist,fname)
+            }
+           }
+          }
+
+       }
+      nmbr <- 1
+      for(ndf2 in 1:length(namelist))
+      {
+       if(!is.na(namelist[ndf2]))
+       {
+        mining.fields[[nmbr]] <- xmlNode("MiningField", attrs=c(name=namelist[ndf2],
+                                                usageType=usage))
+        nmbr <- nmbr + 1
+       }
+      }
+    } else
+    { 
+      if(length(grep("as\\.factor\\(",field$name[i])) == 1)
         fName <- gsub("as.factor\\((\\w*)\\)","\\1", field$name[i], perl=TRUE)
-    else
+      else
         fName <- field$name[i]
-    mining.fields[[ii]] <- xmlNode("MiningField",
+
+      mining.fields[[i]] <- xmlNode("MiningField",
                                   attrs=c(name=fName,
                                     usageType=usage))
-  }
+    }
+
+   }
   }
   # add a predicted mining field if none exist
   if (targetExists == 0)
@@ -487,6 +1017,162 @@ pmml <- function(model,
   mining.schema <- xmlNode("MiningSchema")
   mining.schema$children <- mining.fields
   return(mining.schema)
+}
+
+pmmlLocalTransformations <- function(field, transforms=NULL, LTelement=NULL)
+{
+  # 090806 Generate and return a LocalTransformations element that incldues
+  # each supplied field.
+  #
+  # field$name is a vector of strings, and includes target
+  # field$class is indexed by fields$name
+
+  # LocalTransformations
+  if(is.null(LTelement))
+  {
+   local.transformations <- xmlNode("LocalTransformations")
+  }
+  target <- field$name[1]
+
+  if(!is.null(transforms))
+  {
+    inputs <- transforms$fieldData
+
+# list of all fields derived from the target field
+   targetDL <- NULL
+   targetDL <- c(targetDL,target)
+
+# not used code to make sure list of unique elements 
+#       flist <- flist[!duplicate(flist)]
+
+# code to output all fields, possibly to allow user to output any derived fields via OutputField element
+    for(i in 1:nrow(inputs))
+   {
+    if(inputs[i,"origFieldName"] %in% targetDL)
+    {
+     targetDL <- c(targetDL,rownames(inputs)[i])
+     if(rownames(inputs)[i] %in% field$name[-1])
+     {
+       stop("Target variable and derivations are not allowed to be used as input variables.")
+     }
+    } else 
+    {
+     fname <- rownames(inputs)[i]
+     if(inputs[fname,"type"] == "derived" && fname != target)
+     {
+      if(inputs[fname,"transform"] == "zxform")
+      {
+       origName <- inputs[fname,"origFieldName"]
+       dfNode <- xmlNode("DerivedField",attrs=c(name=fname,dataType="double",optype="continuous"))
+       ncNode <- xmlNode("NormContinuous",attrs=c(field=origName))
+
+       o1 <- as.numeric(inputs[fname,"centers"])
+       o2 <- as.numeric(inputs[fname,"centers"]) + as.numeric(inputs[fname,"scales"])
+       lnNode1 <- xmlNode("LinearNorm",attrs=c(orig=o1,norm="0"))
+       lnNode2 <- xmlNode("LinearNorm",attrs=c(orig=o2,norm="1"))
+
+       ncNode <- append.XMLNode(ncNode, lnNode1)
+       ncNode <- append.XMLNode(ncNode, lnNode2)
+       dfNode <- append.XMLNode(dfNode, ncNode)
+#       local.transformations <- append.XMLNode(local.transformations, dfNode)
+      } else if(inputs[fname,"transform"] == "minmax")
+      {
+       origName <- inputs[fname,"origFieldName"]
+       dfNode <- xmlNode("DerivedField",attrs=c(name=fname,dataType="double",optype="continuous"))
+       ncNode <- xmlNode("NormContinuous",attrs=c(field=origName))
+       o1 <- inputs[fname,"sampleMin"]
+       n1 <- inputs[fname,"xformedMin"]
+       o2 <- inputs[fname,"sampleMax"]
+       n2 <- inputs[fname,"xformedMax"]
+       lnNode1 <- xmlNode("LinearNorm",attrs=c(orig=o1,norm=n1))
+       lnNode2 <- xmlNode("LinearNorm",attrs=c(orig=o2,norm=n2))
+       ncNode <- append.XMLNode(ncNode, lnNode1)
+       ncNode <- append.XMLNode(ncNode, lnNode2)
+       dfNode <- append.XMLNode(dfNode, ncNode)
+#       local.transformations <- append.XMLNode(local.transformations, dfNode)
+      } else if(inputs[fname,"transform"] == "MapValues")
+      {
+       map <- inputs[fname,"fieldsMap"][[1]]
+
+       dtype <- map[2,ncol(map)]
+       if(dtype == "numeric")
+       {
+	dtype <- "double"
+	otype <- "continuous"
+       } else
+       {
+	otype <- "categorical"
+       }
+
+       dfNode <- xmlNode("DerivedField",attrs=c(name=fname,dataType=as.character(dtype),optype=otype))
+       default <- inputs[fname,"defaultValue"]
+       missing <- inputs[fname,"missingValue"]
+       if(!is.na(default) && !is.na(missing))
+       {
+	mapvNode <- xmlNode("MapValues",attrs=c(mapMissingTo=missing,defaultValue=default,outputColumn="output"))
+       } else if(!is.na(default) && is.na(missing))
+       {
+	mapvNode <- xmlNode("MapValues",attrs=c(defaultValue=default,outputColumn="out"))
+       } else if(is.na(default) && !is.na(missing))
+       {
+	mapvNode <- xmlNode("MapValues",attrs=c(mapMissingTo=missing,outputColumn="out"))
+       } else
+       {
+	mapvNode <- xmlNode("MapValues",attrs=c(outputColumn="out"))
+       } 
+
+       for(j in 1:(ncol(map)  - 1))
+       {
+	colname <- paste("input",j,sep="")
+	val <- as.character(map[1,j])
+	fcpNode <- xmlNode("FieldColumnPair",attrs=c(field=val,column=colname))
+	mapvNode <- append.XMLNode(mapvNode,fcpNode)
+       }
+
+       inline <- xmlNode("InlineTable")
+       for(j in 3:nrow(map))
+       {
+	row <- xmlNode("row")
+	for(k in 1:(ncol(map) - 1))
+	{
+	 initNode <- xmlNode(paste("input",k,sep=""),value=as.character(map[j,k]))
+         row <- append.XMLNode(row, initNode)
+	}
+	out <- xmlNode("output",value=as.character(map[j,ncol(map)]))
+        row <- append.XMLNode(row, out)
+	inline <- append.XMLNode(inline,row)
+       }
+
+       mapvNode <- append.XMLNode(mapvNode,inline)
+       dfNode <- append.XMLNode(dfNode,mapvNode)
+      } else if(inputs[fname,"transform"] == "NormDiscrete")
+      {
+        map <- inputs[fname,"fieldsMap"][[1]]
+	dfName <- row.names(inputs)[i]  
+        dfNode <- xmlNode("DerivedField",attrs=c(name=dfName,dataType="double"))
+        normNode <- xmlNode("NormDiscrete",attrs=c(field=as.character(inputs[fname,"origFieldName"]),value=as.character(map[1])))
+        dfNode <- append.XMLNode(dfNode,normNode)
+      }
+
+      if(is.null(LTelement))
+      {
+       local.transformations <- append.XMLNode(local.transformations, dfNode)
+      } else
+      {
+       LTelement <- append.XMLNode(LTelement, dfNode)
+      }
+     }
+     }
+    }
+  }
+
+  if(is.null(LTelement))
+  {
+   return(local.transformations)
+  } else
+  {
+   return(LTelement)
+  }
 }
 
 #####################################################################

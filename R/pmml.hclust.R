@@ -45,15 +45,26 @@ pmml.hclust <- function(model,
   field$class <- rep("numeric", number.of.fields) # All fields are numeric
   names(field$class) <- field$name
 
+  field2 <- NULL
+  field2$name[1] <- "ZementisClusterIDPlaceHolder"
+  field2$class[1] <- "ID"
+  names(field2$class)[1] <- "ZementisClusterIDPlaceHolder"
+  for(i in 1:number.of.fields)
+  {
+   field2$name[i+1] <- field$name[i]
+   field2$class[i+1] <- field$class[i]
+   names(field2$class)[i+1] <- names(field$class[i])
+  }
+
   orig.fields <- field$name
 
   # 090822 Mark any categoric transforms as inactive since they won't
   # have been used in the clustering (at least not until we automate
   # the conversion to indicator variables.
 
-  for (i in which(sapply(transforms, function(x) x$type) %in%
-                  .TRANSFORMS.TO.CATEGORIC))
-    transforms[[i]]$status <- "inactive"
+#  for (i in which(sapply(transforms, function(x) x$type) %in%
+#                  .TRANSFORMS.TO.CATEGORIC))
+#    transforms[[i]]$status <- "inactive"
   
   if (.supportTransformExport(transforms))
   {
@@ -74,7 +85,7 @@ pmml.hclust <- function(model,
 
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field2,transformed=transforms))
 
   # PMML -> ClusteringModel
 
@@ -87,7 +98,7 @@ pmml.hclust <- function(model,
 
   # PMML -> ClusteringModel -> MiningSchema
 
-  cl.model <- append.XMLNode(cl.model, .pmmlMiningSchema(field))
+  cl.model <- append.XMLNode(cl.model, .pmmlMiningSchema(field2,transformed=transforms))
 
   # Outputs
   output <- xmlNode("Output")
@@ -99,6 +110,12 @@ pmml.hclust <- function(model,
 
   if (.supportTransformExport(transforms))
     cl.model <- append.XMLNode(cl.model, .gen.transforms(transforms))
+
+  # test of Zementis xform functions
+  if(!is.null(transforms))
+  {
+    the.model <- append.XMLNode(the.model, pmmlLocalTransformations(field2, transforms))
+  }
   
   # PMML -> ClusteringModel -> ComparisonMeasure
   

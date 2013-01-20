@@ -27,7 +27,8 @@ pmml.rsf <- function(model,
                      model.name="rsfForest_Model",
                      app.name="Rattle/PMML",
                      description="Random Survival Forest Tree Model",
-                     copyright=NULL, ...)
+                     copyright=NULL,
+		     transforms=NULL, ...)
 {
   # Based on RANDOM SURVIVAL FOREST 2.0.0, Copyright 2006, Cleveland Clinic
   # Original by Hemant Ishwaran and Udaya B. Kogalur
@@ -116,7 +117,7 @@ pmml.rsf <- function(model,
   
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, .pmmlDataDictionarySurv(field, model$predictedName))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionarySurv(field, model$predictedName, transformed=transforms))
   
   # Create a dummy XML node object to insert into the recursive
   # output object.
@@ -137,8 +138,48 @@ pmml.rsf <- function(model,
   # <MiningModel>
   miningModelNode <- xmlNode("MiningModel", attrs=c(modelName="RrsfModel",functionName="regression")) 
 
+  if (.supportTransformExport(transforms))
+  {
+    field <- .unifyTransforms(field, transforms)
+    transforms <- .activateDependTransforms(transforms)
+  }
   # MiningModel -> MiningSchema
-  miningModelNode <- append.XMLNode(miningModelNode, .pmmlMiningSchemaSurv(field, model$predictedName))
+  miningModelNode <- append.XMLNode(miningModelNode, .pmmlMiningSchemaSurv(field, model$predictedName, transformed=transforms))
+
+  #Tridi: If interaction terms do exist, define a product in LocalTransformations and use
+  # it as a model variable. This step is rare as randomForest seems to avoid multiplicative
+  # terms.
+  ltNode <- xmlNode("LocalTransformations")
+  interact <- FALSE
+  for(fld in 1:number.of.fields){
+    if(length(grep(":",field$name[fld])) == 1){
+     interact <- TRUE
+     drvnode <- xmlNode("DerivedField",attrs=c(name=field$name[fld],optype="continuous",dataType="double"))
+     applyNode <- xmlNode("Apply",attrs=c("function"="*"))
+     for(fac in 1:length(strsplit(field$name[fld],":")[[1]])){
+       fldNode <- xmlNode("FieldRef",attrs=c(field=strsplit(field$name[fld],":")[[1]][fac]))
+       if(length(grep("as\\.factor\\(",fldNode)) == 1)
+         fldNode <- gsub("as.factor\\((\\w*)\\)","\\1", fldNode, perl=TRUE)
+       applyNode <- append.XMLNode(applyNode, fldNode)
+     }
+     drvnode <- append.XMLNode(drvnode, applyNode)
+    }
+    if(interact)
+      ltNode <- append.XMLNode(ltNode, drvnode)
+  }
+  if(interact && is.null(transforms))
+    mmodel <- append.XMLNode(mmodel, ltNode)
+
+  # test of Zementis xform functions
+  if(interact && !is.null(transforms))
+  {
+    ltNode <- pmmlLocalTransformations(field, transforms, ltNode)
+    mmodel <- append.XMLNode(mmodel, ltNode)
+  }
+  if(!interact && !is.null(transforms))
+  {
+    mmodel <- append.XMLNode(mmodel,pmmlLocalTransformations(field, transforms, ltNode))
+  }
 
   # ensemble method
   segmentationNode <- xmlNode("Segmentation",
@@ -162,31 +203,32 @@ pmml.rsf <- function(model,
 
     # PMML --> TreeModel [b] -> MiningSchema
     
-    treeModelNode <- append.XMLNode(treeModelNode, .pmmlMiningSchemaSurv(field, model$predictedName))
+    treeModelNode <- append.XMLNode(treeModelNode, .pmmlMiningSchemaSurv(field, model$predictedName,NULL))
     
     # Global dependencies: (field$name, forest)
-  
-    ltNode <- xmlNode("LocalTransformations")
-    interact <- FALSE 
-    for(fld in 1:number.of.fields){
-      if(length(grep(":",field$name[fld])) == 1){
-       interact <- TRUE
-       drvnode <- xmlNode("DerivedField",attrs=c(name=field$name[fld],optype="continuous",
-                                                                 dataType="double"))
-       applyNode <- xmlNode("Apply",attrs=c("function"="*"))
-       for(fac in 1:length(strsplit(field$name[fld],":")[[1]])){
-         fldNode <- xmlNode("FieldRef",attrs=c(field=strsplit(field$name[fld],":")[[1]][fac]))
-         if(length(grep("as\\.factor\\(",fldNode)) == 1)
-           fldNode <- gsub("as.factor\\((\\w*)\\)","\\1", fldNode, perl=TRUE)
-         applyNode <- append.XMLNode(applyNode, fldNode) 
-       } 
-       drvnode <- append.XMLNode(drvnode, applyNode)
-      }
-      if(interact)
-        ltNode <- append.XMLNode(ltNode, drvnode)
-    }
-    if(interact)
-      treeModelNode <- append.XMLNode(treeModelNode, ltNode) 
+# Since different trees in the mining model cannot have different xformed field (7/12/2012)
+# there is no need to define the LocalTransformations in each tree
+#    ltNode <- xmlNode("LocalTransformations")
+#    interact <- FALSE 
+#    for(fld in 1:number.of.fields){
+#      if(length(grep(":",field$name[fld])) == 1){
+#       interact <- TRUE
+#       drvnode <- xmlNode("DerivedField",attrs=c(name=field$name[fld],optype="continuous",
+#                                                                 dataType="double"))
+#       applyNode <- xmlNode("Apply",attrs=c("function"="*"))
+#       for(fac in 1:length(strsplit(field$name[fld],":")[[1]])){
+#         fldNode <- xmlNode("FieldRef",attrs=c(field=strsplit(field$name[fld],":")[[1]][fac]))
+#         if(length(grep("as\\.factor\\(",fldNode)) == 1)
+#           fldNode <- gsub("as.factor\\((\\w*)\\)","\\1", fldNode, perl=TRUE)
+#         applyNode <- append.XMLNode(applyNode, fldNode) 
+#       } 
+#       drvnode <- append.XMLNode(drvnode, applyNode)
+#      }
+#      if(interact)
+#        ltNode <- append.XMLNode(ltNode, drvnode)
+#    }
+#    if(interact)
+#      treeModelNode <- append.XMLNode(treeModelNode, ltNode) 
     
     # Initialize the root node.  This differs from the rest of the
     # internal nodes in the PMML structure.

@@ -24,7 +24,8 @@
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{a coded list of transforms performed.}
+  \item{transforms}{a coded list of transforms performed, such as a WrapData object 
+			from the pmmlTransformations package}
 
   \item{\dots}{further arguments passed to or from other methods.}
 }

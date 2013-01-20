@@ -295,11 +295,11 @@ pmml.coxph <- function(model,
 
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field2))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field2,transformed=transforms))
 
   # PMML -> RegressionModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field2, target, inactive))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field2, target, inactive, transforms))
 
   # Tridi Zementis: Add output fields to output both hazard and survival
 
@@ -326,6 +326,12 @@ pmml.coxph <- function(model,
 
   if (.supportTransformExport(transforms))
     the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
+
+  # test of Zementis xform functions
+  if(!is.null(transforms))
+  {
+    the.model <- append.XMLNode(the.model, pmmlLocalTransformations(field, transforms))
+  }
 
  plNode <- xmlNode("ParameterList")
  num <- 0
@@ -467,8 +473,18 @@ pmml.coxph <- function(model,
       {
 	if(CumHazard$strata[j]==name)
 	{
-	  baseCell <- xmlNode("BaseLineCell",attrs=c(time=CumHazard$time[j],cumHazard=CumHazard$hazard[j]))
-	  stratumNode <- append.XMLNode(stratumNode,baseCell) 
+	 if(CumHazard$hazard[j] != Inf)
+	 {
+	  baseCell <- xmlNode("BaselineCell",attrs=c(time=CumHazard$time[j],cumHazard=CumHazard$hazard[j]))
+	  stratumNode <- append.XMLNode(stratumNode,baseCell)
+	 } else
+	 {
+	  baseCell <- xmlNode("BaselineCell",attrs=c(time=CumHazard$time[j],cumHazard=1.0E+10))
+	  stratumNode <- append.XMLNode(stratumNode,baseCell)
+	  warnNode <- xmlCommentNode("Cumulative Hazards approach Infinity after this time")
+	  stratumNode <- append.XMLNode(stratumNode,warnNode)
+	  break
+	 } 
 	}
       }
       baseTable <- append.XMLNode(baseTable,stratumNode) 
@@ -478,9 +494,19 @@ pmml.coxph <- function(model,
     baseTable <- xmlNode("BaseCumHazardTables",attrs=c(maxTime=CumHazard$time[numTime]))
     for(i in 1:length(CumHazard$time))
     {
-      baseCell <- xmlNode("BaselineCell",attrs=c(time=CumHazard$time[i],
+     if(CumHazard$hazard[i] != Inf)
+     {
+       baseCell <- xmlNode("BaselineCell",attrs=c(time=CumHazard$time[i],
                                                cumHazard=CumHazard$hazard[i]))
+       baseTable <- append.XMLNode(baseTable,baseCell)
+     } else
+     {
+      baseCell <- xmlNode("BaselineCell",attrs=c(time=CumHazard$time[i],cumHazard=1.0E+10))
       baseTable <- append.XMLNode(baseTable,baseCell)
+      warnNode <- xmlCommentNode("Cumulative Hazards approach Infinity after this time")
+      baseTable <- append.XMLNode(baseTable,warnNode)
+      break
+     }
     }
   }
   the.model<- append.XMLNode(the.model,baseTable) 

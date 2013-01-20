@@ -10,8 +10,15 @@
 
 }
 \usage{
-\method{pmml}{rsf}(model, model.name="rsfForest_Model", app.name="Rattle/PMML",
-     description="Random Survival Forest Tree Model", copyright, ...)
+
+\method{pmml}{rsf}(model,
+                   model.name="rsfForest_Model",
+                   app.name="Rattle/PMML",
+                   description="Random Survival Forest Tree Model",
+                   copyright=NULL,
+                   transforms=NULL,
+                   ...)
+
 }
 \arguments{
   
@@ -28,6 +35,8 @@
   
   \item{copyright}{the copyright notice for the model.}
 
+  \item{transforms}{transforms to represent within the PMML.}
+  
   \item{\dots}{further arguments passed to or from other methods.}
 }
 \details{

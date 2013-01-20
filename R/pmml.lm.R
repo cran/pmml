@@ -140,7 +140,7 @@ pmml.lm <- function(model,
 
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, weights=weights))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, weights=weights,transformed=transforms))
 
   # PMML -> RegressionModel
 
@@ -203,17 +203,22 @@ pmml.lm <- function(model,
 
   # PMML -> RegressionModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, inactive))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, inactive, transformed=transforms))
+
+  # PMML -> TreeModel -> Output
+
+  the.model <- append.XMLNode(the.model, .pmmlOutput(field, target))
 
   # PMML -> TreeModel -> LocalTransforms
 
   if (.supportTransformExport(transforms))
     the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
+  # test of Zementis xform functions
+  if(!is.null(transforms))
+  {
+    the.model <- append.XMLNode(the.model, pmmlLocalTransformations(field, transforms, NULL))
+  }
 
-  # PMML -> TreeModel -> Output
-
-  the.model <- append.XMLNode(the.model, .pmmlOutput(field, target))
-  
   # PMML -> RegressionModel -> RegressionTable
 
   coeff <- coefficients(model)

@@ -28,6 +28,7 @@ pmml.randomForest <- function(model,
                               app.name="Rattle/PMML",
                               description="Random Forest Tree Model",
                               copyright=NULL,
+			      transforms=NULL,
                               ...)
 
 {
@@ -91,10 +92,17 @@ pmml.randomForest <- function(model,
 
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field,transformed=transforms))
+
+
+  if (.supportTransformExport(transforms))
+  {
+    field <- .unifyTransforms(field, transforms)
+    transforms <- .activateDependTransforms(transforms)
+  }
 
   mmodel <- xmlNode("MiningModel",attrs=c(modelName=model.name,functionName=model$type))
-  mmodel <- append.XMLNode(mmodel,.pmmlMiningSchema(field, target))
+  mmodel <- append.XMLNode(mmodel,.pmmlMiningSchema(field, target,transformed=transforms))
 
   # Tridi Zementis: Add output fields
 #  output <- xmlNode("Output")
@@ -134,8 +142,21 @@ pmml.randomForest <- function(model,
     if(interact)
       ltNode <- append.XMLNode(ltNode, drvnode)
   }
-  if(interact)
+  if(interact && is.null(transforms))
+  {
     mmodel <- append.XMLNode(mmodel, ltNode)
+  }
+
+  # test of Zementis xform functions
+  if(interact && !is.null(transforms))
+  {
+    ltNode <- pmmlLocalTransformations(field, transforms, ltNode)
+    mmodel <- append.XMLNode(mmodel, ltNode)
+  }
+  if(!interact && !is.null(transforms))
+  {
+    mmodel <- append.XMLNode(mmodel,pmmlLocalTransformations(field, transforms, ltNode))
+  }
 
   if(model$type == "regression") 
   {
@@ -208,32 +229,36 @@ pmml.randomForest <- function(model,
 
   # PMML -> TreeModel -> MiningSchema
 
-  tree.model <- append.XMLNode(tree.model, .pmmlMiningSchemaRF(field, target))
+#  tree.model <- append.XMLNode(tree.model, .pmmlMiningSchemaRF(field, target, transformed=transforms))
+  tree.model <- append.XMLNode(tree.model, .pmmlMiningSchemaRF(field, target, NULL))
 
-    ltNode <- xmlNode("LocalTransformations")
-    interact <- FALSE
-    for(fld in 1:number.of.fields)
-    {
-      if(length(grep(":",field$name[fld])) == 1)
-      {
-       interact <- TRUE
-       drvnode <- xmlNode("DerivedField",attrs=c(name=field$name[fld],optype="continuous",
-                                                                 dataType="double"))
-       applyNode <- xmlNode("Apply",attrs=c("function"="*"))
-       for(fac in 1:length(strsplit(field$name[fld],":")[[1]]))
-       {
-         fldNode <- xmlNode("FieldRef",attrs=c(field=strsplit(field$name[fld],":")[[1]][fac]))
-         if(length(grep("as\\.factor\\(",fldNode)) == 1)
-           fldNode <- gsub("as.factor\\((\\w*)\\)","\\1", fldNode, perl=TRUE)
-         applyNode <- append.XMLNode(applyNode, fldNode)
-       }
-       drvnode <- append.XMLNode(drvnode, applyNode)
-      }
-      if(interact)
-        ltNode <- append.XMLNode(ltNode, drvnode)
-    }
-    if(interact)
-      tree.model <- append.XMLNode(tree.model, ltNode)
+# Since different trees in the mining model cannot have different xformed field (7/12/2012)
+# there is no need to define the LocalTransformations in each tree
+#
+#    ltNode <- xmlNode("LocalTransformations")
+#    interact <- FALSE
+#    for(fld in 1:number.of.fields)
+#    {
+#      if(length(grep(":",field$name[fld])) == 1)
+#      {
+#       interact <- TRUE
+#       drvnode <- xmlNode("DerivedField",attrs=c(name=field$name[fld],optype="continuous",
+#                                                                 dataType="double"))
+#       applyNode <- xmlNode("Apply",attrs=c("function"="*"))
+#       for(fac in 1:length(strsplit(field$name[fld],":")[[1]]))
+#       {
+#         fldNode <- xmlNode("FieldRef",attrs=c(field=strsplit(field$name[fld],":")[[1]][fac]))
+#         if(length(grep("as\\.factor\\(",fldNode)) == 1)
+#           fldNode <- gsub("as.factor\\((\\w*)\\)","\\1", fldNode, perl=TRUE)
+#         applyNode <- append.XMLNode(applyNode, fldNode)
+#       }
+#       drvnode <- append.XMLNode(drvnode, applyNode)
+#      }
+#      if(interact)
+#        ltNode <- append.XMLNode(ltNode, drvnode)
+#    }
+#    if(interact)
+#      tree.model <- append.XMLNode(tree.model, ltNode)
 
   # Add to the top level structure.
      segment <- xmlNode("Segment",attrs=c(id=b))

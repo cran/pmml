@@ -157,7 +157,7 @@ pmml.glm <- function(model,
 
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, weights=weights))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, weights=weights, transformed=transforms))
 
 # determine the distribution and link function to add. quasi distributions cannot be
 #  listed. Certain link functions are not supported and an error must be thrown. Certain
@@ -286,7 +286,7 @@ pmml.glm <- function(model,
 
   # PMML -> RegressionModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, inactive))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, inactive, transforms))
 
   if(categ)
   {
@@ -309,6 +309,11 @@ pmml.glm <- function(model,
   if (.supportTransformExport(transforms))
     the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
 
+  # test of Zementis xform functions
+  if(!is.null(transforms))
+  {
+    the.model <- append.XMLNode(the.model, pmmlLocalTransformations(field, transforms))
+  }
 
  plNode <- xmlNode("ParameterList")
  num <- 0

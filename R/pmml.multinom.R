@@ -110,7 +110,7 @@ pmml.multinom <- function(model,
   
   # PMML -> DataDictionary
   
-  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, NULL, NULL, transforms))
 
   # PMML -> RegressionModel
 
@@ -124,7 +124,7 @@ pmml.multinom <- function(model,
 
   # PMML -> RegressionModel -> MiningSchema
   
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, NULL, transforms))
 
   #########################################
   #  OUTPUT
@@ -141,6 +141,7 @@ pmml.multinom <- function(model,
   # PMML -> RegressionModel -> RegressionTable
   
   coeff <- coefficients(model)
+
   # Handle special binary case
   if(length(model$lev) == 2)
   {
@@ -193,8 +194,21 @@ pmml.multinom <- function(model,
       }
     } 
   }
-  if(LTAdd)
+
+  append <- FALSE
+  if(LTAdd && !is.null(transforms))
+  {
+    LTNode <- pmmlLocalTransformations(field, transforms, LTNode)
     the.model <- append.XMLNode(the.model,LTNode)
+  }
+  if(LTAdd && is.null(transforms)) 
+  {
+    the.model <- append.XMLNode(the.model,LTNode) 
+  }
+  if(!LTAdd && !is.null(transforms))
+  {
+  the.model <- append.XMLNode(the.model,pmmlLocalTransformations(field, transforms, LTNode))
+  }
 
   for (k in 1:nrow(coeff))
   {
@@ -206,15 +220,16 @@ pmml.multinom <- function(model,
     {
     name <- coeffnames[j]
       if (name == target) next
-    if(length(grep(".+:.+",name)) == 1){
+    if(length(grep(".+:.+",name)) == 1)
+    {
     } else if(length(grep("^as.factor\\(", name))==1) 
-      {
+    {
     } else 
     {
 # all numeric factors
       for (i in 2:length(orig.names))
       {
-        if((field$class[[field$name[i]]]=="numeric") && length(grep(field$name[i],name)==1))
+        if((field$class[[field$name[i]]]=="numeric") && field$name[i]==name)
         {
           predictor.node <- xmlNode("NumericPredictor",
                                    attrs=c(name=name,exponent="1",

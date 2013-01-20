@@ -12,7 +12,9 @@
 \usage{
 \method{pmml}{randomForest}(model, model.name="randomForest_Model",
      app.name="Rattle/PMML",
-     description="Random Forest Tree Model", copyright = NULL, ...)
+     description="Random Forest Tree Model",
+     copyright = NULL,
+     transforms = NULL, ...)
 }
 \arguments{
   
@@ -28,6 +30,8 @@
   
   \item{copyright}{the copyright notice for the model.}
 
+  \item{transforms}{transforms to represent within the PMML.}
+  
   \item{\dots}{further arguments passed to or from other methods.}
 }
 \details{

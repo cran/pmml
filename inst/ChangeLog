@@ -1,4 +1,4 @@
-rattle (1.2.28) unstable; urgency=low
+pmml (1.2.32) unstable; urgency=low
 
   * Updates to pmml.arules from Michael Hahsler.
   
@@ -9,7 +9,16 @@ rattle (1.2.28) unstable; urgency=low
   
   * Small changes to pmml.lm to support UTF-8/Japanese.
   
- -- 
+  * Fix spelling error in DESCRIPTION - CRAN check found it.
+  
+  * Various updates from Zementis to the randomForest schema.  All the
+    mining schemas in each segment of the random forest now also output
+    the attribute invalidValueTreatment as asis.
+  
+  * Change standard to have an R file per exported function, and all
+    internal functions begin with .
+  
+ -- Graham Williams <Graham.Williams@togaware.com>  Sun, 09 Dec 2012 22:28:00 +1100
 
 rattle (1.2.27) unstable; urgency=low
   

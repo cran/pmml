@@ -251,13 +251,36 @@ pmml.ksvm <- function(model,
     endPos <- (length(tempName[[1]]) - 1)
     target <- substring(target,11,endPos)
   }
-  
-  for (i in 1:number.of.fields)
+
+
+  if (field$class[[field$name[1]]] == "factor")
+      field$levels[[field$name[1]]] <- model@lev
+
+  for (i in 2:number.of.fields)
   {
+    lev <- NULL
     if (field$class[[field$name[i]]] == "factor")
-      field$levels[[field$name[i]]] <- model@lev
+    {
+     dlevel <- unique(dataset[field$name[i]])
+     for(j in 1:nrow(dlevel))
+     {
+      lev <- c(lev,as.character(dlevel[j,1]))
+     }
+     field$levels[[field$name[i]]] <- lev
+    }
   }
+
+
+##########################################
   
+#  for (i in 1:number.of.fields)
+#  {
+#    if (field$class[[field$name[i]]] == "factor")
+#      field$levels[[field$name[i]]] <- model@lev
+#  }
+ 
+####################################  
+
   # PMML
 
   pmml <- .pmmlRootNode("4.1")
@@ -267,8 +290,8 @@ pmml.ksvm <- function(model,
   pmml <- append.XMLNode(pmml, .ksvm.Header(description, copyright, app.name))
 
   # PMML -> DataDictionary
-  
-  pmml <- append.XMLNode(pmml, .ksvm.DataDictionary(field, dataset, weights=weights))
+ 
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, dataset, weights=weights, transformed=transforms))
   
   # PMML -> SupportVectorMachineModel
   
@@ -294,7 +317,7 @@ pmml.ksvm <- function(model,
 
   field$name[1] <- target
   ksvm.model <- append.XMLNode(ksvm.model,
-                               .ksvm.MiningSchema(field, target))
+                               .pmmlMiningSchema(field, target, NULL, transformed=transforms))
 
   # Output 
   ksvm.model <- append.XMLNode(ksvm.model, .pmmlOutput(field, target))  
@@ -326,6 +349,13 @@ pmml.ksvm <- function(model,
   #
   # LocalTransformations are necessary to scale x and y and make data
   # compatible with ksvm's algorithm (pre-processing)
+
+
+  if (.supportTransformExport(transforms))
+  {
+    field <- .unifyTransforms(field, transforms)
+    transforms <- .activateDependTransforms(transforms)
+  }
   
   number.of.data.names <- length(names(dataset))
 
@@ -336,6 +366,13 @@ pmml.ksvm <- function(model,
   }
   
   LocalTransformations <- xmlNode("LocalTransformations")
+ 
+  # test of Zementis xform functions
+  if(!is.null(transforms))
+  {
+    LocalTransformations <- pmmlLocalTransformations(field, transforms, LocalTransformations)
+  }
+
   for (i in 1:number.of.labels)
   {
     if (field$class[[field$name[i+1]]] == "factor")
@@ -418,7 +455,7 @@ pmml.ksvm <- function(model,
   # Support PMML Kernel Functions
   # PMML -> SupportVectorMachineMode -> KernelTypeNode
   
-  if (length(model@kcall) < 4)
+  if (is.null(model@kcall[["kernel"]]))
   {
     KernelTypeNode <- xmlNode("RadialBasisKernelType",
                               attrs=c(gamma=model@kernelf@kpar$sigma,
@@ -426,13 +463,13 @@ pmml.ksvm <- function(model,
   }
   else
   {
-    if (model@kcall[[4]] == "rbfdot")
+    if (model@kcall[["kernel"]] == "rbfdot")
     {
       KernelTypeNode <- xmlNode("RadialBasisKernelType",
                                 attrs=c(gamma=model@kernelf@kpar$sigma,
                                   description="Radial basis kernel type"))
     }
-    else if (model@kcall[[4]] == "polydot")
+    else if (model@kcall[["kernel"]] == "polydot")
     {
       KernelTypeNode <- xmlNode("PolynomialKernelType",
                                 attrs=c(gamma=model@kernelf@kpar$scale,
@@ -440,12 +477,12 @@ pmml.ksvm <- function(model,
                                   degree=model@kernelf@kpar$degree,
                                   description="Polynomial kernel type"))
     }
-    else if (model@kcall[[4]] == "vanilladot")
+    else if (model@kcall[["kernel"]] == "vanilladot")
     {
       KernelTypeNode <- xmlNode("LinearKernelType",
                                 attrs=c(description="Linear kernel type"))
     }
-    else if (model@kcall[4] == "tanhdot")
+    else if (model@kcall[["kernel"]] == "tanhdot")
     {
       KernelTypeNode <- xmlNode("SigmoidKernelType",
                                 attrs=c(gamma=model@kernelf@kpar$scale,

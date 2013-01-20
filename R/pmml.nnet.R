@@ -357,7 +357,7 @@ pmml.nnet <- function(model,
   
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field,transformed=transforms))
   #091206 REMOVE pmml <- append.XMLNode(pmml, pmml.nnet.DataDictionary(field))
 
   # PMML -> NeuralNetwork
@@ -399,7 +399,7 @@ pmml.nnet <- function(model,
 #    target <- substring(target,11,endPos)
 #  }
 
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target,transformed=transforms))
   #091206 REMOVE the.model <- append.XMLNode(the.model, pmml.nnet.MiningSchema(field, target))
   
   #  PMML -> NeuralNetwork -> Output
@@ -410,6 +410,12 @@ pmml.nnet <- function(model,
 
   if (.supportTransformExport(transforms))
     the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
+
+  # test of Zementis xform functions
+  if(!is.null(transforms))
+  {
+    the.model <- append.XMLNode(the.model, pmmlLocalTransformations(field, transforms, NULL))
+  }
   
   # PMML -> NeuralNetwork -> NeuralInputs
   
