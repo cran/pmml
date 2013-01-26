@@ -1,6 +1,6 @@
-3e83573bcb7a5b7d417712fe9f0a7314 *DESCRIPTION
+6e264ec06f169d4722f0318e221f8a5a *DESCRIPTION
 8b54e5a89fbda3af5e077053d40bec76 *NAMESPACE
-e82f1cfcb6dfb39b83227e9befeea6cd *R/pmml.R
+1243e85f998651f9b2bd78175a4d7c7b *R/pmml.R
 5e4159c0808c8b089ef6ce94b62a85d4 *R/pmml.coxph.R
 51fca12570f89a45461854ab4efd63bb *R/pmml.glm.R
 b5c9c0309c4a553f43bba39209438278 *R/pmml.hclust.R
@@ -24,7 +24,7 @@ e06af3f3b325d49d960637112e971ccc *man/pmml.arules.Rd
 cdfc5a1ed1a2aba25bf4aad4b3521cd2 *man/pmml.glm.Rd
 2317f83407f90a1bdb42a22ee5576e29 *man/pmml.hclust.Rd
 d1ff840387f64e78e3a2400ae7507c8a *man/pmml.kmeans.Rd
-83fd0d1323989b2473eda3cced6ccb67 *man/pmml.ksvm.Rd
+1155eaad00952e30adbae63462477c48 *man/pmml.ksvm.Rd
 2573f752aa26396659f528a4d861b862 *man/pmml.lm.Rd
 8dbfbfc6a8e19adf4600f6a9213b029c *man/pmml.multinom.Rd
 01a029f7091088fb9021d9ea805c557c *man/pmml.nnet.Rd

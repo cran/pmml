@@ -2,7 +2,7 @@
 #
 # Part of the Rattle package for Data Mining
 #
-# Time-stamp: <2013-01-19 17:16:35 Graham Williams>
+# Time-stamp: <2013-01-26 07:59:38 Graham Williams>
 #
 # Copyright (c) 2009-2012 Togaware Pty Ltd
 #
@@ -123,9 +123,9 @@ pmml <- function(model,
 {
   # Header
   
-  VERSION <- "1.2.33"
-  DATE <- "2013-01-20"
-  REVISION <- "22"
+  VERSION <- "1.2.34"
+  DATE <- "2013-01-26"
+  REVISION <- "27"
 
   if (is.null(copyright)) copyright <- .generateCopyright()
   header <- xmlNode("Header",
@@ -146,7 +146,7 @@ pmml <- function(model,
 
   header <- append.XMLNode(header, xmlNode("Application",
                                            attrs=c(name=app.name,
-                                             version=paste0(VERSION, "r", REVISION))))
+                                             version=paste(VERSION, "r", REVISION, sep=""))))
 
   # Header -> Timestamp
 						   

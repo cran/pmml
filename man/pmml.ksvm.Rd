@@ -64,14 +64,14 @@
   \code{\link[kernlab]{ksvm}}.
 }
 \examples{
-# Train a support vector machine to perform binary classification.
-require(kernlab)
-data(spam)
-index <- sample(1:dim(spam)[1])
-ds <- spam[index[1:300],] # For illustration only use a small dataset.
-fit <- ksvm(type~., data=ds, kenrel="rbfdot")
+# Train a support vector machine to perform classification.
 
-# Genetate the PMML.
-pmml(fit, dataset=ds)
+require(kernlab)
+model  <- ksvm(Species ~ ., data=iris)
+p <- pmml(model, dataset=iris)
+
+# Save to file.
+
+\dontrun{saveXML(p, "iris_svm.xml")}
 }
 \keyword{interface}
