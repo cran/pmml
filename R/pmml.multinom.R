@@ -1,25 +1,24 @@
-# PMML: Predictive Modelling Markup Language
+# PMML: Predictive Model Markup Language
 #
-# Part of the Rattle package for Data Mining
+# This part of the pmml package handles multinomial regreaaion models
 #
-# Time-stamp: <2012-12-04 06:09:04 Graham Williams>
+# Time-stamp: <2013-06-05 19:48:25 Tridivesh Jena>
 #
-# Copyright (c) 2009 Togaware Pty Ltd
+# Copyright (c) 2013 Zementis, Inc.
 #
-# This files is part of the Rattle suite for Data Mining in R.
+# This file is part of the pmml package.
 #
-# Rattle is free software: you can redistribute it and/or modify it
+# The pmml package is free: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
 # (at your option) any later version.
 #
-# Rattle is distributed in the hope that it will be useful, but
+# The pmml package is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# To review the GNU General Public License see <http://www.gnu.org/licenses/>
 
 ########################################################################
 # multinom PMML exporter

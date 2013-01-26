@@ -1,32 +1,30 @@
-# PMML: Predictive Modelling Markup Language
+# PMML: Predictive Model Markup Language
 #
-# Part of the Rattle package for Data Mining
+# This part of the pmml package handles random survival forest models
 #
-# Time-stamp: <2008-06-21 14:50:31 Graham Williams>
+# Time-stamp: <2013-06-05 19:48:25 Tridivesh Jena>
 #
-# Copyright (c) 2009 Togaware Pty Ltd
+# Copyright (c) 2013 Zementis, Inc.
 #
-# This files is part of the Rattle suite for Data Mining in R.
+# This file is part of the pmml package.
 #
-# Rattle is free software: you can redistribute it and/or modify it
+# The pmml package is free: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
 # (at your option) any later version.
 #
-# Rattle is distributed in the hope that it will be useful, but
+# The pmml package is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
-
+# To review the GNU General Public License see <http://www.gnu.org/licenses/>
 ########################################################################
 
-pmml.rsf <- function(model,
-                     model.name="rsfForest_Model",
+pmml.rfsrc <- function(model,
+                     model.name="rsf_Model",
                      app.name="Rattle/PMML",
-                     description="Random Survival Forest Tree Model",
+                     description="Random Survival Forest Model",
                      copyright=NULL,
 		     transforms=NULL, ...)
 {
@@ -41,13 +39,13 @@ pmml.rsf <- function(model,
   #    stop("Not a legitimate (rsf, forest) object")
 
   require(XML, quietly=TRUE)
-  require(randomSurvivalForest, quietly=TRUE)
+#  require(randomForestSRC, quietly=TRUE)
 
   # Collect the required information.
 
   field <- NULL
 
-  field$name <- model$predictorNames
+  field$name <- model$xvar.names
   if (is.null(field$name))
     stop("RSF predictorNames is NULL.  Please ensure the object is valid.")
   number.of.fields <- length(field$name)
@@ -58,14 +56,16 @@ pmml.rsf <- function(model,
   nativeArray <- model$forest$nativeArray
   if (is.null(nativeArray))
     stop("RSF nativeArray content is NULL. Please ensure object is valid.")
-    
+  if(length(nativeArray[nativeArray[,"mwcpSZ"]!=0,"mwcpSZ"]) != 0)
+   stop("Categorical predictor variables not yet supported for randomForestSRC models.")
+  
   numTrees <- length(as.vector(unique(nativeArray$treeID))) # Trees in forest
   
-  timeInterest = model$timeInterest
+  timeInterest = model$time.interest
   if (is.null(timeInterest))
     stop("RSF timeInterest content is NULL. Please ensure object is valid.")
 
-  formula = model$formula
+  formula = model$call
   if (is.null(formula))
     stop("RSF formula is NULL.  Please ensure the object is valid.")
 
@@ -81,43 +81,32 @@ pmml.rsf <- function(model,
 
   pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
 
-  # PMML -> MiningBuildTask
-
-  buildNode <- xmlNode("MiningBuildTask")
-
-  # PMML -> MiningBuildTask -> Extension
-  
-  extensionNode <- xmlNode("Extension")
-
-  # PMML -> MiningBuildTask -> Extension -> X-RSF-Formula
-
-  extensionNode <- append.XMLNode(extensionNode,
-                                  xmlNode("X-RSF-Formula",
-                                          attrs=c(name=formula)))
-
-  # PMML -> MiningBuildTask -> Extension -> X-RSF-BootstrapSeeds -> Array
-    
-  extensionNode <- append.XMLNode(extensionNode, 
-                                  xmlNode("X-RSF-ForestSeed", 
-                                          attrs=c(value=forestSeed)))
-
-  # PMML -> MiningBuildTask -> Extension -> TimesOfInterest
-
-  extensionNode <- append.XMLNode(extensionNode, 
-                                  xmlNode("X-RSF-TimesOfInterest", 
-                                          xmlNode("Array", 
-                                                  attrs=c(type="double",
-                                                    n=length(timeInterest)), 
-                                                  paste(timeInterest,
-                                                        collapse="  \n  "))))
-  
-  # Add into the PMML.
-
-  pmml <- append.XMLNode(pmml, append.XMLNode(buildNode, extensionNode))
+#  # PMML -> MiningBuildTask
+#
+#  buildNode <- xmlNode("MiningBuildTask")
+#
+#  # PMML -> MiningBuildTask -> Extension
+# 
+#  extensionNode <- xmlNode("Extension")
+#
+#  # PMML -> MiningBuildTask -> Extension -> TimesOfInterest
+#  timeVar <- colnames(model$yvar)[1]
+#  tnode <- append.XMLNode(extensionNode, xmlNode("TimeVariable", attrs=c(name=timeVar)))
+#
+##  extensionNode <- append.XMLNode(extensionNode, 
+##                             xmlNode("Array", attrs=c(n=length(timeInterest), 
+##                                     type="double"),paste(timeInterest, collapse="  \n  ")))
+#  extensionNode <- append.XMLNode(extensionNode,
+#                             xmlNode("Array", attrs=c(n=length(timeInterest),               
+#                                     type="double"),paste(timeInterest,collapse=" ")))
+# 
+## Add into the PMML.
+#
+#  pmml <- append.XMLNode(pmml, append.XMLNode(buildNode, extensionNode))
   
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, .pmmlDataDictionarySurv(field, model$predictedName, transformed=transforms))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionarySurv(field, timeName=model$yvar.names[1], statusName=model$yvar.names[2], dataset=NULL,weights=NULL, transformed=transforms))
   
   # Create a dummy XML node object to insert into the recursive
   # output object.
@@ -144,7 +133,7 @@ pmml.rsf <- function(model,
     transforms <- .activateDependTransforms(transforms)
   }
   # MiningModel -> MiningSchema
-  miningModelNode <- append.XMLNode(miningModelNode, .pmmlMiningSchemaSurv(field, model$predictedName, transformed=transforms))
+  miningModelNode <- append.XMLNode(miningModelNode, .pmmlMiningSchemaSurv(field, timeName=model$yvar.names[1], statusName=model$yvar.names[2], target=NULL, inactive=NULL, transformed=transforms))
 
   #Tridi: If interaction terms do exist, define a product in LocalTransformations and use
   # it as a model variable. This step is rare as randomForest seems to avoid multiplicative
@@ -184,7 +173,20 @@ pmml.rsf <- function(model,
   # ensemble method
   segmentationNode <- xmlNode("Segmentation",
 			attrs=c(multipleModelMethod="average"))
-#  miningModelNode <- append.XMLNode(miningModelNode,segmentationNode)
+
+  # Survival times 
+  extensionNode <- xmlNode("Extension")
+
+  # PMML -> MiningModel -> Segmentation -> Extension -> TimesOfInterest
+  timeVar <- colnames(model$yvar)[1]
+  tnode <- append.XMLNode(extensionNode, xmlNode("TimeVariable", attrs=c(name=timeVar)))
+
+  extensionNode <- append.XMLNode(extensionNode,
+                             xmlNode("Array", attrs=c(n=length(timeInterest),
+                                     type="double"),paste(timeInterest,collapse=" ")))
+
+  # Add into the PMML.
+  segmentationNode <- append.XMLNode(segmentationNode, extensionNode)
   
   # Loop through all trees in the forest and extract the data.
 
@@ -199,41 +201,17 @@ pmml.rsf <- function(model,
     treeModelNode <- xmlNode("TreeModel",
                              attrs=c(modelName=treeName, functionName="regression",
                                algorithmName="rsf",
-                               splitCharacteristic="multiSplit"))
+                               splitCharacteristic="binarySplit"))
 
     # PMML --> TreeModel [b] -> MiningSchema
     
-    treeModelNode <- append.XMLNode(treeModelNode, .pmmlMiningSchemaSurv(field, model$predictedName,NULL))
+    treeModelNode <- append.XMLNode(treeModelNode, .pmmlMiningSchemaSurv(field, timeName=model$yvar.names[1], statusName=model$yvar.names[2], NULL))
     
-    # Global dependencies: (field$name, forest)
-# Since different trees in the mining model cannot have different xformed field (7/12/2012)
-# there is no need to define the LocalTransformations in each tree
-#    ltNode <- xmlNode("LocalTransformations")
-#    interact <- FALSE 
-#    for(fld in 1:number.of.fields){
-#      if(length(grep(":",field$name[fld])) == 1){
-#       interact <- TRUE
-#       drvnode <- xmlNode("DerivedField",attrs=c(name=field$name[fld],optype="continuous",
-#                                                                 dataType="double"))
-#       applyNode <- xmlNode("Apply",attrs=c("function"="*"))
-#       for(fac in 1:length(strsplit(field$name[fld],":")[[1]])){
-#         fldNode <- xmlNode("FieldRef",attrs=c(field=strsplit(field$name[fld],":")[[1]][fac]))
-#         if(length(grep("as\\.factor\\(",fldNode)) == 1)
-#           fldNode <- gsub("as.factor\\((\\w*)\\)","\\1", fldNode, perl=TRUE)
-#         applyNode <- append.XMLNode(applyNode, fldNode) 
-#       } 
-#       drvnode <- append.XMLNode(drvnode, applyNode)
-#      }
-#      if(interact)
-#        ltNode <- append.XMLNode(ltNode, drvnode)
-#    }
-#    if(interact)
-#      treeModelNode <- append.XMLNode(treeModelNode, ltNode) 
     
     # Initialize the root node.  This differs from the rest of the
     # internal nodes in the PMML structure.
 
-    treeRoot <- xmlNode("Node", attrs=c(score=0,id=recursiveOutput$offset))
+    treeRoot <- xmlNode("Node", attrs=c(score=0,id=0))
     treeRoot <- append.XMLNode(treeRoot, xmlNode("True"))
     
     rootParmID <- nativeArray$parmID[recursiveOutput$offset] 
@@ -246,6 +224,66 @@ pmml.rsf <- function(model,
 
     if (rootParmID != 0)
     {
+      # find scored values
+      member <- model$membership[,b]
+      inbag <- model$inbag[,b]
+      y0 <- model$yvar
+      numNodes <- max(member)
+      numData <- nrow(y0)
+      #initialize array to hold chf data
+      numtimes <- length(model$time.interest)
+      nodescores <- vector("list",numNodes)
+
+      for(node in 1:numNodes)
+      {
+        scorematrix <- matrix(0,numtimes,2)
+        scorematrix[,1] <- model$time.interest
+
+        bag1 <- inbag[member==node]
+        y1 <- y0[member==node,]
+
+        #check if number of inbag info equals number of data points
+        sz <- length(bag1)
+        if(sz != nrow(y1))
+        {
+          stop("Inconsistent data; inbag values information not complete. Please contact Technical Support.")
+        }
+
+        nelsonAalen <- 0
+
+        # Yinint = total population in the node
+        Yinit <- sum(bag1)
+
+        # get inbag only data in time order
+        bag2 <- bag1[bag1 != 0]
+        y2 <- y1[bag1 != 0,]
+        ybag1 <- cbind(y2,bag2)
+        y <- ybag1[order(ybag1[,1]),]
+        colnames(y) <- c("time","status","numInbag")
+     
+        for(bdat in 1:nrow(y))
+        {
+          nelsonAalen = nelsonAalen + (y[bdat,"status"]*y[bdat,"numInbag"]/Yinit)
+          tindex <- which(scorematrix[,1] == y[bdat,"time"])
+          scorematrix[tindex,2] <- nelsonAalen
+          if(y[bdat,"status"] == 1)
+          {
+            Yinit = Yinit - y[bdat,"numInbag"]
+          }
+        }
+
+        #fill up the rest of the chf matrix
+        for(sindex in 2:numtimes)
+        {
+          if(scorematrix[sindex,2] == 0)
+          {
+            scorematrix[sindex,2] <- scorematrix[sindex-1,2]
+          }
+        }
+
+        nodescores[[node]] <- scorematrix
+      }
+
       # The tree must be created in two phases.  First, the root left
       # daughter branches are created.  Second, the root right
       # daughter branches are created.  This is due to the root node
@@ -261,10 +299,10 @@ pmml.rsf <- function(model,
       recursiveOutput$internalNode <- NULL
       recursiveOutput <- .rsfMakeTree(recursiveOutput, nativeArray,
                                      field$name, b, -1, rootParmID,
-                                     rootSpltPT,model)
+                                     rootSpltPT,model,nodescores)
       
       treeRoot <- append.XMLNode(treeRoot, recursiveOutput$internalNode)
-      
+     
       recursiveOutput$leafCount <- recursiveOutput$leafCount + 1
       
       # Create the right daughter nodes.  Note that the object node
@@ -273,10 +311,10 @@ pmml.rsf <- function(model,
       recursiveOutput$internalNode <- NULL
       recursiveOutput <- .rsfMakeTree(recursiveOutput, nativeArray,
                                      field$name, b, +1, rootParmID,
-                                     rootSpltPT,model)
+                                     rootSpltPT,model,nodescores)
       
       treeRoot <- append.XMLNode(treeRoot, recursiveOutput$internalNode)
-      
+     
     }
     
     # Add the current tree to the PMML data structure.
@@ -291,8 +329,8 @@ pmml.rsf <- function(model,
   return (pmml)
 }
 
-.rsfMakeTree <- function(recursiveObject, nativeArray, predictorNames,
-                        b, daughter, splitParameter, splitValue, model)
+.rsfMakeTree <- function(recursiveObject, nativeArray, predictorNames, b,
+                      daughter, splitParameter, splitValue, model, nodescores)
 {
   # Node information encoded in a PMML TreeModel follows a slightly
   # different protocol than that encoded in our RSF matrix
@@ -322,19 +360,25 @@ pmml.rsf <- function(model,
   fwdSplitValue <- nativeArray$contPT[recursiveObject$offset]
 
   # Create the node that will be returned on this call.
-  ident <- recursiveObject$offset
+  ident <- nativeArray$nodeID[recursiveObject$offset]
   if (fwdSplitParameter == 0)
   {
-    rsfNode <- xmlNode("Node",attrs=c(id=ident))
+    scorelist <- nodescores[[ident]]
+    extensionNode <- xmlNode("Extension")
+    extensionNode <- append.XMLNode(extensionNode,
+                             xmlNode("Array", attrs=c(n=length(scorelist[,2]),
+                                     type="double"),paste(scorelist[,2],collapse=" ")))
+    rsfNode <- xmlNode("Node",attrs=c(score="HazardFunction",id=ident))
+    rsfNode <- append.xmlNode(rsfNode,extensionNode)
     terminalFlag <- TRUE
   }
   else if (fwdSplitParameter != 0)
   {
-    rsfNode <- xmlNode("Node",attrs=c(id=ident))
+    rsfNode <- xmlNode("Node")
  
     terminalFlag <- FALSE
   }
-   
+  
   # Determine whether this the left of right daughter.
 
   if (daughter == -1)
@@ -350,6 +394,7 @@ pmml.rsf <- function(model,
   pName <- predictorNames[splitParameter]
   if(length(grep("as\\.factor\\(",predictorNames[splitParameter])) == 1)
     pName <- gsub("as.factor\\((\\w*)\\)","\\1", predictorNames[splitParameter], perl=TRUE)
+
   rsfNode <- append.XMLNode(rsfNode,
                             xmlNode("SimplePredicate",
                                   attrs=c(field=pName,
@@ -358,45 +403,6 @@ pmml.rsf <- function(model,
   # Increment the offset, always.
 
   recursiveObject$offset <- recursiveObject$offset + 1
-
-  # Add nodes with time information
-
-  if (terminalFlag == TRUE)
-  {
-    timeIntLength <- length(model$timeInterest)
-    leafMaxLength <- length(model$time)
-    treeJump <- timeIntLength * leafMaxLength
-    node <- nativeArray$nodeID[ident]
-    for(t in 1:timeIntLength)
-    {
-      nident <- paste(ident,t,sep="")
-      if(t == 1)
-      {
-        nNode <- xmlNode("Node",attrs=c(score=model$cumHazard[((b-1)*treeJump)+node],id=nident))
-        sPred <- xmlNode("SimplePredicate",attrs=c(field=model$predictedName,operator="lessOrEqual",value=model$timeInterest[t]))
-        nNode <- append.XMLNode(nNode,sPred)
-        rsfNode <- append.XMLNode(rsfNode,nNode)
-      }
-      else if(t == timeIntLength)
-      {
-        nNode <- xmlNode("Node",attrs=c(score=model$cumHazard[((b-1)*treeJump)+((t-1)*leafMaxLength)+node],id=nident))
-        sPred <- xmlNode("SimplePredicate",attrs=c(field=model$predictedName,operator="greaterThan",value=model$timeInterest[t-1]))
-        nNode <- append.XMLNode(nNode,sPred)
-        rsfNode <- append.XMLNode(rsfNode,nNode)
-      }
-      else
-      { 
-        nNode <- xmlNode("Node",attrs=c(score=model$cumHazard[((b-1)*treeJump)+((t-1)*leafMaxLength)+node],id=nident))
-        cPred <- xmlNode("CompoundPredicate",attrs=c(booleanOperator="and"))
-        sPred1 <- xmlNode("SimplePredicate",attrs=c(field=model$predictedName,operator="greaterThan",value=model$timeInterest[t-1]))
-        sPred2 <- xmlNode("SimplePredicate",attrs=c(field=model$predictedName,operator="lessOrEqual",value=model$timeInterest[t]))
-        cPred <- append.XMLNode(cPred,sPred1)
-        cPred <- append.XMLNode(cPred,sPred2)
-        nNode <- append.XMLNode(nNode,cPred)
-        rsfNode <- append.XMLNode(rsfNode,nNode)
-      }
-    }
-  }
 
   # Parse left and then right, if this is not a terminal node.
 
@@ -409,7 +415,7 @@ pmml.rsf <- function(model,
     recursiveObject$internalNode <- NULL
     recursiveObject <- .rsfMakeTree(recursiveObject, nativeArray,
                                    predictorNames, b, daughter = -1,
-                                   fwdSplitParameter, fwdSplitValue, model)
+                                   fwdSplitParameter, fwdSplitValue, model,nodescores)
     
     rsfNode <- append.XMLNode(rsfNode, recursiveObject$internalNode)
     
@@ -421,7 +427,7 @@ pmml.rsf <- function(model,
     recursiveObject$internalNode <- NULL
     recursiveObject <- .rsfMakeTree(recursiveObject, nativeArray,
                                    predictorNames, b, daughter = +1,
-                                   fwdSplitParameter, fwdSplitValue, model)
+                                   fwdSplitParameter, fwdSplitValue, model,nodescores)
     
     rsfNode <- append.XMLNode(rsfNode, recursiveObject$internalNode)
     

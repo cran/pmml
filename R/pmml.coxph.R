@@ -100,8 +100,9 @@ pmml.coxph <- function(model,
   # Tridi Zementis: Include startTime, endTime, status and strata variable if present
   isStrata <- FALSE
   starttimeVar <- FALSE
-  endtimeVar <- 0
-  statusVar <- NULL 
+  endtimeVar <- "" 
+  statusVar <- "" 
+  strataVar <- "" 
   model.type <- "coxph"
 
   survObject <- names(terms$dataClasses)[1]
@@ -128,6 +129,12 @@ pmml.coxph <- function(model,
       strataVar0 <- gsub("strata\\(","",termVar)
       strataVar <- gsub("\\)","",strataVar0)
     }
+  }
+
+  if((endtimeVar %in% field$name) || (starttimeVar %in% field$name) || 
+	(statusVar %in% field$name) || (strataVar %in% field$name))
+  {
+    stop("Predictor fields cannot be status, time or strata variables") 
   }
 
   # 090103 Support transforms if available.
@@ -202,7 +209,6 @@ pmml.coxph <- function(model,
   pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
 
   # PMML -> RegressionModel
-
 
   # Zementis: Different start node depending on existence of startTimeVariable 
   # or baselineStrataVariable attributes 
@@ -340,7 +346,7 @@ pmml.coxph <- function(model,
    pname <- gsub(" ","",pname)
    num <- num + 1
    pnode <- xmlNode("Parameter",attrs=c(name=pname,label=names(coefficients(model))[i],
-					referencePoint=model$means[i]))
+					referencePoint=model$means[[i]]))
    plNode <- append.XMLNode(plNode,pnode)
  }
 
@@ -436,7 +442,7 @@ pmml.coxph <- function(model,
      pmNode <- append.XMLNode(pmNode,pcNode)
    } else
    {
-     stop("Model coefficients did not converge and resulted in sungular values")
+     stop("Model coefficients did not converge and resulted in singular values")
    }
   }
   the.model <- append.XMLNode(the.model,pmNode)

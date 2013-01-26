@@ -1,5 +1,5 @@
-\name{pmml.rsf}
-\alias{pmml.rsf}
+\name{pmml.rfsrc}
+\alias{pmml.rfsrc}
 \title{Generate PMML for a Random Survival Forest (rsf) object}
 \description{
   
@@ -11,10 +11,10 @@
 }
 \usage{
 
-\method{pmml}{rsf}(model,
-                   model.name="rsfForest_Model",
+\method{pmml}{rfsrc}(model,
+                   model.name="rsf_Model",
                    app.name="Rattle/PMML",
-                   description="Random Survival Forest Tree Model",
+                   description="Random Survival Forest Model",
                    copyright=NULL,
                    transforms=NULL,
                    ...)
@@ -47,7 +47,7 @@
   information about PMML and the Data Mining Group can be found at
   http://www.dmg.org.  
 
-  Use of PMML and \code{pmml.rsf} requires the \pkg{XML} package.  Be
+  Use of PMML and \code{pmml.rfsrc} requires the \pkg{XML} package.  Be
   aware that XML is a very verbose data format.  Reasonably sized trees
   and data sets can lead to extremely large text files.  XML, while
   achieving interoperability, is not an efficient data storage mechanism
@@ -57,7 +57,7 @@
   PMML compliant applications, including graphics packages that are
   capable of printing binary trees.  In addition, the user may wish to
   save the geometry of the forest for later retrieval and prediction on
-  new data sets using \code{pmml.rsf} together with \code{pmml_to_rsf}.
+  new data sets using \code{pmml.rfsrc} together with \code{pmml_to_rsf}.
 
 }    
 \value{
@@ -69,6 +69,9 @@
   
 }
 \references{
+
+  H. Ishwaran, U.B. Kogalur, E.H. Blackstone, M.S. Lauer (2008), /emph{RANDOM SURVIVAL FORESTS}.
+     The Annals of Applied Statistics, Vol. 2, No. 3, 841-860
 
   H. Ishwaran and Udaya B. Kogalur (2006).  Random Survival Forests.
   \emph{Cleveland Clinic Technical Report}.

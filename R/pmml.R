@@ -183,7 +183,10 @@ pmml <- function(model,
   datypelist <- NULL
   fname <- NULL
   data.fields <- list()
-
+  # discrete place holder variable name as set in pmml.naiveBayes.R
+  DPL1 <- "DiscretePlaceHolder"
+  DPL2 <- "Temp"
+  DPL3 <- "predictedScore"
 
   if(!is.null(transformed))
   {
@@ -195,6 +198,9 @@ pmml <- function(model,
       if(type == "numeric")
       {
         datypelist[[row.names(transformed$fieldData)[i]]] <- "double"
+      } else if(type == "logical")
+      {
+        datypelist[[row.names(transformed$fieldData)[i]]] <- "boolean"
       } else
       {
         datypelist[[row.names(transformed$fieldData)[i]]] <- "string"
@@ -214,12 +220,28 @@ pmml <- function(model,
     datypelist[[field$name[1]]] <- "double"
     optypelist[[field$name[1]]] <- "continuous"
    }
+   if(DPL1 %in% field$name)
+   {
+     datypelist[[DPL1]] <- "string"
+     optypelist[[DPL1]] <- "categorical"
+   }
+   if(DPL2 %in% field$name)
+   {
+     datypelist[[DPL2]] <- "string"
+     optypelist[[DPL2]] <- "categorical"
+   }
+   if(DPL3 %in% field$name)
+   {
+     datypelist[[DPL3]] <- "double"
+     optypelist[[DPL3]] <- "continuous"
+   } 
   } else
   {
    for(i in begin:number.of.fields)
    {
    fname <- field$name[i]
    if(length(grep("as\\.factor\\(",field$name[i])) == 1)
+#   if(length(grep("^as\\.factor\\(.*\\)",field$name[1])) == 1)
    {
         fname <- gsub("as.factor\\((\\w*)\\)","\\1", field$name[i], perl=TRUE)
    }
@@ -233,6 +255,11 @@ pmml <- function(model,
     {
       optypelist[[fname]] <- "continuous"
       datypelist[[fname]] <- "double"
+    }
+    else if (field$class[[field$name[i]]] == "logical")
+    {
+      optypelist[[fname]] <- "categorical"
+      datypelist[[fname]] <- "boolean"
     }
     else if (field$class[[field$name[i]]] == "factor")
     {
@@ -329,7 +356,6 @@ pmml <- function(model,
        namelist <- c(namelist,fName)
       }
 
-
      }
   }
 
@@ -342,8 +368,6 @@ pmml <- function(model,
     data.dictionary <-append.XMLNode(data.dictionary, xmlNode("Extension",
                                                               attrs=c(name="Weights",
                                                               value=weights, extender="Rattle")))
-
-
 
   nmbr <- 1
   for(ndf2 in 1:length(namelist))
@@ -376,25 +400,35 @@ pmml <- function(model,
    }
 
    # DataDictionary -> DataField -> Value
-   if (optypelist[[namelist[nmbr][[1]]]] == "categorical")
+   name <- namelist[nmbr][[1]]
+   if (optypelist[[name]] == "categorical")
    {
-     for (j in seq_along(field$levels[[namelist[nmbr][[1]]]]))
+     if(is.null(field$levels[[name]]) && !is.null(transformed))
      {
-       data.fields[[nmbr]][[j]] <- xmlNode("Value",
+       lev <- levels(as.list(unique(transformed$data[name]))[[1]])
+       for (j in seq_along(lev))
+       {
+         data.fields[[nmbr]][[j]] <- xmlNode("Value",
+                          attrs=c(value=.markupSpecials(lev[j])))
+       }
+     } else
+     {
+       for (j in seq_along(field$levels[[namelist[nmbr][[1]]]]))
+       {
+         data.fields[[nmbr]][[j]] <- xmlNode("Value",
                           attrs=c(value=.markupSpecials(field$levels[[namelist[nmbr][[1]]]][j])))
+       }
      }
    }
 
    data.dictionary <- append.XMLNode(data.dictionary, data.fields[[nmbr]])
-
    nmbr <- nmbr + 1
   }
-
 
   return(data.dictionary)
 }
 
-.pmmlDataDictionarySurv <- function(field, timeName, dataset=NULL, weights=NULL, transformed=NULL)
+.pmmlDataDictionarySurv <- function(field, timeName, statusName, dataset=NULL, weights=NULL, transformed=NULL)
 {
   # Tridi 012712
   # modify for a survival model. Survival forests do not typically have
@@ -415,6 +449,7 @@ pmml <- function(model,
 
   optypelist <- list()
   namelist <- list()
+  datypelist <- list()
   data.fields <- list()
 
   if(field$name[1] == "ZementisClusterIDPlaceHolder")
@@ -435,9 +470,12 @@ pmml <- function(model,
       if(type == "numeric")
       {
         datypelist[[row.names(transformed$fieldData)[i]]] <- "double"
-      } else
+      } else if(type == "logical")
       {
-        datypelist[[row.names(transformed$fieldData)[i]]] <- "string"
+        datypelist[[row.names(transformed$fieldData)[i]]] <- "boolean"
+      } else 
+      {
+        datypelist[[row.names(transformed$fieldData)[i]]] <- "categorical"
       }
 
       if(type == "numeric")
@@ -467,6 +505,10 @@ pmml <- function(model,
     {
       optypelist[[field$name[i]]] <- "continuous"
       datypelist[[field$name[i]]] <- "double"
+    } else if (field$class[[field$name[i]]] == "logical")
+    {
+      optypelist[[field$name[i]]] <- "categorical"
+      datypelist[[field$name[i]]] <- "boolean"
     }
     else if (field$class[[field$name[i]]] == "factor")
     {
@@ -541,9 +583,9 @@ pmml <- function(model,
             }
            }
           }
-
        }
      } else
+# if no transforms
      {
       if(length(grep("as\\.factor\\(",field$name[ii])) == 1)
         fName <- gsub("as.factor\\((\\w*)\\)","\\1", field$name[ii], perl=TRUE)
@@ -558,21 +600,23 @@ pmml <- function(model,
       {
        namelist <- c(namelist,fName)
       }
-
+    
      }
+    }
+   }
 
     # DataDictionary -> DataField -> Interval
     nmbr <- 1
     for(ndf2 in 1:length(namelist))
     {
-     fname <- namelist[ndf2]
+     fname <- namelist[[ndf2]]
      if (optypelist[[fname]] == "continuous" && ! is.null(dataset))
      {
       interval <-  xmlNode("Interval",
                            attrs=c(closure="closedClosed",
-                             leftMargin=min(dataset[[namelist[ndf2]]],
+                             leftMargin=min(dataset[[namelist[[ndf2]]]],
                                na.rm=TRUE), # 091025 Handle missing values
-                             rightMargin=max(dataset[[namelist[nmbr]]],
+                             rightMargin=max(dataset[[namelist[[nmbr]]]],
                                na.rm=TRUE))) # 091025 Handle missing values
       data.fields[[ii]] <- append.XMLNode(data.fields[[ii]], interval)
      }
@@ -580,13 +624,31 @@ pmml <- function(model,
     # DataDictionary -> DataField -> Value
 
     if (optypelist[[fname]] == "categorical")
-      for (j in seq_along(field$levels[[fname]]))
-        data.fields[[ii]][j] <- xmlNode("Value",
-                                         attrs=c(value=
-                                           .markupSpecials(field$levels[[fname]][j])))
+    {
+      if(is.null(field$levels[[fname]]) && !is.null(transformed))
+      {
+        lev <- levels(as.list(unique(transformed$data[fname]))[[1]])
+        for (j in seq_along(lev))
+        {
+          data.fields[[ii]][[j]] <- xmlNode("Value",
+                          attrs=c(value=.markupSpecials(lev[j])))
+        }
+      } else
+      {
+        for (j in seq_along(field$levels[[fname]]))
+        {
+          data.fields[[ii]][[j]] <- xmlNode("Value",
+                          attrs=c(value=.markupSpecials(field$levels[[fname]][j])))
+        }
+      }
     }
-   }
-  }
+
+#    if (optypelist[[fname]] == "categorical")
+#      for (j in seq_along(field$levels[[fname]]))
+#        data.fields[[ii]][j] <- xmlNode("Value",
+#                                         attrs=c(value=
+#                                           .markupSpecials(field$levels[[fname]][j])))
+    }
 
   if (! is.null(weights) && length(weights))
     data.dictionary <-append.XMLNode(data.dictionary, xmlNode("Extension",
@@ -594,13 +656,15 @@ pmml <- function(model,
                                                                 value=weights,
                                                                 extender="Rattle")))
 
-  data.fields[[ii+1]] <- xmlNode("DataField", attrs=c(name="predictedField",
+  data.fields[[ii+1]] <- xmlNode("DataField", attrs=c(name=statusName,
                                                 optype="continuous",dataType="double"))
   data.fields[[ii+2]] <- xmlNode("DataField", attrs=c(name=timeName,
                                                 optype="continuous",dataType="double"))
+  data.fields[[ii+3]] <- xmlNode("DataField", attrs=c(name="cumulativeHazard",
+                                                optype="continuous",dataType="double"))
 
   data.dictionary <- xmlNode("DataDictionary",
-                             attrs=c(numberOfFields=length(namelist)))
+                             attrs=c(numberOfFields=length(namelist)+3))
   data.dictionary <- append.XMLNode(data.dictionary, data.fields)
 
 
@@ -626,7 +690,6 @@ pmml <- function(model,
   # that singularities can be identified as inactive for a linear
   # model. It could also be used to capture ignored variables, if they
   # were to ever be included in the variable list.
-
 
   number.of.fields <- length(field$name)
   mining.fields <- list()
@@ -664,7 +727,7 @@ pmml <- function(model,
     # all fields as active. 
     #if (field$name[i] %in% inactive) usage <- "supplementary"
     # 090328 if (length(grep(field$name[i], inactive))) usage <- "inactive"
-     
+    
     if(!is.null(transformed) && i!=1)
     {
        if(is.na(transformed$fieldData[field$name[i],"origFieldName"]))
@@ -754,8 +817,19 @@ pmml <- function(model,
       usage <- ifelse(namelist[j] == target, "predicted", "active")
     }
 
-    mf <- xmlNode("MiningField", attrs=c(name=namelist[j],
+    # if field name is the naive bayes categorical field place holder, add missingValueReplacement
+    if(namelist[j]=="Temp" || namelist[j]=="DiscretePlaceHolder")
+    {
+      if(length(field$levels[[namelist[j]]])==1)
+      {
+        mf <- xmlNode("MiningField", attrs=c(name=namelist[j],
+                            usageType=usage,missingValueReplacement=field$levels[[namelist[j]]]))
+      }
+    } else
+    {
+      mf <- xmlNode("MiningField", attrs=c(name=namelist[j],
                                                 usageType=usage))
+    }
     mining.schema <- append.XMLNode(mining.schema, mf)
    }
   }
@@ -863,7 +937,7 @@ pmml <- function(model,
   return(mining.schema)
 }
 
-.pmmlMiningSchemaSurv <- function(field, timeName, target=NULL, inactive=NULL, transformed=NULL)
+.pmmlMiningSchemaSurv <- function(field, timeName, statusName, target=NULL, inactive=NULL, transformed=NULL)
 {
   # Tridi 012712
   # Generate the PMML for the MinimgSchema element for a survival model.
@@ -1008,15 +1082,20 @@ pmml <- function(model,
   # add a predicted mining field if none exist
   if (targetExists == 0)
    mining.fields[[ii + 1]] <- xmlNode("MiningField",
-                                              attrs=c(name="predictedField",
-                                               usageType="predicted"))
+                                              attrs=c(name=statusName,
+                                               usageType="active"))
    mining.fields[[ii + 2]] <- xmlNode("MiningField",
                                               attrs=c(name=timeName,
                                                usageType="active"))
-
+   mining.fields[[ii + 3]] <- xmlNode("MiningField",
+                                              attrs=c(name="cumulativeHazard",
+                                               usageType="predicted"))
   mining.schema <- xmlNode("MiningSchema")
   mining.schema$children <- mining.fields
+
+
   return(mining.schema)
+
 }
 
 pmmlLocalTransformations <- function(field, transforms=NULL, LTelement=NULL)
@@ -1046,8 +1125,9 @@ pmmlLocalTransformations <- function(field, transforms=NULL, LTelement=NULL)
 #       flist <- flist[!duplicate(flist)]
 
 # code to output all fields, possibly to allow user to output any derived fields via OutputField element
-    for(i in 1:nrow(inputs))
+   for(i in 1:nrow(inputs))
    {
+
     if(inputs[i,"origFieldName"] %in% targetDL)
     {
      targetDL <- c(targetDL,rownames(inputs)[i])
@@ -1058,13 +1138,21 @@ pmmlLocalTransformations <- function(field, transforms=NULL, LTelement=NULL)
     } else 
     {
      fname <- rownames(inputs)[i]
+
      if(inputs[fname,"type"] == "derived" && fname != target)
      {
       if(inputs[fname,"transform"] == "zxform")
       {
        origName <- inputs[fname,"origFieldName"]
+       missing <- inputs[fname,"missingValue"]
        dfNode <- xmlNode("DerivedField",attrs=c(name=fname,dataType="double",optype="continuous"))
-       ncNode <- xmlNode("NormContinuous",attrs=c(field=origName))
+       if(!is.na(missing))
+       {
+         ncNode <- xmlNode("NormContinuous",attrs=c(mapMissingTo=missing,field=origName))
+       } else
+       {
+         ncNode <- xmlNode("NormContinuous",attrs=c(field=origName))     
+       }
 
        o1 <- as.numeric(inputs[fname,"centers"])
        o2 <- as.numeric(inputs[fname,"centers"]) + as.numeric(inputs[fname,"scales"])
@@ -1078,8 +1166,16 @@ pmmlLocalTransformations <- function(field, transforms=NULL, LTelement=NULL)
       } else if(inputs[fname,"transform"] == "minmax")
       {
        origName <- inputs[fname,"origFieldName"]
+       missing <- inputs[fname,"missingValue"]
        dfNode <- xmlNode("DerivedField",attrs=c(name=fname,dataType="double",optype="continuous"))
-       ncNode <- xmlNode("NormContinuous",attrs=c(field=origName))
+       if(!is.na(missing))
+       {
+         ncNode <- xmlNode("NormContinuous",attrs=c(mapMissingTo=missing,field=origName)) 
+       } else
+       {
+         ncNode <- xmlNode("NormContinuous",attrs=c(field=origName)) 
+       }
+
        o1 <- inputs[fname,"sampleMin"]
        n1 <- inputs[fname,"xformedMin"]
        o2 <- inputs[fname,"sampleMax"]
@@ -1099,23 +1195,46 @@ pmmlLocalTransformations <- function(field, transforms=NULL, LTelement=NULL)
        {
 	dtype <- "double"
 	otype <- "continuous"
-       } else
+       } else if(dtype == "boolean")
        {
+        dtype <- "boolean"
+        otype <- "categorical" 
+       } else 
+       {
+        dtype <- "string"
 	otype <- "categorical"
        }
 
        dfNode <- xmlNode("DerivedField",attrs=c(name=fname,dataType=as.character(dtype),optype=otype))
-       default <- inputs[fname,"defaultValue"]
+       default <- inputs[fname,"default"]
        missing <- inputs[fname,"missingValue"]
+       if(dtype == "boolean")
+       {
+	if((default==1) || (toupper(default)==TRUE))
+	{
+	 default="true"
+	} else
+	{
+	 default="false"
+	}
+        if((missing==1) || (toupper(missing)==TRUE))
+        {
+         missing="true"
+        } else
+        {
+         missing="false"
+        }
+       }
+
        if(!is.na(default) && !is.na(missing))
        {
 	mapvNode <- xmlNode("MapValues",attrs=c(mapMissingTo=missing,defaultValue=default,outputColumn="output"))
        } else if(!is.na(default) && is.na(missing))
        {
-	mapvNode <- xmlNode("MapValues",attrs=c(defaultValue=default,outputColumn="out"))
+	mapvNode <- xmlNode("MapValues",attrs=c(defaultValue=default,outputColumn="output"))
        } else if(is.na(default) && !is.na(missing))
        {
-	mapvNode <- xmlNode("MapValues",attrs=c(mapMissingTo=missing,outputColumn="out"))
+	mapvNode <- xmlNode("MapValues",attrs=c(mapMissingTo=missing,outputColumn="output"))
        } else
        {
 	mapvNode <- xmlNode("MapValues",attrs=c(outputColumn="out"))
@@ -1147,11 +1266,110 @@ pmmlLocalTransformations <- function(field, transforms=NULL, LTelement=NULL)
        dfNode <- append.XMLNode(dfNode,mapvNode)
       } else if(inputs[fname,"transform"] == "NormDiscrete")
       {
-        map <- inputs[fname,"fieldsMap"][[1]]
-	dfName <- row.names(inputs)[i]  
-        dfNode <- xmlNode("DerivedField",attrs=c(name=dfName,dataType="double"))
-        normNode <- xmlNode("NormDiscrete",attrs=c(field=as.character(inputs[fname,"origFieldName"]),value=as.character(map[1])))
-        dfNode <- append.XMLNode(dfNode,normNode)
+       map <- inputs[fname,"fieldsMap"][[1]]
+       dfName <- row.names(inputs)[i]
+       missing <- inputs[fname,"missingValue"]
+ 
+       dfNode <- xmlNode("DerivedField",attrs=c(name=dfName,dataType="double",optype="continuous"))
+       if(!is.na(missing))
+       {
+         normNode <- xmlNode("NormDiscrete",attrs=c(field=as.character(inputs[fname,"origFieldName"]),value=as.character(map[1]),mapMissingTo=missing))
+       } else
+       {
+         normNode <- xmlNode("NormDiscrete",attrs=c(field=as.character(inputs[fname,"origFieldName"]),value=as.character(map[1])))
+       }
+       dfNode <- append.XMLNode(dfNode,normNode)
+      } else if(inputs[fname,"transform"] == "discretize")
+      {
+	maps <- inputs[fname,"fieldsMap"][[1]]
+	missingVal <- inputs[fname,"missingValue"]
+	defVal <- inputs[fname,"default"]
+
+	origName <- inputs[fname,"origFieldName"] 
+	map <- maps[c(-1,-2),]
+	dtype <- as.character(inputs[fname,"dataType"])
+        if(dtype == "numeric")
+        {
+         dtype <- "double"
+         otype <- "continuous"
+        }
+
+	# The following doesnt work as there seems to be no way in PMML to have predicates
+	# which indicate if a boolean variable is true or false; and this issue comes up
+	# when derived fields of type boolean are used in Tree models
+	# We cannot use the operator "isIn" as  in 
+	#  <... booleanOperator="isIn> <Array type="string>"TRUE"</Attay
+	# as then we need an array of type boolean
+	# and that is not allowed; and ADAPA complains if boolean vaiable is tested as being 
+	# contained in an Arraya of type string  
+	# else if(dtype == "boolean")
+
+        # {
+        # dtype <- "boolean"
+        # otype <- "categorical"
+        # }
+
+	else
+        {
+         dtype <- "string"
+         otype <- "categorical"
+        }
+
+        if(dtype == "boolean")
+        {
+         if((default==1) || (toupper(default)==TRUE))
+         {
+          default="true"
+         } else
+         {
+          default="false"
+         }
+         if((missing==1) || (toupper(missing)==TRUE))
+         {
+          missing="true"
+         } else
+         {
+          missing="false"
+         }
+        }
+
+	dfNode <- xmlNode("DerivedField",attrs=c(name=fname,dataType=dtype,optype=otype))
+        if(!is.na(defVal) && !is.na(missingVal))
+        {
+         discNode <- xmlNode("Discretize",attrs=c(field=origName,mapMissingTo=missingVal,defaultValue=defVal)) 
+        } else if(!is.na(defVal) && is.na(missingVal))
+        {
+         discNode <- xmlNode("Discretize",attrs=c(field=origName,defaultValue=defVal))
+        } else if(is.na(defVal) && !is.na(missingVal))
+        {
+         discNode <- xmlNode("Discretize",attrs=c(field=origName,mapMissingTo=missingVal))
+        } else
+        {
+         discNode <- xmlNode("Discretize",attrs=c(field=origName))
+        }
+
+	for(i in 1:nrow(map))
+	{ 
+	 dbinNode <- xmlNode("DiscretizeBin",attrs=c(binValue=map[i,2]))
+	 clsr <- paste(map[1,3],map[i,5],sep="")
+	 if(!is.na(map[i,4]))
+  	 {
+	  if(!is.na(map[i,6]))
+	  {
+	   intrNode <- xmlNode("Interval",attrs=c(closure=clsr,leftMargin=map[i,4],rightMargin=map[i,6]))
+	  } else
+	  {
+	   intrNode <- xmlNode("Interval",attrs=c(closure=clsr,leftMargin=map[i,4]))
+	  }
+	 } else
+	 {
+	  intrNode <- xmlNode("Interval",attrs=c(closure=clsr,rightMargin=map[i,6]))
+	 }
+	 dbinNode <- append.XMLNode(dbinNode,intrNode)
+	 discNode <- append.XMLNode(discNode,dbinNode)
+	}
+	dfNode <- append.XMLNode(dfNode,discNode) 
+
       }
 
       if(is.null(LTelement))
@@ -1201,6 +1419,8 @@ pmmlLocalTransformations <- function(field, transforms=NULL, LTelement=NULL)
                                           "double", "string"),
                                         feature="predictedValue"))
 
+     if(field$name[i] %in% names(field$levels))
+     {
       for (j in seq_along(field$levels[[field$name[i]]]))
         output.fields[[j+1]] <- xmlNode("OutputField",
                                         attrs=c(name=paste("Probability_",
@@ -1210,6 +1430,7 @@ pmmlLocalTransformations <- function(field, transforms=NULL, LTelement=NULL)
                                           dataType = "double",
                                           feature="probability",
                                           value= field$levels[[field$name[i]]][j]))
+     }
     }
   }
   

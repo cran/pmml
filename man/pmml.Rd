@@ -55,12 +55,14 @@ pmml(model, model.name="Rattle_Model", app.name="Rattle/PMML",
   \code{\link{pmml.kmeans}},
   \code{\link{pmml.ksvm}},
   \code{\link{pmml.glm}},
+  \code{\link{pmml.cv.glmnet}},
   \code{\link{pmml.lm}},
+  \code{\link{pmml.naiveBayes}},
   \code{\link{pmml.nnet}},
   \code{\link{pmml.multinom}},
   \code{\link{pmml.rpart}},
   \code{\link{pmml.randomForest}},
-  \code{\link{pmml.rsf}},
+  \code{\link{pmml.rfsrc}},
   \code{\link{pmmltoc}}.
 }
 \examples{
