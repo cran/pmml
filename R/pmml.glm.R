@@ -33,6 +33,9 @@
 # capability to export binary logistic regression models using glm.
 #
 # Modified: 090103 by Graham Williams to add transforms framework.
+#
+# Modified: 081513 by tridivesh.jena@zementis.com to output as a 
+# PMML GeneralRegressionModel file
 
 pmml.glm <- function(model,
                     model.name="General_Regression_Model",
@@ -43,7 +46,7 @@ pmml.glm <- function(model,
                     ...)
 {
   if (! inherits(model, "glm")) stop("Not a legitimate lm object")
-  require(XML, quietly=TRUE)
+  #require(XML, quietly=TRUE)
 
   # Collect the required information.
 
@@ -143,6 +146,15 @@ pmml.glm <- function(model,
           names(field$class)[i] <- sub("^as.factor\\((.*)\\)", "\\1", names(field$class)[i])
           names(field$levels)[numfac] <- sub("^as.factor\\((.*)\\)", "\\1", names(field$levels)[numfac])
         }
+      }
+    } else
+    {
+      #Tridi 7/26/13: remove any 'as.numeric' from field names
+      if (length(grep("^as.numeric\\(", field$name[i])))
+      {
+        field$name[i] <- sub("^as.numeric\\((.*)\\)", "\\1", field$name[i])
+        names(field$class)[i] <- sub("^as.numeric\\((.*)\\)", "\\1", names(field$class)[i])
+        names(field$levels)[numfac] <- sub("^as.numeric\\((.*)\\)", "\\1", names(field$levels)[numfac])
       }
     }
   }
@@ -317,7 +329,8 @@ pmml.glm <- function(model,
 
  plNode <- xmlNode("ParameterList")
  num <- 0
- for(i in 1:length(names(coefficients(model)))){
+ for(i in 1:length(names(coefficients(model))))
+ {
    pname <- paste("p",num)
    pname <- gsub(" ","",pname)
    num <- num + 1
@@ -353,52 +366,120 @@ pmml.glm <- function(model,
   the.model <- append.XMLNode(the.model,cvNode)
 
   ppm <- xmlNode("PPMatrix")
-  for(j in 1:length(model$coefficients)){
-   if(length(grep("Intercept",names(coefficients(model))[j])) == 1){
-   } else if(length(grep(".+:.+",names(coefficients(model))[j])) == 1){
+  for(j in 1:length(model$coefficients))
+  {
+   special <- FALSE 
+   coefname <- names(coefficients(model))[j]
+   if(grepl("^`.*`$",coefname))
+   {
+     coefname <- gsub("^`","",coefname)
+     coefname <- gsub("`$","",coefname)
+   }
+
+   if(grepl("Intercept",coefname))
+   {
+   } else if(grepl(".+:.+",coefname))
+   {
 # interactive terms
-       for(k in 1:length(strsplit(names(coefficients(model))[j],":")[[1]])){
-         for(f in 2:number.of.fields){
-           if(field$class[[field$name[f]]] == "factor"){
-             if(length(grep(field$name[f],strsplit(names(coefficients(model))[j],":")[[1]][k])) == 1){
-  	       modfield <- gsub(field$name[f],"",strsplit(names(coefficients(model))[j],":")[[1]][k])
-               ppcell <- xmlNode("PPCell",attrs=c(value=modfield,predictorName=field$name[f],
-                                                             parameterName=gsub(" ","",paste("p",j-1))))
-               ppm <- append.XMLNode(ppm,ppcell) 
-             } 
-           } else{
-              if(length(grep(field$name[f],strsplit(names(coefficients(model))[j],":")[[1]][k])) == 1){
-              ppcell <- xmlNode("PPCell",attrs=c(value="1",predictorName=field$name[f],
-                                                             parameterName=gsub(" ","",paste("p",j-1))))
-              ppm <- append.XMLNode(ppm,ppcell)
-           }
-         }
-       }
+    fnms <- strsplit(coefname,":")[[1]]
+    for(k in 1:length(fnms))
+    {
+     if(grepl("`",fnms[k]))
+     {
+       special <- TRUE 
+       fnm <- strsplit(fnms,"`")[[1]]
+       fnm <- fnm[fnm != ""]
+     } else
+     {
+       fnm <- fnms[k]
      }
-   } else {
-# categorical terms
-       for(f in 2:number.of.fields){
-         if(field$class[[field$name[f]]] == "factor"){
-           if(length(grep(field$name[f],names(coefficients(model))[j])) == 1){
-            if (length(grep("^as.factor\\(", names(coefficients(model))[j]))==1)
-            {
-             modfield <- sub("^as.factor\\((.*)\\)", "\\1", names(coefficients(model))[j])
-             modfield <- gsub(field$name[f],"",modfield)
-            } else {
-              modfield <- gsub(field$name[f],"",names(coefficients(model))[j]) 
-            }
-            ppcell <- xmlNode("PPCell",attrs=c(value=modfield,predictorName=field$name[f],
-                                                          parameterName=gsub(" ","",paste("p",j-1))))
-            ppm <- append.XMLNode(ppm,ppcell)
-           }
-         } else{
-# numerical terms
-             if(length(grep(field$name[f],names(coefficients(model))[j])) == 1){
-             ppcell <- xmlNode("PPCell",attrs=c(value="1",predictorName=field$name[f],
-                                                           parameterName=gsub(" ","",paste("p",j-1))))
-             ppm <- append.XMLNode(ppm,ppcell)
-         }
+
+     for(f in 2:number.of.fields)
+     {
+      if(field$class[[field$name[f]]] == "factor")
+      {
+       match <- FALSE
+       if(special)
+         match <- (field$name[f] %in% fnm)
+       else
+         match <- grepl(field$name[f],fnm)
+
+       if(!special && match)
+       { 
+  	  modfield <- gsub(field$name[f],"",fnm)
+          ppcell <- xmlNode("PPCell",attrs=c(value=modfield,predictorName=field$name[f],
+                                               parameterName=gsub(" ","",paste("p",j-1))))
+          ppm <- append.XMLNode(ppm,ppcell)
+        } else if(special && match)
+        {
+          ppcell <- xmlNode("PPCell",attrs=c(value=fnm[2],predictorName=field$name[f],
+                                               parameterName=gsub(" ","",paste("p",j-1))))
+          ppm <- append.XMLNode(ppm,ppcell)
+        }
+       } else
+       {
+        if(field$name[f] == fnm[1])
+        {
+         ppcell <- xmlNode("PPCell",attrs=c(value="1",predictorName=field$name[f],
+                                             parameterName=gsub(" ","",paste("p",j-1))))
+         ppm <- append.XMLNode(ppm,ppcell)
+        }
        }
+      }
+     }
+   } else 
+   {
+# categorical terms
+    if(grepl("`",coefname))
+    {
+     special <- TRUE
+     fnm <- strsplit(coefname,"`")[[1]]
+     fnm <- fnm[fnm != ""]
+    } else
+    {
+      fnm <- coefname
+    }
+
+    for(f in 2:number.of.fields)
+    {
+     if(field$class[[field$name[f]]] == "factor")
+     {
+      match <- FALSE
+      if(special)
+	match <- (field$name[f] %in% fnm)
+      else
+	match <- grepl(field$name[f],fnm)
+ 
+       if(match && special)
+       {
+         ppcell <- xmlNode("PPCell",attrs=c(value=fnm[2],predictorName=field$name[f],
+                                             parameterName=gsub(" ","",paste("p",j-1))))
+         ppm <- append.XMLNode(ppm,ppcell)
+       } else if(match && !special)
+       { 
+	  modfield <-  gsub(field$name[f],"",fnm)
+          if (grepl("^as.factor\\(", fnm))
+          {
+           modfield <- sub("^as.factor\\((.*)\\)", "\\1", fnm)
+           modfield <- gsub(field$name[f],"",modfield)
+          } else 
+          {
+            modfield <- gsub(field$name[f],"",fnm) 
+          }
+          ppcell <- xmlNode("PPCell",attrs=c(value=modfield,predictorName=field$name[f],
+                                             parameterName=gsub(" ","",paste("p",j-1))))
+          ppm <- append.XMLNode(ppm,ppcell)
+        }
+      } else
+      {
+# numerical terms
+       if(field$name[f] == fnm[1])
+       {
+         ppcell <- xmlNode("PPCell",attrs=c(value="1",predictorName=field$name[f],
+                                             parameterName=gsub(" ","",paste("p",j-1))))
+         ppm <- append.XMLNode(ppm,ppcell)
+       }
+      }
      }
    }
   }

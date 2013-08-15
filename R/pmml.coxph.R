@@ -38,7 +38,7 @@ pmml.coxph <- function(model,
 {
   if (! inherits(model, "coxph")) stop("Not a legitimate coxph object")
   
-  require(XML, quietly=TRUE)
+  #require(XML, quietly=TRUE)
 
   # Collect the required information.
 
@@ -452,8 +452,20 @@ pmml.coxph <- function(model,
   #eventNode<-xmlCommentNode("EventValues expected by R are either [0,1] or [1,2] or [TRUE,FALSE]")
   #the.model <- append.XMLNode(the.model,eventNode)
 
-  # Zementis: call the R basehaz function to get the baselineHazard values 
-  CumHazard <- survival:::basehaz(model)
+  # Zementis: call the R basehaz function to get the baselineHazard values
+#  CumHazard <- survival:::basehaz(model)
+  sfit<-survival::survfit(model)
+  H<- -log(sfit$surv)
+
+  strata<-sfit$strata
+  if (!is.null(strata))
+      strata<- factor(rep(names(strata),strata), levels=names(strata))
+
+  if (is.null(strata))
+    CumHazard <- data.frame(hazard=H,time=sfit$time)
+  else
+    CumHazard <- data.frame(hazard=H,time=sfit$time,strata=strata)
+ 
   numTime <- length(CumHazard$time)
   levl <- NULL
   baselineNode <- NULL

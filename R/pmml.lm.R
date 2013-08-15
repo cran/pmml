@@ -46,7 +46,7 @@ pmml.lm <- function(model,
 {
   if (! inherits(model, "lm")) stop("Not a legitimate lm object")
   
-  require(XML, quietly=TRUE)
+  #require(XML, quietly=TRUE)
 
   # Collect the required information.
 

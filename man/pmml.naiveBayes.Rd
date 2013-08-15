@@ -55,6 +55,12 @@
   probability values of 0 and standard deviations of continuous variables of 
   with the value 0 are replaced by the threshold value. The two values will
   therefore not match exactly for cases involving very small probability values.  
+  
+  The generated PMML can be imported into any PMML consuming
+  application, such as the Zementis ADAPA and UPPI scoring engines which allow for
+  predictive models built in R to be deployed and executed on site, in the cloud 
+  (Amazon, IBM, and FICO), in-database (IBM Netezza, Pivotal, Sybase IQ, Teradata and 
+  Teradata Aster) or Hadoop (Datameer and Hive).
 
 }    
 \references{
@@ -67,6 +73,11 @@
 
   A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), /emph{PMML: An Open Standard for 
      Sharing Models}. The R journal, Volume 1/1, 60-65
+     
+  A. Guazzelli, T. Jena, W. Lin, M. Zeller (2013). Extending the Naive Bayes Model Element
+     in PMML: Adding Support for Continuous Input Variables. 
+     In \emph{Proceedings of the 19th ACM SIGKDD Conference on Knowledge Discovery 
+     and Data Mining}.      
 
 }
 \author{\email{info@zementis.com}}	

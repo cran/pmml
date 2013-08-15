@@ -42,7 +42,7 @@ pmml.rpart <- function(model,
                         ...)
 {
   if (! inherits(model, "rpart")) stop("Not a legitimate rpart object")
-  require(XML, quietly=TRUE)
+  #require(XML, quietly=TRUE)
   require(rpart, quietly=TRUE)
 
   function.name <- "classification"
@@ -197,7 +197,11 @@ pmml.rpart <- function(model,
 
   # Collect information to create nodes.
   
-  depth <- rpart:::tree.depth(as.numeric(row.names(model$frame)))
+#  depth <- rpart:::tree.depth(as.numeric(row.names(model$frame)))
+  numnode <- as.numeric(row.names(model$frame))
+  treedepth <- floor(log(numnode, base=2) + 1e-7)
+  depth <- treedepth - min(treedepth)
+
   count <- model$frame$n
   label <- labels(model, minlength=0, digits=7)
   fieldLabel <- label[1]
@@ -582,7 +586,7 @@ pmml.rpart <- function(model,
                                 description="RPart model as rules",
                                 copyright=NULL)
 {
-  require(XML, quietly=TRUE)
+  #require(XML, quietly=TRUE)
   require(rpart, quietly=TRUE)
   
   if (! inherits(model, "rpart")) stop("Not a legitimate rpart tree")

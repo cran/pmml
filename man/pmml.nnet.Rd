@@ -5,9 +5,8 @@
 }
 \description{
   
-  Generate the PMML representation for a nnet object (Neural Network). 
-  The nnet object is converted into a PMML representation. The PMML 
-  can then be imported into other systems that accept PMML. 
+  Generate the Predictive Model Markup Language (PMML) 
+  representation for a nnet object (Neural Network). 
   With this code, a PMML representation can be obtained for Neural
   Networks implementing classification (multi-class and binary) as well
   as regression.
@@ -36,30 +35,31 @@ transforms=NULL, \dots)
 }
 \details{
 
+  PMML is an XML based language which
+  provides a way for applications to define statistical and data mining
+  models and to share models between PMML compliant applications.  More
+  information about PMML and the Data Mining Group can be found at
+  http://www.dmg.org.  
+
   The generated PMML can be imported into any PMML consuming
-  application that recognizes PMML 3.2. An example is ADAPA. 
-  ADAPA (Adaptive Decision and Predictive Analytics) is a lightweight 
-  decision engine that offers at its core batch and real-time scoring 
-  of predictive models as well as fast execution of business rules. 
-  ADAPA supports an extensive collection of PMML elements, including the 
-  following predictive techniques: 1) Neural Networks (Backprogagation 
-  and Neural Gas); 2) Support Vector Machines; 3) Linear and Logistic 
-  Regression as well as all general regression PMML models: a) Multinomial 
-  Logistic; b) General Linear; 3) Ordinal Multinomial; 4) Simple Regression; 
-  and 5) Generalized Linear Model. ADAPA  provides a reliable and fast 
-  way to manage, deploy, and execute a multitude of models and decision 
-  strategies.
+  application, such as the Zementis ADAPA and UPPI scoring engines which allow for
+  predictive models built in R to be deployed and executed on site, in the cloud 
+  (Amazon, IBM, and FICO), in-database (IBM Netezza, Pivotal, Sybase IQ, Teradata and 
+  Teradata Aster) or Hadoop (Datameer and Hive). 
 
 }
 \references{
 
-  Package home page: \url{http://rattle.togaware.com}
+  Rattle home page: \url{http://rattle.togaware.com}
 
   PMML home page: \url{http://www.dmg.org}
 
-  Zementis' useful PMML convert: \url{http://www.zementis.com/pmml_converters.htm}
-  
-  ADAPA home page: \url{http://www.zementis.com/adapa.htm}
+  A. Guazzelli, W. Lin, T. Jena (2012), \emph{PMML in Action: Unleashing the Power  
+     of Open Standards for Data Mining and Predictive Analytics}. CreativeSpace 
+     (Second Edition) - Available on Amazon.com - \url{http://www.amazon.com/dp/1470003244}.
+
+  A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), PMML: An Open Standard for 
+     Sharing Models. \emph{The R journal}, Volume 1/1, 60-65
 
 }
 \author{\email{info@zementis.com}}

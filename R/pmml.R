@@ -23,8 +23,11 @@
 
 #######################################################################
 # MAIN PMML FUNCTION
-
-pmml <- function(model,
+#
+# modified 081513 to add implementation of transformations generator
+# and transformations element addition;  tridivesh.jena@zementis.com
+# 
+pmml <- function(model=NULL,
                  model.name="Rattle_Model",
                  app.name="Rattle/PMML",
                  description=NULL,
@@ -32,7 +35,25 @@ pmml <- function(model,
                  transforms=NULL,
                  dataset=NULL,
                  ...)
-  UseMethod("pmml")
+{
+  if(is.null(model) && !is.null(transforms))
+  {
+    field <- NULL
+    field$name <- names(transforms$fieldData)
+    field$class <- transforms$fieldData[,"dataType"]
+    names(field$class) <- row.names(transforms$fieldData)
+
+    return(pmmlLocalTransformations(field, transforms, NULL))
+  }
+  else if(grepl("XMLNode",toString(class(model))))
+  {
+    addLT(model, transforms)
+  }
+  else
+  {
+    UseMethod("pmml")
+  }
+}
 
 ########################################################################
 # UTILITY FUNCTIONS
@@ -121,39 +142,22 @@ pmml <- function(model,
 
 .pmmlHeader <- function(description, copyright, app.name)
 {
-  # Header
-  
-  VERSION <- "1.2.34"
-  DATE <- "2013-01-26"
-  REVISION <- "27"
-
-  if (is.null(copyright)) copyright <- .generateCopyright()
-  header <- xmlNode("Header",
-                    attrs=c(copyright=copyright, description=description))
-
-  # Header -> User (Extension)
-  #
-  # 100519 wenching.lin@zementis.com pointed out that the DMG spec
-  # requires the Extension to be first.
-  
-  header <- append.XMLNode(header, xmlNode("Extension",
-                                           attrs=c(name="user",
-                                             value=sprintf("%s",
-                                               Sys.info()["user"]),
-                                             extender=app.name)))
-
-  # Header -> Application
-
-  header <- append.XMLNode(header, xmlNode("Application",
-                                           attrs=c(name=app.name,
-                                             version=paste(VERSION, "r", REVISION, sep=""))))
-
-  # Header -> Timestamp
-						   
-  header <- append.XMLNode(header,
-                           xmlNode("Timestamp", sprintf("%s", Sys.time())))
-
-  return(header)
+    if (is.null(copyright)) copyright <- .generateCopyright()
+    
+    # Header Node
+    header <- xmlNode("Header", attrs=c(copyright=copyright, description=description))
+    
+    # Header -> Extension for user info
+    header <- append.XMLNode(header, xmlNode("Extension", attrs=c(name="user",value=sprintf("%s", Sys.info()["user"]), extender=app.name)))
+    
+    # Header -> Application
+    VERSION <- "1.3"
+    header <- append.XMLNode(header, xmlNode("Application", attrs=c(name=app.name, version=VERSION)))
+    
+    # Header -> Timestamp
+    header <- append.XMLNode(header, xmlNode("Timestamp", sprintf("%s", Sys.time())))
+    
+    return(header)
 }
 
 .pmmlDataDictionary <- function(field, dataset=NULL, weights=NULL, transformed=NULL)
@@ -241,7 +245,6 @@ pmml <- function(model,
    {
    fname <- field$name[i]
    if(length(grep("as\\.factor\\(",field$name[i])) == 1)
-#   if(length(grep("^as\\.factor\\(.*\\)",field$name[1])) == 1)
    {
         fname <- gsub("as.factor\\((\\w*)\\)","\\1", field$name[i], perl=TRUE)
    }
@@ -370,16 +373,14 @@ pmml <- function(model,
                                                               value=weights, extender="Rattle")))
 
   nmbr <- 1
+
   for(ndf2 in 1:length(namelist))
   {
-   if(!is.na(namelist[ndf2]))
-   {
     optype <- optypelist[[namelist[ndf2][[1]]]]
+
     datype <- datypelist[[namelist[ndf2][[1]]]]
     data.fields[[nmbr]] <- xmlNode("DataField", attrs=c(name=namelist[ndf2],
                                              optype=optype, dataType=datype))
-
-   }
 
    # DataDictionary -> DataField -> Interval
 
@@ -803,6 +804,11 @@ pmml <- function(model,
  
   }
 
+  if(length(grep("as\\.factor\\(",target)) == 1)
+  {
+       target <- gsub("as.factor\\((\\w*)\\)","\\1", target, perl=TRUE)
+  }
+
   for(j in 1:length(namelist))
   {
    if(!is.na(namelist[j]))
@@ -919,15 +925,20 @@ pmml <- function(model,
        if(!is.na(namelist[ndf2]))
        {
         mining.fields[[nmbr]] <- xmlNode("MiningField", attrs=c(name=namelist[ndf2],
-                                                usageType=usage))
+                                                usageType=usage,invalidValueTreatment="asIs"))
         nmbr <- nmbr + 1
        }
       }
     } else
     { 
+      if(length(grep("as\\.factor\\(",field$name[i])) == 1)
+        fName <- gsub("as.factor\\((\\w*)\\)","\\1", field$name[i], perl=TRUE)
+      else
+	fName <- field$name[i]
+
       mining.fields[[i]] <- xmlNode("MiningField",
-                                  attrs=c(name=field$name[i],
-                                    usageType=usage))
+                                  attrs=c(name=fName,
+                                    usageType=usage,invalidValueTreatment="asIs"))
     }
 
 
@@ -1407,19 +1418,24 @@ pmmlLocalTransformations <- function(field, transforms=NULL, LTelement=NULL)
   {
     if (field$name[i]==target)
     {
+      targetout = target
+      if(length(grep("as\\.factor\\(",targetout)) == 1)
+      {
+        targetout <- gsub("as.factor\\((\\w*)\\)","\\1", targetout, perl=TRUE)
+      }
+
       if (is.null(optype))
         output.fields[[1]] <- xmlNode("OutputField",
-                                      attrs=c(name=gsub(" ","",paste("Predicted_",target)),
+                                      attrs=c(name=gsub(" ","",paste("Predicted_",targetout)),
                                         feature="predictedValue"))
       else
         output.fields[[1]] <- xmlNode("OutputField",
-                                      attrs=c(name=gsub(" ","",paste("Predicted_",target)),
+                                      attrs=c(name=gsub(" ","",paste("Predicted_",targetout)),
                                         optype=optype,
                                         dataType=ifelse(optype=="continuous",
                                           "double", "string"),
                                         feature="predictedValue"))
 
-     if(field$name[i] %in% names(field$levels))
      {
       for (j in seq_along(field$levels[[field$name[i]]]))
         output.fields[[j+1]] <- xmlNode("OutputField",

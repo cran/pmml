@@ -38,7 +38,7 @@
 {
   if (! inherits(model, "survreg")) stop("Not a legitimate survreg object")
   
-  require(XML, quietly=TRUE)
+  #require(XML, quietly=TRUE)
 
   # Collect the required information.
 

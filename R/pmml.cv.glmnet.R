@@ -21,7 +21,7 @@
 # To review the GNU General Public License see <http://www.gnu.org/licenses/>
 ########################################################################
 #
-# Implemented: 080201 by Zementis, Inc. (info@zementis.com) to add the
+# Implemented: 080201 by Tridivesh Jena (info@zementis.com) to add the
 # capability to export glmnet models.
 
 pmml.cv.glmnet <- function(model,
@@ -36,7 +36,7 @@ pmml.cv.glmnet <- function(model,
 {
   if (! inherits(model, "cv.glmnet")) stop("Not a legitimate cross-validated glmnet object")
   
-  require(XML, quietly=TRUE)
+  #require(XML, quietly=TRUE)
 
   # Collect the required information.
   # the fitted model   
@@ -104,6 +104,15 @@ pmml.cv.glmnet <- function(model,
    beta <- fitmodel$beta
    varnames <- attributes(beta)$Dimnames[[1]]
 
+##new 
+   if(!is.null(transforms))
+   {
+    for(i in 1:length(varnames))
+    {
+     varnames[i] <- row.names(transforms$fieldData)[i] 
+    }
+   }
+
   if(exact)
   {
     # intercept 
@@ -137,10 +146,20 @@ pmml.cv.glmnet <- function(model,
   class <- NULL  
   field <- NULL
   field$name <- c("predictedScore", varnames)
+
+# get field class from the modelling dataset, if provided
+# else assume it is numeric
   for(i in 1:length(field$name))
   {
-    class <- c(class,"numeric")
+    if(is.null(dataset))
+    {
+      class <- c(class,"numeric") 
+    } else 
+    {
+      class <- c(class,class(dataset[,i]))
+    }
   }
+
   field$class <- class
   names(field$class) <- field$name
 

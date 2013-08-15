@@ -49,9 +49,7 @@
 
   Use of PMML and \code{pmml.rfsrc} requires the \pkg{XML} package.  Be
   aware that XML is a very verbose data format.  Reasonably sized trees
-  and data sets can lead to extremely large text files.  XML, while
-  achieving interoperability, is not an efficient data storage mechanism
-  in this case.
+  and data sets can lead to extremely large text files. 
 
   This function is used to export the geometry of the forest to other
   PMML compliant applications, including graphics packages that are
@@ -76,10 +74,15 @@
   H. Ishwaran and Udaya B. Kogalur (2006).  Random Survival Forests.
   \emph{Cleveland Clinic Technical Report}.
 
-  A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), /emph{PMML: An Open Standard for
-     Sharing Models}. The R journal, Volume 1/1, 60-65
-
   PMML home page: \url{http://www.dmg.org}
+  
+  A. Guazzelli, W. Lin, T. Jena (2012), \emph{PMML in Action: Unleashing the Power  
+     of Open Standards for Data Mining and Predictive Analytics}. CreativeSpace 
+     (Second Edition) - Available on Amazon.com - \url{http://www.amazon.com/dp/1470003244}.
+
+  A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), PMML: An Open Standard for 
+     Sharing Models. \emph{The R journal}, Volume 1/1, 60-65
+     
 }	
 \author{\email{info@zementis.com}}
 \seealso{

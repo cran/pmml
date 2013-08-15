@@ -40,13 +40,13 @@
   http://www.dmg.org.  
 
   Use of PMML and \code{pmml.multinom} requires the \pkg{XML} package.  Be
-  aware that XML is a very verbose data format.  Reasonably sized trees
-  and data sets can lead to extremely large text files.  XML, while
-  achieving interoperability, is not an efficient data storage mechanism
-  in this case.
+  aware that XML is a very verbose data format. 
 
-  This function is used to export the structure of the multinomial logistoc 
-  regression model to other PMML compliant applications. 
+  This function is used to export the structure of the multinomial logistic 
+  regression model to any PMML consuming applications, such as the Zementis ADAPA and UPPI 
+  scoring engines which allow for predictive models built in R to be deployed and 
+  executed on site, in the cloud (Amazon, IBM, and FICO), in-database (IBM Netezza, 
+  Pivotal, Sybase IQ, Teradata and Teradata Aster) or Hadoop (Datameer and Hive). 
 
 }    
 \value{
@@ -60,13 +60,13 @@
 \references{
 
   Venables, W.N. and Ripley, B.D. (2002) /emph{Modern Applied Statistics with S}.
-					Fourth edition. Springer.
+	Fourth edition. Springer.
 
   PMML home page: \url{http://www.dmg.org}
 
   A. Guazzelli, W. Lin, T. Jena (2012), /emph{PMML in Action: Unleashing the Power 
      of Open Standards for Data Mining and Predictive Analytics}. CreativeSpace                
-     (Second Edition - Available on Amazon.com - \url{http://www.amazon.com/dp/1470003244}.
+     (Second Edition) - Available on Amazon.com - \url{http://www.amazon.com/dp/1470003244}.
 
   A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), /emph{PMML: An Open Standard for 
      Sharing Models}. The R journal, Volume 1/1, 60-65

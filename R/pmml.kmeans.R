@@ -34,7 +34,7 @@ pmml.kmeans <- function(model,
                         ...)
 {
   if (! inherits(model, "kmeans")) stop("Not a legitimate kmeans object")
-  require(XML, quietly=TRUE)
+  #require(XML, quietly=TRUE)
   
   # Collect the required information.
 
@@ -75,18 +75,22 @@ pmml.kmeans <- function(model,
   number.of.clusters <- length(model$size)
   cluster.names <- rownames(model$centers)
 
+  #----------------------------------------------------------
   # PMML
-
+  
   pmml <- .pmmlRootNode("4.1")
-
+  
+  #----------------------------------------------------------
   # PMML -> Header
 
   pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
 
+  #-----------------------------------------------------------
   # PMML -> DataDictionary
 
   pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field2,transformed=transforms))
 
+  #------------------------------------------------------------
   # PMML -> ClusteringModel
 
   the.model <- xmlNode("ClusteringModel",
@@ -96,16 +100,28 @@ pmml.kmeans <- function(model,
                         modelClass="centerBased", # Required
                         numberOfClusters=number.of.clusters)) # Required
 
+  #---------------------------------------------------------------
   # PMML -> ClusteringModel -> MiningSchema
 
   the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field2,transformed=transforms))
 
+  #-----------------------------------------------------------------
   # Outputs
+  
   output <- xmlNode("Output")
   out <- xmlNode("OutputField",attrs=c(name="predictedValue", feature="predictedValue"))
   output <- append.XMLNode(output, out)
+  
+  for (i in 1:number.of.clusters)
+  {
+    affinityFieldName <- paste("clusterAffinity_",i,sep="")
+    out <- xmlNode("OutputField",attrs=c(name=affinityFieldName, feature="clusterAffinity", value=i))
+    output <- append.XMLNode(output, out)
+  }
+  
   the.model <- append.XMLNode(the.model, output)
 
+  #-----------------------------------------------------------------
   # PMML -> ClusteringModel -> LocalTransformations -> DerivedField -> NormContiuous
 
   if (.supportTransformExport(transforms))
@@ -117,37 +133,29 @@ pmml.kmeans <- function(model,
     the.model <- append.XMLNode(the.model, pmmlLocalTransformations(field2, transforms))
   }
  
+  #------------------------------------------------------------------
   # PMML -> ClusteringModel -> ComparisonMeasure
   
   the.model <- append.XMLNode(the.model,
-                             append.XMLNode(xmlNode("ComparisonMeasure",
-                                                    attrs=c(kind="distance")),
-                                            xmlNode("squaredEuclidean")))
+                             append.XMLNode(xmlNode("ComparisonMeasure",attrs=c(kind="distance")), xmlNode("squaredEuclidean")))
 
+  #------------------------------------------------------------------
   # PMML -> ClusteringField
 
   for (i in orig.fields)
   {
-    the.model <- append.xmlNode(the.model,
-                               xmlNode("ClusteringField",
-                                       attrs=c(field=i,
-                                         compareFunction="absDiff")))
+    the.model <- append.xmlNode(the.model, xmlNode("ClusteringField", attrs=c(field=i,compareFunction="absDiff")))
   }
   
+  #-------------------------------------------------------------------
   # PMML -> ClusteringModel -> Cluster -> Array
   
-  clusters <- list()
+ # clusters <- list()
   for (i in 1:number.of.clusters)
   {
-    the.model <- append.XMLNode(the.model,
-                               xmlNode("Cluster",
-                                       attrs=c(name=cluster.names[i],
-                                         size=model$size[i]),
-                                       xmlNode("Array",
-                                               attrs=c(n=number.of.fields,
-                                                 type="real"),
-                                               paste(model$centers[i,],
-                                                     collapse=" "))))
+    the.model <- append.XMLNode(the.model,xmlNode("Cluster",attrs=c(name=cluster.names[i],size=model$size[i],id=i),
+                                       xmlNode("Array",attrs=c(n=number.of.fields,type="real"),
+                                               paste(model$centers[i,],collapse=" "))))
   }
   pmml <- append.XMLNode(pmml, the.model)
 

@@ -7,7 +7,7 @@ pmml.itemsets <- function(model,
   
   if (! inherits(model, "itemsets")) stop("Not a legitimate arules itemsets rules object")
 
-  require(XML, quietly=TRUE)
+#  require(XML, quietly=TRUE)
   require(arules, quietly=TRUE)
   
   ## PMML

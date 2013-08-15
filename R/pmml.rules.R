@@ -40,7 +40,7 @@ pmml.rules <- function(model,
 {
   
   #if (!inherits(model, "rules")) stop("Not a legitimate arules rules object")
-  require(XML, quietly=TRUE)
+  #require(XML, quietly=TRUE)
   #require(arules, quietly=TRUE)
   
   # PMML

@@ -5,8 +5,8 @@
 }
 \description{
   
-  Generate the PMML representation for a ksvm object (SVM). The PMML can
-  then be imported into other systems that accept PMML.  With this code,
+  Generate the Predictive Model Markup Language (PMML) 
+  representation for a ksvm object (SVM). With this code,
   a PMML representation can be obtained for SVMs implementing
   classification (multi-class and binary) as well as regression.
   
@@ -40,22 +40,33 @@
 }
 \details{
 
-  The generated PMML can be imported into any PMML consuming application
-  that recognizes PMML 3.2. An example is ADAPA (Adaptive Decision and
-  Predictive Analytics), a lightweight decision engine with batch and
-  real-time scoring of predictive models (also supporting neural
-  networks and linear and logistic regression).
+  PMML is an XML based language which
+  provides a way for applications to define statistical and data mining
+  models and to share models between PMML compliant applications.  More
+  information about PMML and the Data Mining Group can be found at
+  http://www.dmg.org.  
+
+  The generated PMML can be imported into any PMML consuming
+  application, such as the Zementis ADAPA and UPPI scoring engines which allow for
+  predictive models built in R to be deployed and executed on site, in the cloud 
+  (Amazon, IBM, and FICO), in-database (IBM Netezza, Pivotal, Sybase IQ, Teradata and 
+  Teradata Aster) or Hadoop (Datameer and Hive). 
+
 
 }
 \references{
 
-  Package home page: \url{http://rattle.togaware.com}
+  Rattle home page: \url{http://rattle.togaware.com}
 
   PMML home page: \url{http://www.dmg.org}
 
-  Zementis' useful PMML convert: \url{http://www.zementis.com/pmml_converters.htm}
-  
-  ADAPA home page: \url{http://www.zementis.com/adapa.htm}
+  A. Guazzelli, W. Lin, T. Jena (2012), \emph{PMML in Action: Unleashing the Power  
+     of Open Standards for Data Mining and Predictive Analytics}. CreativeSpace 
+     (Second Edition) - Available on Amazon.com - \url{http://www.amazon.com/dp/1470003244}.
+
+  A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), PMML: An Open Standard for 
+     Sharing Models. \emph{The R journal}, Volume 1/1, 60-65
+
 
 }
 \author{\email{info@zementis.com}}
@@ -69,6 +80,16 @@
 require(kernlab)
 model  <- ksvm(Species ~ ., data=iris)
 p <- pmml(model, dataset=iris)
+
+# To make predictions using this model, the new data must be given; without it and by
+# simply using the "predict" function without an input dataset, the predicted value 
+# will not be the true predicted value. It will be a raw predicted value which must be
+# post-processed to get the final correct predicted value
+#
+# Make predictions using same iris input data. Even though it is the same dataset, it
+# must be provided as an input parameter for the "predict" function. 
+
+predict(model,iris[,1:4])
 
 # Save to file.
 

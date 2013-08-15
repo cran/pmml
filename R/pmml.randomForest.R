@@ -20,6 +20,8 @@
 #
 # To review the GNU General Public License see <http://www.gnu.org/licenses/>
 ########################################################################
+# Implemented: by Tridivesh Jena (info@zementis.com) to add the
+# capability to export random forest models.
 
 pmml.randomForest <- function(model,
                               model.name="randomForest_Model",
@@ -30,13 +32,13 @@ pmml.randomForest <- function(model,
                               ...)
 
 {
-  if (! inherits(model, "randomForest"))
+   if (! inherits(model, "randomForest"))
     stop("Not a legitimate randomForest object")
 
-  require(XML, quietly=TRUE)
+  #require(XML, quietly=TRUE)
   require(randomForest, quietly=TRUE)
 
-  # Collect the required information. We list all variables,
+  # Tridivesh: Collect the required information. We list all variables,
   # irrespective of whether they appear in the final model. This
   # seems to be the standard thing to do with PMML. It also adds
   # extra information - i.e., the model did not need these extra
@@ -49,9 +51,6 @@ pmml.randomForest <- function(model,
 
   field <- NULL
   tr.vars <- attr(model$terms, "dataClasses")
-#  var.names <- unlist(lapply(names(tr.vars),
-#                             function(x) gsub("as.factor\\((\\w*)\\)",
-#                                              "\\1", x, perl=TRUE)))
   var.names0 <- gsub("as\\.factor\\(","",names(tr.vars))
   var.names <- gsub("\\)","",var.names0)
   field$name <- var.names
@@ -118,18 +117,9 @@ pmml.randomForest <- function(model,
   }
 
   mmodel <- xmlNode("MiningModel",attrs=c(modelName=model.name,functionName=model$type))
-  mmodel <- append.XMLNode(mmodel,.pmmlMiningSchema(field, target,transformed=transforms))
+  mmodel <- append.XMLNode(mmodel,.pmmlMiningSchemaRF(field, target,transformed=transforms))
 
-  # Tridi Zementis: Add output fields
-#  output <- xmlNode("Output")
-
-#  out<-xmlNode("OutputField",attrs=c(name=gsub(" ","",paste("Predicted_",target)), feature="predictedValue"))
-#  output <- append.XMLNode(output, out)
-#  if(model$type == "classification")
-#  {
-#    out2 <- xmlNode("OutputField",attrs=c(name=, feature="probability"))
-#    output <- append.XMLNode(output, out2) 
-#  }
+  # Tridi: Add output fields
   mmodel <- append.XMLNode(mmodel, .pmmlOutput(field, target))
 
 
@@ -238,7 +228,7 @@ pmml.randomForest <- function(model,
     }
     if(model$type == "classification") 
     {
-  tree.model <- xmlNode("TreeModel",
+  	tree.model <- xmlNode("TreeModel",
                         attrs=c(modelName=model.name,
                           functionName="classification",
                           algorithmName="randomForest",
@@ -292,7 +282,7 @@ pmml.randomForest <- function(model,
   }
   mmodel <- append.XMLNode(mmodel, segmentation)
   pmml <- append.XMLNode(pmml, mmodel)
-  
+ 
   return(pmml)
 }
 

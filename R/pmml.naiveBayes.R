@@ -26,6 +26,8 @@
 # To review the GNU General Public License see <http://www.gnu.org/licenses/>
 ########################################################################
 # naiveBayes PMML exporter
+# Implemented: 081513 by Tridivesh Jena (info@zementis.com) to add the
+# capability to export naive bayes models with categorical and continuous variables.
 
 pmml.naiveBayes <- function(model,
                           model.name="naiveBayes_Model",
@@ -39,8 +41,8 @@ pmml.naiveBayes <- function(model,
 {
   if (! inherits(model, "naiveBayes")) stop("Not a legitimate naiveBayes object")
 
-  require(XML, quietly=TRUE)
-#  require(e1071, quietly=TRUE)
+  #require(XML, quietly=TRUE)
+  require(e1071, quietly=TRUE)
 
   # field names and attributes are not given 
   # They must be inferred from the information given in the tables 
@@ -91,8 +93,8 @@ pmml.naiveBayes <- function(model,
     {
       # continuous variable
       # Stop after explaining continuous NaiveBayes models not yet supported.
-      stop("continuous variables not yet supported for NaiveBayes models.")
-
+      # stop("continuous variables not yet supported for NaiveBayes models.")
+      # Above no longer true 
       field$class[[name]] <- "numeric"
     }
   }

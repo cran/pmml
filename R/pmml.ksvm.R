@@ -29,45 +29,6 @@
 # E-mail: info@zementis.com
 # Date: 17 Jan 2008
 
-.ksvm.Header <- function(description, copyright, app.name)
-{
-  # Header
-
-  KSVMVERSION <- "1.2.27"
-  # "1.2.27" Took care the case when using the default kernal
-  #          Took care the case when model$scaling is NULL
-  # "1.1.8" Fixed dataField issues and REAL-SPARSE ARRAY n issue
-  # "1.1.4" # Add pmml.ksvm. Fix extensions.
-  # "1.1.3" Fixes for new version of randomSurvivalForest.
-  # "1.1.2" Expose pmml.lm in NAMESPACE - woops.
-  # "1.1.1" Add pmml.lm
-
-  if (is.null(copyright))
-    copyright <- .generateCopyright()
-  header <- xmlNode("Header",
-                    attrs=c(copyright=copyright, description=description))
-
-  # Header -> Extension
-
-  header <- append.XMLNode(header,
-                           xmlNode("Extension",
-                                   attrs=c(name="timestamp",
-                                     value=sprintf("%s", Sys.time()),
-                                     extender="Rattle")))
-
-  header <- append.XMLNode(header, xmlNode("Extension",
-                                           attrs=c(name="description",
-                                             value=sprintf("%s", Sys.info()["user"]),
-                                             extender="Rattle")))
-
-  # Header -> Application
-
-  header <- append.XMLNode(header, xmlNode("Application",
-                                           attrs=c(name=app.name,
-                                             version=KSVMVERSION)))
-
-  return(header)
-}
 
 ###################################################################
 # Function .ksvm.DataDictionary
@@ -193,7 +154,7 @@ pmml.ksvm <- function(model,
   if (! is.object(dataset))
     stop("Specified dataset not a legitimate object.")
 
-  require(XML, quietly=TRUE)
+  #require(XML, quietly=TRUE)
 
   # Collect the required information.
   attributes.model <- attributes(model)
@@ -244,15 +205,6 @@ pmml.ksvm <- function(model,
   # First, remove as.factor() from target name
   # Second, capture classes for levels.
   
-  temp = grep("as.factor", target, value = TRUE, fixed = TRUE)
-  if (field$function.name == "classification" && length(temp) > 0)
-  {
-    tempName <- strsplit(target,"")
-    endPos <- (length(tempName[[1]]) - 1)
-    target <- substring(target,11,endPos)
-  }
-
-
   if (field$class[[field$name[1]]] == "factor")
       field$levels[[field$name[1]]] <- model@lev
 
@@ -287,7 +239,7 @@ pmml.ksvm <- function(model,
 
   # PMML -> Header
   
-  pmml <- append.XMLNode(pmml, .ksvm.Header(description, copyright, app.name))
+  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
 
   # PMML -> DataDictionary
  
@@ -301,8 +253,7 @@ pmml.ksvm <- function(model,
                           attrs=c(modelName=model.name,
                             functionName=field$function.name,
                             algorithmName="supportVectorMachine",
-                            svmRepresentation="SupportVectors",
-                            alternateBinaryTargetCategory=model@lev[2]))
+                            svmRepresentation="SupportVectors"))
   }
   else
   {
@@ -315,12 +266,19 @@ pmml.ksvm <- function(model,
   
   # PMML -> SupportVectorMachineModel -> MiningSchema
 
-  field$name[1] <- target
   ksvm.model <- append.XMLNode(ksvm.model,
                                .pmmlMiningSchema(field, target, NULL, transformed=transforms))
 
   # Output 
   ksvm.model <- append.XMLNode(ksvm.model, .pmmlOutput(field, target))  
+
+  temp = grep("as.factor", target, value = TRUE, fixed = TRUE)
+  if (field$function.name == "classification" && length(temp) > 0)
+  {
+    tempName <- strsplit(target,"")
+    endPos <- (length(tempName[[1]]) - 1)
+    target <- substring(target,11,endPos)
+  }
   
   ##########################################################################
   # PMML -> SupportVectorMachineModel -> Targets
@@ -688,19 +646,19 @@ pmml.ksvm <- function(model,
       if (number.of.SVMs > 2)
       {
         SupportVectorMachine <- xmlNode("SupportVectorMachine",
-                                        attrs=c(targetCategory=model@lev[target1[[ix]]]))
+                                        attrs=c(targetCategory=model@lev[target1[[ix]]],alternateTargetCategory=model@lev[target2[[ix]]] ))
         
-        targetExtension <- xmlNode("Extension",
-                                   attrs=c(name="alternateTargetCategory",
-                                     value=model@lev[target2[[ix]]],
-                                     extender="ADAPA"))
+       # targetExtension <- xmlNode("Extension",
+       #                            attrs=c(name="alternateTargetCategory",
+       #                              value=model@lev[target2[[ix]]],
+       #                              extender="ADAPA"))
         
-        SupportVectorMachine <- append.XMLNode(SupportVectorMachine, targetExtension)
+       # SupportVectorMachine <- append.XMLNode(SupportVectorMachine, targetExtension)
       }
       else  # binary classification
       {
         SupportVectorMachine <- xmlNode("SupportVectorMachine",
-                                        attrs=c(targetCategory=model@lev[ix]))
+                                        attrs=c(targetCategory=model@lev[ix],alternateTargetCategory=model@lev[ix+1]))
       }
     }
     else   # Regression

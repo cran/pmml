@@ -3,8 +3,8 @@
 \title{Can this installation export PMML variables (particularly transforms).}
 \description{
   
-  This function is designed to be overriden by other pacakges that
-  implement pmml export, particularly of transforms.
+  This function is designed to be overriden by other packages that
+  implement PMML export, particularly of transformations.
   
 }
 \usage{

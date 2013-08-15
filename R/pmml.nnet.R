@@ -148,7 +148,7 @@ pmml.nnet <- function(model,
 {
   if (! inherits(model, "nnet")) stop("Not a legitimate nnet object")
   
-  require(XML, quietly=TRUE)
+  #require(XML, quietly=TRUE)
   
   # Collect the required information.
 

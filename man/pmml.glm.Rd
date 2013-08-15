@@ -34,20 +34,20 @@
 }
 \details{
 
-  The Predictive Model Markup Language is an XML based language which
+  PMML is an XML based language which
   provides a way for applications to define statistical and data mining
   models and to share models between PMML compliant applications.  More
   information about PMML and the Data Mining Group can be found at
   http://www.dmg.org.  
 
   Use of PMML and \code{pmml.glm} requires the \pkg{XML} package.  Be
-  aware that XML is a very verbose data format.  Reasonably sized trees
-  and data sets can lead to extremely large text files.  XML, while
-  achieving interoperability, is not an efficient data storage mechanism
-  in this case.
+  aware that XML is a very verbose data format.  
 
-  This function is used to export the structure of a general regrssion
-  model to other PMML compliant applications, including graphics packages.
+  This function is used to export the structure of a general regression
+  model to any PMML consuming applications, such as the Zementis ADAPA and UPPI 
+  scoring engines which allow for predictive models built in R to be deployed and 
+  executed on site, in the cloud (Amazon, IBM, and FICO), in-database (IBM Netezza, 
+  Pivotal, Sybase IQ, Teradata and Teradata Aster) or Hadoop (Datameer and Hive). 
 
 }    
 \value{

@@ -33,7 +33,7 @@ pmml.hclust <- function(model,
                         centers,
                         ...)
 {
-  require(XML, quietly=TRUE)
+  #require(XML, quietly=TRUE)
   
   if (! inherits(model, "hclust")) stop("Not a legitimate hclust object")
 

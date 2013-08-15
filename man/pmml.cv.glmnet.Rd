@@ -12,7 +12,7 @@
 \usage{
 \method{pmml}{cv.glmnet}(model, model.name="Elasticnet_Model", app.name="Rattle/PMML",
      description="Generalized Linear Regression Model", 
-     copyright = NULL, transforms = NULL, dataset = NULL, s = NULL, ...)
+     copyright = NULL, transforms = NULL, dataset = NULL, s = NULL, \dots)
 }
 \arguments{
   
@@ -48,22 +48,26 @@
   and data frames can be converted to a matrix format using the data.matrix
   function from the base package. Given a data frame df, a matrix m can 
   thus be created by using m <- data.matrix(df).
+
+  The PMML language requires variable names which will be read in as the 
+  column names of the input matrix. If the matrix does not have variable 
+  names, they will be given the default values of "X1", "X2", ...  
  
-  The Predictive Model Markup Language is an XML based language which
+  PMML is an XML based language which
   provides a way for applications to define statistical and data mining
   models and to share models between PMML compliant applications.  More
   information about PMML and the Data Mining Group can be found at
   http://www.dmg.org.  
 
   Use of PMML and \code{pmml.cv.glmnet} requires the \pkg{XML} package.  Be
-  aware that XML is a very verbose data format.  Reasonably sized trees
-  and data sets can lead to extremely large text files.  XML, while
-  achieving interoperability, is not an efficient data storage mechanism
-  in this case.
-
-  This function is used to export the structure of a general regrssion
-  model to other PMML compliant applications, including graphics packages.
-
+  aware that XML is a very verbose data format. 
+  
+  This function is used to export the structure of a general regression
+  model to any PMML consuming applications, such as the Zementis ADAPA and UPPI 
+  scoring engines which allow for predictive models built in R to be deployed and 
+  executed on site, in the cloud (Amazon, IBM, and FICO), in-database (IBM Netezza, 
+  Pivotal, Sybase IQ, Teradata and Teradata Aster) or Hadoop (Datameer and Hive). 
+  
 }    
 \value{
   
@@ -82,7 +86,7 @@
 
   A. Guazzelli, W. Lin, T. Jena (2012), \emph{PMML in Action: Unleashing the Power 
      of Open Standards for Data Mining and Predictive Analytics}. CreativeSpace                
-     (Second Edition - Available on Amazon.com - \url{http://www.amazon.com/dp/1470003244}.
+     (Second Edition) - Available on Amazon.com - \url{http://www.amazon.com/dp/1470003244}.
 
   A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), \emph{PMML: An Open Standard for 
      Sharing Models}. The R journal, Volume 1/1, 60-65
