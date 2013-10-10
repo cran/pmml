@@ -1,25 +1,21 @@
 # PMML: Predictive Model Markup Language
 #
-# Part of the pmml package handling glmnet models
+# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
-# Time-stamp: <2013-06-05 19:48:25 Tridivesh Jena>
+# This file is part of the PMML package for R.
 #
-# Copyright (c) 2013 Zementis, Inc.
+# The PMML package is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of 
+# the License, or (at your option) any later version.
 #
-# This file is part of the pmml package.
-#
-# The pmml package is free: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
-#
-# The pmml package is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# To review the GNU General Public License see <http://www.gnu.org/licenses/>
-########################################################################
+# The PMML package is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
+# GNU General Public License for details (http://www.gnu.org/licenses/).
+######################################################################################
+# 
+# Author: Tridivesh Jena
 #
 # Implemented: 080201 by Tridivesh Jena (info@zementis.com) to add the
 # capability to export glmnet models.
@@ -30,17 +26,15 @@ pmml.cv.glmnet <- function(model,
                     description="Generalized Linear Regression Model",
                     copyright=NULL,
                     transforms=NULL,
-		    dataset=NULL,
-		    s=NULL,
+		            dataset=NULL,
+		            s=NULL,
                     ...)
 {
   if (! inherits(model, "cv.glmnet")) stop("Not a legitimate cross-validated glmnet object")
-  
-  #require(XML, quietly=TRUE)
 
   # Collect the required information.
+  
   # the fitted model   
-
   fitmodel <- model$glmnet.fit 
 
   # the lambda sequence and the lambda resulting in the minimum covariance
@@ -163,13 +157,6 @@ pmml.cv.glmnet <- function(model,
   field$class <- class
   names(field$class) <- field$name
 
-  # 090103 Support transforms if available.
-
-  if (.supportTransformExport(transforms))
-  {
-    field <- .unifyTransforms(field, transforms)
-    transforms <- .activateDependTransforms(transforms)
-  }
   number.of.fields <- length(field$name)
   target <- "predictedScore" 
 
@@ -369,7 +356,7 @@ pmml.cv.glmnet <- function(model,
 
   # PMML -> RegressionModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, NULL, transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transforms))
 
   outn <- xmlNode("Output")
   outpn <- xmlNode("OutputField",attrs=c(name="predictedValue",feature="predictedValue"))
@@ -386,16 +373,13 @@ pmml.cv.glmnet <- function(model,
 
   the.model <- append.XMLNode(the.model, outn)
 
-
+  #--------------------------------------------
   # PMML -> Model -> LocalTransforms
-
-  if (.supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
 
   # test of Zementis xform functions
   if(!is.null(transforms))
   {
-    the.model <- append.XMLNode(the.model, pmmlLocalTransformations(field, transforms, NULL))
+    the.model <- append.XMLNode(the.model, .pmmlLocalTransformations(field, transforms, NULL))
   }
 
   plNode <- xmlNode("ParameterList")

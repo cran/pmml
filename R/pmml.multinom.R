@@ -1,24 +1,22 @@
 # PMML: Predictive Model Markup Language
 #
-# This part of the pmml package handles multinomial regreaaion models
+# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
-# Time-stamp: <2013-06-05 19:48:25 Tridivesh Jena>
+# This file is part of the PMML package for R.
 #
-# Copyright (c) 2013 Zementis, Inc.
+# The PMML package is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of 
+# the License, or (at your option) any later version.
 #
-# This file is part of the pmml package.
+# The PMML package is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
+# GNU General Public License for details (http://www.gnu.org/licenses/).
+#####################################################################################
 #
-# The pmml package is free: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
-#
-# The pmml package is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# To review the GNU General Public License see <http://www.gnu.org/licenses/>
+# Author: Tridivesh Jena
+# 
 
 ########################################################################
 # multinom PMML exporter
@@ -40,13 +38,12 @@ pmml.multinom <- function(model,
                           ...)
 {
   if (! inherits(model, "multinom")) stop("Not a legitimate multinom object")
-  #require(XML, quietly=TRUE)
   require(nnet, quietly=TRUE)
 
-  # models built with formulae have 2 main pieces of information missing 
-  # from the model description of models built with matrices: the categorical
-  # variable levels, the dataType of the target variable. Add 
-  # those information by hand below
+  #------------------------------------------------
+  # models built with formulae have 2 main pieces of information missing from the
+  # model description of models built with matrices: the categorical variable levels,
+  # the dataType of the target variable. Add those information by hand below
   field <- NULL
   if (is.null(model$lev) && length(grep("matrix",attributes(model$terms)$dataClasses[1][1]))==1)
   {
@@ -67,13 +64,6 @@ pmml.multinom <- function(model,
   field$class <- terms$dataClasses
   orig.class <- field$class
 
-   # 090216 Support transforms if available.
-  
-  if (.supportTransformExport(transforms))
-  {
-    field <- .unifyTransforms(field, transforms)
-    transforms <- .activateDependTransforms(transforms)
-  }
   number.of.fields <- length(field$name)
  
   target <- field$name[1]
@@ -123,20 +113,18 @@ pmml.multinom <- function(model,
 
   # PMML -> RegressionModel -> MiningSchema
   
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, NULL, transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transforms))
 
   #########################################
   #  OUTPUT
   the.model <- append.XMLNode(the.model, .pmmlOutput(field,target))
 
-
+  #----------------------------------------------------
   # PMML -> TreeModel -> LocalTransformations -> DerivedField -> NormContiuous
-
-  if (.supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
 
   LTNode <- xmlNode("LocalTransformations")
   
+  #--------------------------------------------------------------------------
   # PMML -> RegressionModel -> RegressionTable
   
   coeff <- coefficients(model)
@@ -197,7 +185,7 @@ pmml.multinom <- function(model,
   append <- FALSE
   if(LTAdd && !is.null(transforms))
   {
-    LTNode <- pmmlLocalTransformations(field, transforms, LTNode)
+    LTNode <- .pmmlLocalTransformations(field, transforms, LTNode)
     the.model <- append.XMLNode(the.model,LTNode)
   }
   if(LTAdd && is.null(transforms)) 
@@ -206,7 +194,7 @@ pmml.multinom <- function(model,
   }
   if(!LTAdd && !is.null(transforms))
   {
-  the.model <- append.XMLNode(the.model,pmmlLocalTransformations(field, transforms, LTNode))
+  the.model <- append.XMLNode(the.model,.pmmlLocalTransformations(field, transforms, LTNode))
   }
 
   for (k in 1:nrow(coeff))

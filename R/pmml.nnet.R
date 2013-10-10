@@ -1,25 +1,19 @@
-# PMML: Predictive Modelling Markup Language
+# PMML: Predictive Model Markup Language
 #
-# Part of the Rattle package for Data Mining
+# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
-# Time-stamp: <2009-12-07 06:34:57 Graham Williams>
+# This file is part of the PMML package for R.
 #
-# Copyright (c) 2009 Togaware Pty Ltd
+# The PMML package is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of 
+# the License, or (at your option) any later version.
 #
-# This files is part of the Rattle suite for Data Mining in R.
-#
-# Rattle is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
-#
-# Rattle is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# The PMML package is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
+# GNU General Public License for details (http://www.gnu.org/licenses/).
+######################################################################################
 
 #######################################################################
 # Neural Networks
@@ -32,107 +26,6 @@
 # a single output node neural network?
 #
 
-# Function pmml.nnet.DataDictionary
-
-##091206 REMOVE Revert to using the original version of this rather than a special one for nnet
-##091206  pmml.nnet.DataDictionary <- function(field)
-## {
-##   # field$name is a vector of strings, and includes target
-##   # field$class is indexed by fields$names
-##   # field$levels is indexed by fields$names
-##   number.of.fields <- length(field$name)
-  
-##   # DataDictionary
-	
-##   data.dictionary <- xmlNode("DataDictionary",
-##                              attrs=c(numberOfFields=number.of.fields))
-##   data.fields <- list()
-##   for (i in 1:number.of.fields)
-##   {
-##     # Determine the operation type
-    
-##     optype <- "UNKNOWN"
-##     datype <- "UNKNOWN"
-##     values <- NULL
-##     #091206 orig.target <- field$name[1]
-    
-##     if (field$class[[field$name[i]]] == "numeric")
-##     {
-##       optype <- "continuous"
-##       datype <- "double"
-##     }
-##     else if (field$class[[field$name[i]]] == "factor")
-##     {
-##       optype <- "categorical"
-##       datype <- "string"
-      
-##       temp = grep("as.factor", field$name[i], value = TRUE, fixed = TRUE)
-##       if (i == 1 && length(temp) > 0)
-##         field$name[i] <- sub("as.factor\\((.*)\\)", "\\1", field$name[i])
-##     }
-    
-##     # DataDictionary -> DataField
-    
-##     data.fields[[i]] <- xmlNode("DataField", attrs=c(name=field$name[i],
-##                                                optype=optype,
-##                                                dataType=datype))
-
-##     # Restore the original target name. 091206 This is wastefull to do
-##     # it every loop. Need to improve this. The aim is to use the real
-##     # variable name in the above data.field but I'm not sure why we
-##     # needed to revert it here? I don't think we do. so don't
-    
-##     # 091206 field$name[1] <- orig.target
-    
-##     # DataDictionary -> DataField -> Value
-    
-##     if (optype == "categorical")
-##       for (j in 1:length(field$levels[[field$name[i]]]))
-##         data.fields[[i]][[j]] <- xmlNode("Value",
-##                                          attrs=c(value=field$levels[[field$name[i]]][j]))
-##   }
-##   data.dictionary$children <- data.fields
-  
-##   return(data.dictionary)
-  
-## }
-
-###################################################################
-# Function pmml.nnet.MiningSchema
-
-##091206 REMOVE Revert to using the original version of this rather than a special one for nnet
-## pmml.nnet.MiningSchema <- function(field, target=NULL)
-## {
-##   number.of.fields <- length(field$name)
-##   mining.fields <- list()
-##   for (i in 1:number.of.fields)
-##   {
-##     if (field$class[[field$name[i]]] == "factor")
-##     {
-## 			temp = grep("as.factor", field$name[i], value = TRUE, fixed = TRUE)
-## 			if (i == 1 && length(temp) > 0)
-## 			{
-## 				targetTmp <- field$name[i]
-## 				tempName <- strsplit(field$name[i],"")
-## 				endPos <- (length(tempName[[1]]) - 1)
-## 				field$name[i] <- substring(targetTmp,11,endPos)
-##                                 modified.target <- TRUE
-##                         }
-##     }
-    
-##     if (is.null(target))
-##       usage <- "active"
-##     else
-##       usage <- ifelse(field$name[i] == target, "predicted", "active")
-      
-##     mining.fields[[i]] <- xmlNode("MiningField",
-##                                   attrs=c(name=field$name[i],
-##                                         usageType=usage))
-##   }
-##   mining.schema <- xmlNode("MiningSchema")
-##   mining.schema$children <- mining.fields
-##   return(mining.schema)
-## }
 
 ###################################################################
 # Function pmml.nnet
@@ -147,9 +40,7 @@ pmml.nnet <- function(model,
                       ...)
 {
   if (! inherits(model, "nnet")) stop("Not a legitimate nnet object")
-  
-  #require(XML, quietly=TRUE)
-  
+
   # Collect the required information.
 
   # 090824 The number of layers is the number of hidden layers. So it
@@ -264,13 +155,6 @@ pmml.nnet <- function(model,
 
   target <- field$name[1]
   
-  # 090820 Support transforms if available.
-
-  if (.supportTransformExport(transforms))
-  {
-    field <- .unifyTransforms(field, transforms)
-    transforms <- .activateDependTransforms(transforms)
-  }
   number.of.fields <- length(field$name)
   
   # According to the nnet documentation:
@@ -408,13 +292,14 @@ pmml.nnet <- function(model,
 
   # PMML -> NeuralNetwork -> LocalTransforms
 
-  if (.supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
+  #2013 ... commented by Wen to see if it breaks anything
+  #if (.supportTransformExport(transforms))
+  #  the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
 
   # test of Zementis xform functions
   if(!is.null(transforms))
   {
-    the.model <- append.XMLNode(the.model, pmmlLocalTransformations(field, transforms, NULL))
+    the.model <- append.XMLNode(the.model, .pmmlLocalTransformations(field, transforms, NULL))
   }
   
   # PMML -> NeuralNetwork -> NeuralInputs

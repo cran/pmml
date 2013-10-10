@@ -1,11 +1,8 @@
 \name{pmml.coxph}
 \alias{pmml.coxph}
-\title{Generate PMML for a coxph object}
+\title{Generate PMML for coxph objects}
 \description{
-  
-  Generate the PMML (Predictive Model Markup Language) representation of
-  a \pkg{coxph} object. 
-  
+  Generate the PMML representation for a coxph object from package \pkg{survival}.
 }
 \usage{
 \method{pmml}{coxph}(model, model.name="CoxPH_Survival_Regression_Model", app.name="Rattle/PMML",
@@ -15,52 +12,32 @@
   
   \item{model}{a coxph object.}
 
-  \item{model.name}{a name to give to the model in the PMML.}
+  \item{model.name}{a name to be given to the model in the PMML code.}
 
-  \item{app.name}{the name of the application that generated the PMML.}
+  \item{app.name}{the name of the application that generated the PMML code.}
 
-  \item{description}{a descriptive text for the header of the PMML.}
+  \item{description}{a descriptive text for the Header element of the PMML code.}
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{a coded list of transforms performed, such as a WrapData object 
-			from the pmmlTransformations package}
+  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
 
   \item{\dots}{further arguments passed to or from other methods.}
 }
 \details{
 
-  PMML is an XML based language which
-  provides a way for applications to define statistical and data mining
-  models and to share models between PMML compliant applications.  More
-  information about PMML and the Data Mining Group can be found at
-  http://www.dmg.org. 
-  
-  The generated PMML can be imported into any PMML consuming
-  application, such as the Zementis ADAPA and UPPI scoring engines which allow for
-  predictive models built in R to be deployed and executed on site, in the cloud 
-  (Amazon, IBM, and FICO), in-database (IBM Netezza, Pivotal, Sybase IQ, Teradata and 
-  Teradata Aster) or Hadoop (Datameer and Hive). 
-
-  Note that only numeric risk regression is supported currently.
+  A coxph object is the result of fitting a proportional hazards regression model, using the "coxph"
+  function from the package \pkg{survival}. Although the \pkg{survival} package supports 
+  special terms "cluster", "tt" and "strata", only the special term "strata" is supported by the
+  \pkg{pmml} package. Note that special term "strata" cannot be a multiplicative variable and only numeric risk 
+  regression is supported.
 
 }
+
 \references{
+  R project CRAN package: \emph{\bold{survival}: Survival Analysis} \cr
+  \url{http://cran.r-project.org/web/packages/survival/index.html}
 
-  Rattle home page: \url{http://rattle.togaware.com}
-
-  PMML home page: \url{http://www.dmg.org}
-  
-  A. Guazzelli, W. Lin, T. Jena (2012), \emph{PMML in Action: Unleashing the Power  
-     of Open Standards for Data Mining and Predictive Analytics}. CreativeSpace 
-     (Second Edition) - Available on Amazon.com - \url{http://www.amazon.com/dp/1470003244}.
-
-  A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), PMML: An Open Standard for 
-     Sharing Models. \emph{The R journal}, Volume 1/1, 60-65
-     
 }
-\author{\email{Graham.Williams@togaware.com}}
-\seealso{
-  \code{\link{pmml}}.
-}
-\keyword{interface}
+
+\author{\email{Graham.Williams@togaware.com},   Zementis Inc. \email{info@zementis.com}}

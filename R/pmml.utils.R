@@ -14,14 +14,18 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
 # GNU General Public License for details (http://www.gnu.org/licenses/).
 ######################################################################################
-#
-# Author: Tridivesh Jena
-# Date: Aug 2013
-#------------------------------------------------------------------------------------
 
-fileToXMLNode <- function(file) {
-
-  filexml <- xmlTreeParse(file, useInternalNodes=FALSE)$doc$children[[1]]
-
-  return(filexml) 
+.removeAsFactor <- function(fieldName)
+{
+    if(length(grep("as\\.factor\\(",fieldName)) == 1)
+    {
+        fieldName <- gsub("as.factor\\((\\w*)\\)","\\1", fieldName, perl=TRUE)
+    } 
+    return (fieldName)
 }
+
+.getNamespace <- function(x)
+{
+  return(paste("http://www.dmg.org/PMML-",x,sep=""))
+}
+

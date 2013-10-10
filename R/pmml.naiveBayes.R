@@ -1,30 +1,23 @@
 # PMML: Predictive Model Markup Language
 #
-# This part of the pmml package handles naive bayes models
+# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
-# Time-stamp: <2013-06-05 19:48:25 Tridivesh Jena>
+# This file is part of the PMML package for R.
 #
-# Copyright (c) 2013 Zementis, Inc.
-# Implements a PMML exporter for naiveBayes objects (e1071 package)
+# The PMML package is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of 
+# the License, or (at your option) any later version.
 #
-# Author: Tridivesh Jena, Zementis, Inc. (www.zementis.com)
-# E-mail: info@zementis.com
-# Date: 8 March 2013
+# The PMML package is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
+# GNU General Public License for details (http://www.gnu.org/licenses/).
+######################################################################################
 #
-# This file is part of the pmml package.
+# Author: Tridivesh Jena
+# Date: March 2013
 #
-# The pmml package is free: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
-#
-# The pmml package is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# To review the GNU General Public License see <http://www.gnu.org/licenses/>
-########################################################################
 # naiveBayes PMML exporter
 # Implemented: 081513 by Tridivesh Jena (info@zementis.com) to add the
 # capability to export naive bayes models with categorical and continuous variables.
@@ -35,22 +28,19 @@ pmml.naiveBayes <- function(model,
                           description="NaiveBayes Model",
                           copyright=NULL,
                           transforms=NULL,
-			  dataset=NULL,
                           predictedField,
                           ...)
 {
   if (! inherits(model, "naiveBayes")) stop("Not a legitimate naiveBayes object")
-
-  #require(XML, quietly=TRUE)
   require(e1071, quietly=TRUE)
 
   # field names and attributes are not given 
   # They must be inferred from the information given in the tables 
   field <- NULL
 # target field name not given in R model object. 
-# Use dataset to get name...cannot assume in general that the target is the first column
-# find it by going thru columns and checking if the levels of the variable is the same
-# as the target levels...which are given in the R model output
+# Use predictedField input parameter to get name...cannot assume in general that the target 
+# is the first column find it by going thru columns and checking if the levels of the variable 
+# is the same as the target levels...which are given in the R model output
 
   target <- predictedField 
   colname <- 1
@@ -115,14 +105,6 @@ pmml.naiveBayes <- function(model,
     field$levels[[tname]] <- "pseudoValue"
   }
 
-   # 090216 Support transforms if available.
-  
-  if (.supportTransformExport(transforms))
-  {
-    field <- .unifyTransforms(field, transforms)
-    transforms <- .activateDependTransforms(transforms)
-  }
-
 #  numFac <- 1
   field$origName <- NA
   for(i in 1:number.of.fields)
@@ -166,24 +148,24 @@ pmml.naiveBayes <- function(model,
                          functionName="classification",
                          threshold=thresh))
 
+  #--------------------------------------------------
   # PMML ->  MiningSchema
   
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, NULL, transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transforms))
 
-  #########################################
-  #  OUTPUT
+  #-----------------------------------------
+  #  PMML -> OUTPUT
   the.model <- append.XMLNode(the.model, .pmmlOutput(field,target))
 
+  #------------------------------------------
   # PMML -> LocalTransformations 
-
-  if (.supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
 
   if(!is.null(transforms))
   {
-  the.model <- append.XMLNode(the.model,pmmlLocalTransformations(field, transforms))
+  the.model <- append.XMLNode(the.model,.pmmlLocalTransformations(field, transforms))
   }
 
+  #---------------------------------------
   prob <- NULL
   BayesInputsNode <- xmlNode("BayesInputs")
   for(i in 2:number.of.fields)

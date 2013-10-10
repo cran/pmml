@@ -1,81 +1,42 @@
 \name{pmml.glm}
 \alias{pmml.glm}
-\title{Generate PMML for a glm (stats) object}
+\title{Generate PMML for glm objects}
 \description{
-  
-  Generate the Predictive Model Markup Language (PMML) representation of
-  a \pkg{stats} general linear regression object.  In particular, this
-  function gives the user the ability to save the geometry of a general 
-  regression as a PMML XML document.
-
+  Generate the PMML representation for a glm object from package \pkg{stats}.
 }
 \usage{
 \method{pmml}{glm}(model, model.name="General_Regression_Model", app.name="Rattle/PMML",
-     description="Generalized Linear Regression Model", copyright = NULL, transforms
-                 = NULL, ...)
+     description="Generalized Linear Regression Model", copyright=NULL,
+     transforms=NULL, weights=NULL, ...)
 }
 \arguments{
   
-  \item{model}{the \code{glm} object contained in an object of class
-      \pkg{stats}, as that contained in the object returned by
-      the function \code{glm}.}
+  \item{model}{a \code{glm} object.}
 
-  \item{model.name}{a name to give to the model in the PMML.}
+  \item{model.name}{a name to be given to the model in the PMML code.}
 
-  \item{app.name}{the name of the application that generated the PMML.}
+  \item{app.name}{the name of the application that generated the PMML code.}
 
-  \item{description}{a descriptive text for the header of the PMML.}
+  \item{description}{a descriptive text for the Header element of the PMML code.}
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{transforms.}
+  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+  
+  \item{weights}{the weights used for building the model.}
 
   \item{\dots}{further arguments passed to or from other methods.}
 }
-\details{
 
-  PMML is an XML based language which
-  provides a way for applications to define statistical and data mining
-  models and to share models between PMML compliant applications.  More
-  information about PMML and the Data Mining Group can be found at
-  http://www.dmg.org.  
-
-  Use of PMML and \code{pmml.glm} requires the \pkg{XML} package.  Be
-  aware that XML is a very verbose data format.  
-
-  This function is used to export the structure of a general regression
-  model to any PMML consuming applications, such as the Zementis ADAPA and UPPI 
-  scoring engines which allow for predictive models built in R to be deployed and 
-  executed on site, in the cloud (Amazon, IBM, and FICO), in-database (IBM Netezza, 
-  Pivotal, Sybase IQ, Teradata and Teradata Aster) or Hadoop (Datameer and Hive). 
-
+\details{  
+  The function exports the glm model in the PMML GeneralRegressionModel format.
 }    
-\value{
-  
-  An object of class \code{XMLNode} as that defined by the \pkg{XML}
-  package.  This represents the top level, or root node, of the XML
-  document and is of type PMML. It can be written to file with
-  \code{saveXML}.
-  
-}
+
+
 \references{
-
-  Dobson, A.J. (1990), /emph{An Introduction to Generalized Linear Models.}
-			London: Chapman and Hall. 
-
-  PMML home page: \url{http://www.dmg.org}
-
-  A. Guazzelli, W. Lin, T. Jena (2012), /emph{PMML in Action: Unleashing the Power 
-     of Open Standards for Data Mining and Predictive Analytics}. CreativeSpace                
-     (Second Edition - Available on Amazon.com - \url{http://www.amazon.com/dp/1470003244}.
-
-  A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), /emph{PMML: An Open Standard for 
-     Sharing Models}. The R journal, Volume 1/1, 60-65
+  R project: \emph{\bold{Fitting Generalized Linear Models}} \cr
+  \url{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/glm.html}
 
 }
-\author{\email{info@zementis.com}}	
-\seealso{
-  \code{\link{pmml}}.
-}
-\keyword{interface}
-\keyword{tree}
+
+\author{Zementis Inc. \email{info@zementis.com}}	

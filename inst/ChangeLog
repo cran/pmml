@@ -1,3 +1,18 @@
+pmml (1.4)
+
+  * Add support for the svm model in e1071 package
+  
+  * Add support for ada package
+  
+  * Add classificationMethod attribute for ksvm model (kernlab) for information purpose
+  
+  * Add usageType for AssociationModel MiningField elements
+  
+  * Fix bug for combining algorithm PMML and transformation XML fragment
+  
+  * Remove obsolete codes
+  
+
 pmml (1.2.32) unstable; urgency=low
 
   * Updates to pmml.arules from Michael Hahsler.

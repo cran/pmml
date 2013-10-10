@@ -1,25 +1,19 @@
-# PMML: Predictive Modelling Markup Language
+# PMML: Predictive Model Markup Language
 #
-# Part of the Rattle package for Data Mining
+# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
-# Time-stamp: <2012-12-03 18:13:13 Graham Williams>
+# This file is part of the PMML package for R.
 #
-# Copyright (c) 2009 Togaware Pty Ltd
+# The PMML package is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of 
+# the License, or (at your option) any later version.
 #
-# This files is part of the Rattle suite for Data Mining in R.
-#
-# Rattle is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
-#
-# Rattle is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# The PMML package is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
+# GNU General Public License for details (http://www.gnu.org/licenses/).
+######################################################################################
 
 ########################################################################
 # rpart PMML exporter
@@ -42,7 +36,6 @@ pmml.rpart <- function(model,
                         ...)
 {
   if (! inherits(model, "rpart")) stop("Not a legitimate rpart object")
-  #require(XML, quietly=TRUE)
   require(rpart, quietly=TRUE)
 
   function.name <- "classification"
@@ -67,41 +60,6 @@ pmml.rpart <- function(model,
                     gsub("crs\\$dataset\\$|\\[.*\\]", "",
                          capture.output(print(weights))))
   
-  # 090215 Remove from transforms any transforms that are not used in
-  # the model. No point unneccessarily passing a transform on to the
-  # PMML and then to the C code for calculating.
-
-  if (.supportTransformExport(transforms))
-  {
-    frame <- model$frame
-    leaves <- frame$var == "<leaf>"
-    # 090607 This is no longer required?
-    #used<-unlist(lapply(as.character(unique(frame$var[!leaves])), .transformToBasename))
-    used <- as.character(unique(frame$var[!leaves]))
-
-    # 090617 Make sure we include any transforms that don't appear in
-    # the model, but have other variables transformed from them.
-
-    used <- union(used, sapply(transforms, function(x) x$orig))
-
-    trs <- names(transforms)
-    unused <- as.vector(sapply(setdiff(trs, used), function(x) which(x == trs)))
-
-    if (length(unused)) transforms <- transforms[-unused]
-
-    trs <- intersect(trs, field$name)
-    unused <- as.vector(sapply(setdiff(trs, used), function(x) which(x == field$name)))
-    if (length(unused))
-    {
-      field$name <- field$name[-unused]
-      field$class <- field$class[-unused]
-    }
-
-    # 090813 Ensure transforms that remain are made active.
-
-    transforms <- .activateTransforms(transforms)
-  }
-  
   # 081229 Our names and types get out of sync for multiple transforms
   # on the one variable. TODO How to fix? For now, we will assume a
   # single transform on each variable.
@@ -112,8 +70,6 @@ pmml.rpart <- function(model,
   # the transforms. By this stage the transforms should have removed
   # from it any that are not needed in the model.
 
-  if (.supportTransformExport(transforms))
-    field <- .unifyTransforms(field, transforms)
   number.of.fields <- length(field$name)
 
   target <- field$name[1]
@@ -172,31 +128,40 @@ pmml.rpart <- function(model,
 
   # PMML -> TreeModel -> MiningSchema
   
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, inactive,transformed=transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transformed=transforms))
 
   # PMML -> TreeModel -> Output
   
-  the.model <- append.XMLNode(the.model,
-                              .pmmlOutput(field, target,
-                                         switch(function.name,
-                                                classification="categorical",
-                                                regression="continuous")))
+  the.model <- append.XMLNode(the.model, .pmmlOutput(field, target, switch(function.name,
+                             classification="categorical", regression="continuous")))
 
   # PMML -> TreeModel -> LocalTransformations -> DerivedField -> NormContiuous
-
-  if (.supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
 
   # test of Zementis xform functions
   if(!is.null(transforms))
   {
-    the.model <- append.XMLNode(the.model, pmmlLocalTransformations(field, transforms, NULL))
+    the.model <- append.XMLNode(the.model, .pmmlLocalTransformations(field, transforms, NULL))
   }
   
   # PMML -> TreeModel -> Node
 
   # Collect information to create nodes.
   
+  xmlTreeNode <- .buildRpartTreeNode(model,function.name)
+  the.model <- append.XMLNode(the.model, xmlTreeNode)
+
+  # Add to the top level structure.
+
+  pmml <- append.XMLNode(pmml, the.model)
+
+  return(pmml)
+}
+
+
+############################################################################
+# .buildRpartTreeNode
+.buildRpartTreeNode <- function(model,function.name)
+{
 #  depth <- rpart:::tree.depth(as.numeric(row.names(model$frame)))
   numnode <- as.numeric(row.names(model$frame))
   treedepth <- floor(log(numnode, base=2) + 1e-7)
@@ -255,15 +220,8 @@ pmml.rpart <- function(model,
                                model, parent_ii, rows,"right")
   }
 
-  the.model <- append.XMLNode(the.model, node)
 
-  # Add to the top level structure.
-
-  pmml <- append.XMLNode(pmml, the.model)
-
-  return(pmml)
 }
-
 ############################################################################
 # FUNCTION: .genBinaryTreeNodes
 #
@@ -573,7 +531,9 @@ pmml.rpart <- function(model,
 
    for(i in 1:n) 
    {
-     scoreDist <- xmlNode("ScoreDistribution", attrs = c(value=ylevel[i], recordCount = recordCountMap[i], confidence = confidenceMap[i]))
+     recordCount <- ifelse(is.na(recordCountMap[i]), 0, recordCountMap[i])
+     confidence <- ifelse(is.na(confidenceMap[i]), 0, confidenceMap[i])
+     scoreDist <- xmlNode("ScoreDistribution", attrs = c(value=ylevel[i], recordCount = recordCount, confidence = confidence))
      node <- append.XMLNode(node,scoreDist)
    }
 

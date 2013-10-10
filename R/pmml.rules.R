@@ -1,25 +1,19 @@
-# PMML: Predictive Modelling Markup Language
+# PMML: Predictive Model Markup Language
 #
-# Part of the Rattle package for Data Mining
+# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
-# Time-stamp: <2012-12-03 05:44:17 Graham Williams>
+# This file is part of the PMML package for R.
 #
-# Copyright (c) 2011-2012 Togaware Pty Ltd
+# The PMML package is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of 
+# the License, or (at your option) any later version.
 #
-# This files is part of the Rattle suite for Data Mining in R.
-#
-# Rattle is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
-#
-# Rattle is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# The PMML package is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
+# GNU General Public License for details (http://www.gnu.org/licenses/).
+######################################################################################
 #
 # ARules Module
 #
@@ -84,8 +78,8 @@ pmml.rules <- function(model,
   ## mining schema
   mining.schema <- xmlNode("MiningSchema")
   mining.schema <- append.xmlNode(mining.schema, list(
-      xmlNode("MiningField", attrs = c(name = "transaction")),
-      xmlNode("MiningField", attrs = c(name = "item"))
+      xmlNode("MiningField", attrs = c(name = "transaction",usageType="group")),
+      xmlNode("MiningField", attrs = c(name = "item",usageType="active"))
   ))
   
   association.model <- append.xmlNode(association.model, mining.schema)

@@ -1,27 +1,19 @@
-# PMML: Predictive Modelling Markup Language
+# PMML: Predictive Model Markup Language
 #
-# Part of the Rattle package for Data Mining
+# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
-# Time-stamp: <2009-10-25 20:51:42 Graham Williams>
+# This file is part of the PMML package for R.
 #
-# Copyright (c) 2009 Togaware Pty Ltd
+# The PMML package is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of 
+# the License, or (at your option) any later version.
 #
-# This files is part of the Rattle suite for Data Mining in R.
-#
-# Rattle is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
-#
-# Rattle is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
-
-########################################################################
+# The PMML package is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
+# GNU General Public License for details (http://www.gnu.org/licenses/).
+######################################################################################
 
 pmml.hclust <- function(model,
                         model.name="HClust_Model",
@@ -29,12 +21,10 @@ pmml.hclust <- function(model,
                         description="Hierarchical cluster model",
                         copyright=NULL,
                         transforms=NULL,
-                        dataset=NULL,
                         centers,
                         ...)
 {
-  #require(XML, quietly=TRUE)
-  
+
   if (! inherits(model, "hclust")) stop("Not a legitimate hclust object")
 
   # Collect the required information.
@@ -65,24 +55,21 @@ pmml.hclust <- function(model,
 #  for (i in which(sapply(transforms, function(x) x$type) %in%
 #                  .TRANSFORMS.TO.CATEGORIC))
 #    transforms[[i]]$status <- "inactive"
-  
-  if (.supportTransformExport(transforms))
-  {
-    field <- .unifyTransforms(field, transforms, keep.first=FALSE)
-    transforms <- .activateDependTransforms(transforms)
-  }
 
   number.of.clusters <- nrow(centers)
   cluster.names <- 1:number.of.clusters
 
+  #-------------------------------------------------------------------
   # PMML
 
   pmml <- .pmmlRootNode("4.1")
 
+  #-------------------------------------------------------------------
   # PMML -> Header
 
   pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
 
+  #-------------------------------------------------------------------
   # PMML -> DataDictionary
 
   pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field2,transformed=transforms))
@@ -100,23 +87,23 @@ pmml.hclust <- function(model,
 
   cl.model <- append.XMLNode(cl.model, .pmmlMiningSchema(field2,transformed=transforms))
 
+  #----------------------------------------------------------------------
   # Outputs
   output <- xmlNode("Output")
   out <- xmlNode("OutputField",attrs=c(name="predictedValue", feature="predictedValue"))
   output <- append.XMLNode(output, out)
   cl.model <- append.XMLNode(cl.model, output)
 
+  #----------------------------------------------------------------------
   # PMML -> ClusteringModel -> LocalTransformations -> DerivedField -> NormContiuous
-
-  if (.supportTransformExport(transforms))
-    cl.model <- append.XMLNode(cl.model, .gen.transforms(transforms))
 
   # test of Zementis xform functions
   if(!is.null(transforms))
   {
-    the.model <- append.XMLNode(the.model, pmmlLocalTransformations(field2, transforms))
+    the.model <- append.XMLNode(the.model, .pmmlLocalTransformations(field2, transforms))
   }
   
+  #------------------------------------------------------------------
   # PMML -> ClusteringModel -> ComparisonMeasure
   
   cl.model <- append.XMLNode(cl.model,
@@ -124,13 +111,12 @@ pmml.hclust <- function(model,
                                                     attrs=c(kind="distance")),
                                             xmlNode("squaredEuclidean")))
 
+  #-------------------------------------------------------------------
   # PMML -> ClusteringField
 
   for (i in orig.fields)
   {
-    cl.model <- append.xmlNode(cl.model,
-                               xmlNode("ClusteringField",
-                                       attrs=c(field=i)))
+    cl.model <- append.xmlNode(cl.model, xmlNode("ClusteringField", attrs=c(field=i)))
   }
   
   # PMML -> ClusteringModel -> Cluster -> Array
@@ -139,14 +125,9 @@ pmml.hclust <- function(model,
   for (i in 1:number.of.clusters)
   {
     cl.model <- append.XMLNode(cl.model,
-                               xmlNode("Cluster",
-                                       attrs=c(name=cluster.names[i],
-                                         size=model$size[i]),
-                                       xmlNode("Array",
-                                               attrs=c(n=number.of.fields,
-                                                 type="real"),
-                                               paste(centers[i,],
-                                                     collapse=" "))))
+                               xmlNode("Cluster",  attrs=c(name=cluster.names[i],size=model$size[i]),
+                               xmlNode("Array", attrs=c(n=number.of.fields, type="real"),
+                                               paste(centers[i,],collapse=" "))))
   }
   pmml <- append.XMLNode(pmml, cl.model)
 

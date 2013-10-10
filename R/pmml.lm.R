@@ -1,27 +1,19 @@
-# PMML: Predictive Modelling Markup Language
+# PMML: Predictive Model Markup Language
 #
-# Part of the Rattle package for Data Mining
+# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
-# Handle lm and glm models.
+# This file is part of the PMML package for R.
 #
-# Time-stamp: <2011-01-13 19:48:25 Graham Williams>
+# The PMML package is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of 
+# the License, or (at your option) any later version.
 #
-# Copyright (c) 2009 Togaware Pty Ltd
-#
-# This files is part of the Rattle suite for Data Mining in R.
-#
-# Rattle is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
-#
-# Rattle is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# The PMML package is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
+# GNU General Public License for details (http://www.gnu.org/licenses/).
+######################################################################################
 
 ########################################################################
 # Linear Model PMML exporter
@@ -71,12 +63,12 @@ pmml.lm <- function(model,
   orig.class <- field$class
 
   # 090103 Support transforms if available.
-
-  if (.supportTransformExport(transforms))
-  {
-    field <- .unifyTransforms(field, transforms)
-    transforms <- .activateDependTransforms(transforms)
-  }
+# Wen ... commented to see if it break anything ... august 2013
+#  if (.supportTransformExport(transforms))
+#  {
+#    field <- .unifyTransforms(field, transforms)
+ #   transforms <- .activateDependTransforms(transforms)
+#  }
   number.of.fields <- length(field$name)
 
   target <- field$name[1]
@@ -169,8 +161,7 @@ pmml.lm <- function(model,
                            # classification.
                            functionName="classification",
                            algorithmName="glm",
-                           normalizationMethod="softmax",
-                             targetFieldName=target)) 
+                           normalizationMethod="softmax")) 
   }
   else if (model.type == "poisson")
   {
@@ -178,16 +169,14 @@ pmml.lm <- function(model,
                          attrs=c(modelName=model.name,
                            functionName="regression",
                              algorithmName="glm",
-                           normalizationMethod="exp",
-                           targetFieldName=target)) 
+                           normalizationMethod="exp")) 
   }
   else if (model.type == "gaussian")
   {
     the.model <- xmlNode("RegressionModel",
                          attrs=c(modelName=model.name,
                            functionName="regression",
-                           algorithmName="glm",
-                           targetFieldName=target)) 
+                           algorithmName="glm")) 
   }		
   else if (model.type == "lm")
   {
@@ -195,28 +184,26 @@ pmml.lm <- function(model,
     the.model <- xmlNode("RegressionModel",
                          attrs=c(modelName=model.name,
                            functionName="regression",
-                           algorithmName="least squares",
-                           targetFieldName=target))
+                           algorithmName="least squares"))
   }
   else 
     stop("pmml.lm: Not a supported family object: ", model.type)
 
   # PMML -> RegressionModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, inactive, transformed=transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transformed=transforms))
 
   # PMML -> TreeModel -> Output
 
   the.model <- append.XMLNode(the.model, .pmmlOutput(field, target))
 
+  #----------------------------------------------------
   # PMML -> TreeModel -> LocalTransforms
 
-  if (.supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
   # test of Zementis xform functions
   if(!is.null(transforms))
   {
-    the.model <- append.XMLNode(the.model, pmmlLocalTransformations(field, transforms, NULL))
+    the.model <- append.XMLNode(the.model, .pmmlLocalTransformations(field, transforms, NULL))
   }
 
   # PMML -> RegressionModel -> RegressionTable

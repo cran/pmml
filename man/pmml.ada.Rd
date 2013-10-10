@@ -1,0 +1,62 @@
+\name{pmml.ada}
+\alias{pmml.ada}
+\title{Generate PMML for ada objects}
+\description{
+  Generate the PMML representation for an ada object from package \pkg{ada}.
+}
+\usage{
+\method{pmml}{ada}(model, model.name="AdaBoost_Model", app.name="R-PMML", 
+     description="AdaBoost Model", copyright=NULL, transforms=NULL, ...)
+}
+\arguments{
+  
+  \item{model}{\code{ada} object.}
+
+  \item{model.name}{a name to be given to the model in the PMML code.}
+
+  \item{app.name}{the name of the application that generated the PMML code.}
+
+  \item{description}{a descriptive text for the Header element of the PMML code.}
+  
+  \item{copyright}{the copyright notice for the model.}
+
+  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+      
+  \item{\dots}{further arguments passed to or from other methods.}
+}
+\details{
+
+  The \code{pmml} function exports the ada model in the PMML MiningModel (multiple models) format. The MiningModel element
+  consists of a list of TreeModel elements, one in each model segment.
+  
+  Note that each segment tree is a classification model, returning either -1 or 1.
+  However the MiningModel (ada algorithm) is doing a weighted sum of the returned value, -1 or 1.
+  So the value of attribute functionName of element MiningModel is set to "regression"; 
+  the value of attribute functionName of each
+  segment tree is also set to "regression" (they have to be the same as the parent MiningModel
+  per PMML schema). Although each segment/tree is being named a "regression" tree,
+  the actual returned score can only be -1 or 1, which practically turns each segment
+  into a classification tree.
+  
+  The model in PMML format has 5 different outputs. The "rawValue" output is the value of the model 
+  expressed as a tree model. The boosted tree model uses a transformation of this value, this is the 
+  "boostValue" output. The last 3 outputs are the predicted class and the probabilities of each of the 
+  2 classes (The ada package Boosted Tree models can only handle binary classification models).  
+}    
+
+\references{
+  R project CRAN package: \emph{\bold{ada}: an R package for stochastic boosting} \cr
+  \url{http://cran.r-project.org/web/packages/ada/index.html}
+
+}
+
+\author{Zementis Inc. \email{info@zementis.com}}	
+
+\examples{
+library(ada)
+library(pmml)
+data(audit)
+
+fit <- ada(Adjusted~Employment+Education+Hours+Income,iter=3, audit)
+pmml_fit <- pmml(fit)
+}

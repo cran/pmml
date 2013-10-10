@@ -1,25 +1,22 @@
 # PMML: Predictive Model Markup Language
 #
-# This part of the pmml package handles random forest models
+# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
-# Time-stamp: <2013-06-05 19:48:25 Tridivesh Jena>
+# This file is part of the PMML package for R.
 #
-# Copyright (c) 2013 Zementis, Inc.
+# The PMML package is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of 
+# the License, or (at your option) any later version.
 #
-# This file is part of the pmml package.
+# The PMML package is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
+# GNU General Public License for details (http://www.gnu.org/licenses/).
+######################################################################################
 #
-# The pmml package is free: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
+# Author: Tridivesh Jena
 #
-# The pmml package is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# To review the GNU General Public License see <http://www.gnu.org/licenses/>
-########################################################################
 # Implemented: by Tridivesh Jena (info@zementis.com) to add the
 # capability to export random forest models.
 
@@ -35,14 +32,12 @@ pmml.randomForest <- function(model,
    if (! inherits(model, "randomForest"))
     stop("Not a legitimate randomForest object")
 
-  #require(XML, quietly=TRUE)
-  require(randomForest, quietly=TRUE)
+   require(randomForest, quietly=TRUE)
 
   # Tridivesh: Collect the required information. We list all variables,
-  # irrespective of whether they appear in the final model. This
-  # seems to be the standard thing to do with PMML. It also adds
-  # extra information - i.e., the model did not need these extra
-  # variables!
+  # irrespective of whether they appear in the final model. This seems 
+  # to be the standard thing to do with PMML. It also adds extra information
+  # - i.e., the model did not need these extra variables!
   #
   # For a randomForest formula as currently used in Rattle, the
   # target is, for example, as.factor(Adjusted). Here, I need to
@@ -109,13 +104,6 @@ pmml.randomForest <- function(model,
 
   pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field,transformed=transforms))
 
-
-  if (.supportTransformExport(transforms))
-  {
-    field <- .unifyTransforms(field, transforms)
-    transforms <- .activateDependTransforms(transforms)
-  }
-
   mmodel <- xmlNode("MiningModel",attrs=c(modelName=model.name,functionName=model$type))
   mmodel <- append.XMLNode(mmodel,.pmmlMiningSchemaRF(field, target,transformed=transforms))
 
@@ -156,12 +144,12 @@ pmml.randomForest <- function(model,
   # test of Zementis xform functions
   if(interact && !is.null(transforms))
   {
-    ltNode <- pmmlLocalTransformations(field, transforms, ltNode)
+    ltNode <- .pmmlLocalTransformations(field, transforms, ltNode)
     mmodel <- append.XMLNode(mmodel, ltNode)
   }
   if(!interact && !is.null(transforms))
   {
-    mmodel <- append.XMLNode(mmodel,pmmlLocalTransformations(field, transforms, ltNode))
+    mmodel <- append.XMLNode(mmodel,.pmmlLocalTransformations(field, transforms, ltNode))
   }
 
   if(model$type == "regression") 

@@ -1,25 +1,20 @@
-# PMML: Predictive Modelling Markup Language
+# PMML: Predictive Model Markup Language
 #
-# Part of the Rattle package for Data Mining
+# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
-# Time-stamp: <2012-12-03 22:26:40 Graham Williams>
+# This file is part of the PMML package for R.
 #
-# Copyright (c) 2009-2010 Togaware Pty Ltd
+# The PMML package is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of 
+# the License, or (at your option) any later version.
 #
-# This files is part of the Rattle suite for Data Mining in R.
-#
-# Rattle is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
-#
-# Rattle is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# The PMML package is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
+# GNU General Public License for details (http://www.gnu.org/licenses/).
+######################################################################################
+
 #
 # SVM Module
 #
@@ -28,111 +23,6 @@
 # Author: Zementis, Inc. (www.zementis.com)
 # E-mail: info@zementis.com
 # Date: 17 Jan 2008
-
-
-###################################################################
-# Function .ksvm.DataDictionary
-
-.ksvm.DataDictionary <- function(field, dataset, weights=NULL)
-{
-  # field$name is a vector of strings, and includes target
-  # field$class is indexed by fields$names
-  # field$levels is indexed by fields$names
-
-  number.of.fields <- length(field$name)
-  number.of.data.names = length(names(dataset))
-  
-  # DataDictionary
-  data.dictionary <- xmlNode("DataDictionary",
-                             attrs=c(numberOfFields=number.of.fields))
-  if (! is.null(weights))
-    data.dictionary <-append.XMLNode(data.dictionary, xmlNode("Extension",
-                                                              attrs=c(name="Weights",
-                                                                value=weights,
-                                                                extender="Rattle")))
-  data.fields <- list()
-  for (i in 1:number.of.fields)
-  {
-    # Determine the operation type
-    optype <- "UNKNOWN"
-    datype <- "UNKNOWN"
-    values <- NULL
-    modified.target <- FALSE
-
-    if (field$class[[field$name[i]]] == "numeric")
-    {
-      optype <- "continuous"
-      datype <- "double"
-    }
-    else if (field$class[[field$name[i]]] == "factor")
-    {
-      optype <- "categorical"
-      datype <- "string"
-      
-      temp = grep("as.factor", field$name[i], value = TRUE, fixed = TRUE)
-
-      # Deal with the target variable by removing the "as.factor(...)"
-      # from around the variable name. 110101 It appears that the
-      # strsplit is simply splitting the string into individual
-      # chars. Why is that so and is it correct?
-      
-      if (i == 1 && length(temp) > 0)
-      {
-         target <- field$name[i]
-         tempName <- strsplit(field$name[i],"")
-         endPos <- (length(tempName[[1]]) - 1)
-         field$name[i] <- substring(target,11,endPos)
-         modified.target <- TRUE
-      }
-    }
-
-    # DataDictionary -> DataField
-    
-    if(i==1) # For the target field.
-    {
-      predictedFieldName = field$name[1];
-      if(modified.target == TRUE)
-      {
-        field$name[1] <- target
-      }
-      data.dictionary <- .getPredictedDataField(data.dictionary, field,
-                                               predictedFieldName, optype, datype)
-    }
-    else  # For non-target fields.
-    {
-      # 110101 Graham: We should really only pass through the field
-      # name and the levels, rahter than relying on indexing the
-      # dataset within the function with the field name etc.
-
-      data.dictionary <- .getInputDataField(data.dictionary,field,dataset,i,optype,datype)
-    }
-  }
-
-  return(data.dictionary)
-}
-
-###################################################################
-# Function .ksvm.MiningSchema
-
-.ksvm.MiningSchema <- function(field, target=NULL)
-{
-  number.of.fields <- length(field$name)
-  mining.fields <- list()
-  for (i in 1:number.of.fields)
-  {
-    if (is.null(target))
-      usage <- "active"
-    else
-      usage <- ifelse(field$name[i] == target, "predicted", "active")
-      
-    mining.fields[[i]] <- xmlNode("MiningField",
-                                  attrs=c(name=field$name[i],
-                                        usageType=usage))
-  }
-  mining.schema <- xmlNode("MiningSchema")
-  mining.schema$children <- mining.fields
-  return(mining.schema)
-}
 
 ##################################################################
 # Function pmml.ksvm
@@ -145,7 +35,6 @@ pmml.ksvm <- function(model,
                       copyright=NULL,
                       transforms=NULL,
                       dataset=NULL,
-                      weights=NULL,
                       ...)
 {
   if (! inherits(model, "ksvm"))
@@ -153,8 +42,6 @@ pmml.ksvm <- function(model,
   
   if (! is.object(dataset))
     stop("Specified dataset not a legitimate object.")
-
-  #require(XML, quietly=TRUE)
 
   # Collect the required information.
   attributes.model <- attributes(model)
@@ -222,15 +109,6 @@ pmml.ksvm <- function(model,
     }
   }
 
-
-##########################################
-  
-#  for (i in 1:number.of.fields)
-#  {
-#    if (field$class[[field$name[i]]] == "factor")
-#      field$levels[[field$name[i]]] <- model@lev
-#  }
- 
 ####################################  
 
   # PMML
@@ -243,31 +121,28 @@ pmml.ksvm <- function(model,
 
   # PMML -> DataDictionary
  
-  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, dataset, weights=weights, transformed=transforms))
-  
+ # pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, dataset, weights=weights, transformed=transforms))
+   pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, NULL, transformed=transforms))
+  #------------------------------------------------
   # PMML -> SupportVectorMachineModel
   
-  if (field$function.name == "classification" && model@nclass == 2)
-  {
-    ksvm.model <- xmlNode("SupportVectorMachineModel",
-                          attrs=c(modelName=model.name,
-                            functionName=field$function.name,
-                            algorithmName="supportVectorMachine",
-                            svmRepresentation="SupportVectors"))
-  }
-  else
-  {
-    ksvm.model <- xmlNode("SupportVectorMachineModel",
-                          attrs=c(modelName=model.name,
-                            functionName=field$function.name,
-                            algorithmName="supportVectorMachine",
-                            svmRepresentation="SupportVectors"))
-  }
-  
+   if(field$function.name == "classification" && number.of.SVMs > 1) {
+       # TODO: number.of.SVMs > 1 not needed later
+       ksvm.model <- xmlNode("SupportVectorMachineModel", 
+                            attrs=c(modelName=model.name, functionName=field$function.name,
+                                    algorithmName="supportVectorMachine", classificationMethod="OneAgainstOne",
+                                    svmRepresentation="SupportVectors"))
+   } else {
+       ksvm.model <- xmlNode("SupportVectorMachineModel",
+                            attrs=c(modelName=model.name, functionName=field$function.name,
+                                    algorithmName="supportVectorMachine", svmRepresentation="SupportVectors"))
+   }
+   
+                            
   # PMML -> SupportVectorMachineModel -> MiningSchema
 
   ksvm.model <- append.XMLNode(ksvm.model,
-                               .pmmlMiningSchema(field, target, NULL, transformed=transforms))
+                               .pmmlMiningSchema(field, target, transformed=transforms))
 
   # Output 
   ksvm.model <- append.XMLNode(ksvm.model, .pmmlOutput(field, target))  
@@ -307,13 +182,6 @@ pmml.ksvm <- function(model,
   #
   # LocalTransformations are necessary to scale x and y and make data
   # compatible with ksvm's algorithm (pre-processing)
-
-
-  if (.supportTransformExport(transforms))
-  {
-    field <- .unifyTransforms(field, transforms)
-    transforms <- .activateDependTransforms(transforms)
-  }
   
   number.of.data.names <- length(names(dataset))
 
@@ -328,7 +196,7 @@ pmml.ksvm <- function(model,
   # test of Zementis xform functions
   if(!is.null(transforms))
   {
-    LocalTransformations <- pmmlLocalTransformations(field, transforms, LocalTransformations)
+    LocalTransformations <- .pmmlLocalTransformations(field, transforms, LocalTransformations)
   }
 
   for (i in 1:number.of.labels)
@@ -647,13 +515,7 @@ pmml.ksvm <- function(model,
       {
         SupportVectorMachine <- xmlNode("SupportVectorMachine",
                                         attrs=c(targetCategory=model@lev[target1[[ix]]],alternateTargetCategory=model@lev[target2[[ix]]] ))
-        
-       # targetExtension <- xmlNode("Extension",
-       #                            attrs=c(name="alternateTargetCategory",
-       #                              value=model@lev[target2[[ix]]],
-       #                              extender="ADAPA"))
-        
-       # SupportVectorMachine <- append.XMLNode(SupportVectorMachine, targetExtension)
+
       }
       else  # binary classification
       {
@@ -721,77 +583,28 @@ pmml.ksvm <- function(model,
 #
 # refactored in June, 2008 
 ##############################################################################################
-.getPredictedDataField <- function(dataDictionary,field,predictedFieldName,optype,datatype)
-{
-    target <- field$name[1]
-    predictedDataField <- xmlNode("DataField", attrs=c(name = predictedFieldName, optype=optype, dataType=datatype))
-
-    if (field$function.name == "classification"){
-       for (j in 1:length(field$levels[[target]]))
-       {
-            predictedDataField <- append.XMLNode( predictedDataField,xmlNode("Value", attrs=c(value=field$levels[[target]][j])) )
-       }
-    } else   # field$function.name == regression
-    {
-          optype <- "continuous"
-          datatype <- "double"
-
-          if (length (field$levels[[target]]) == 2)
-          {
-             predictedDataField <- append.XMLNode( predictedDataField,
-              xmlNode("Interval", attrs=c(closure="closedClosed", leftMargin=field$levels[[target]][1], rightMargin=field$levels[[target]][2])))
-          }
-    }
-
-    dataDictionary <- append.XMLNode(dataDictionary,predictedDataField)
-    return(dataDictionary)
-}
-
-########################################################################
-# function: .getInputDataField
-# goal: create the data field for the input data field
-# author: Zementis
-# refactored: June, 2008
+#.getPredictedDataField <- function(dataDictionary,field,predictedFieldName,optype,datatype)
+#{
+#    target <- field$name[1]
+#    predictedDataField <- xmlNode("DataField", attrs=c(name = predictedFieldName, optype=optype, dataType=datatype))
 #
-# modified: 110101 Graham: Fix bug where i is field$name index, not
-#           dataset column index. Result was that factors were getting
-#           the next variable's levels, not its own levels.
+#    if (field$function.name == "classification"){
+#       for (j in 1:length(field$levels[[target]]))
+#       {
+#            predictedDataField <- append.XMLNode( predictedDataField,xmlNode("Value", attrs=c(value=field$levels[[target]][j])) )
+#       }
+#    } else   # field$function.name == regression
+#    {
+#          optype <- "continuous"
+#          datatype <- "double"
 #
-########################################################################
-
-# 110101 Graham: We should really only pass through the field name and
-# the levels, rather than relying on indexing the dataset within the
-# function with the field name etc.
-
-.getInputDataField <- function(dataDictionary,field,dataset,i,optype,datatype)
-{
-  field.name <- field$name[i]
-  
-  inputDataField <- xmlNode("DataField",
-                            attrs=c(name=field.name,
-                              optype=optype,
-                              dataType=datatype))
-
-  if(optype == "categorical") # For categorical data field.
-  {
-    field.levels <- levels(dataset[[field.name]])
-    for (j in 1:length(field.levels))
-      inputDataField <- append.XMLNode(inputDataField,
-                                       xmlNode("Value",
-                                               attrs=c(value=field.levels[j])))
-  }
-  else  # For a continuous data field.
-  {
-    if (length (field$levels[[field.name]]) == 2)
-    {
-      inputDataField <-
-        append.XMLNode(inputDataField,
-                       xmlNode("Interval",
-                               attrs=c(closure="closedClosed",
-                                 leftMargin=field$levels[[field.name]][1],
-                                 rightMargin=field$levels[[field.name]][2])))
-    }
-  }
-  dataDictionary <- append.XMLNode(dataDictionary,inputDataField)
-  return(dataDictionary)
-}
+#          if (length (field$levels[[target]]) == 2)
+#          {
+#             predictedDataField <- append.XMLNode( predictedDataField,
+#              xmlNode("Interval", attrs=c(closure="closedClosed", leftMargin=field$levels[[target]][1], rightMargin=field$levels[[target]][2])))
+#          }
+#    }
+#
+#    dataDictionary <- append.XMLNode(dataDictionary,predictedDataField)
+#    return(dataDictionary)
+#}

@@ -1,3 +1,20 @@
+# PMML: Predictive Model Markup Language
+#
+# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+#
+# This file is part of the PMML package for R.
+#
+# The PMML package is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of 
+# the License, or (at your option) any later version.
+#
+# The PMML package is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
+# GNU General Public License for details (http://www.gnu.org/licenses/).
+######################################################################################
+
 pmml.itemsets <- function(model,
                        model.name="arules_Model",
                        app.name="Rattle/PMML",
@@ -7,7 +24,6 @@ pmml.itemsets <- function(model,
   
   if (! inherits(model, "itemsets")) stop("Not a legitimate arules itemsets rules object")
 
-#  require(XML, quietly=TRUE)
   require(arules, quietly=TRUE)
   
   ## PMML
@@ -46,8 +62,8 @@ pmml.itemsets <- function(model,
   ## mining schema
   mining.schema <- xmlNode("MiningSchema")
   mining.schema <- append.xmlNode(mining.schema, list(
-      xmlNode("MiningField", attrs = c(name = "transaction")),
-      xmlNode("MiningField", attrs = c(name = "item"))
+      xmlNode("MiningField", attrs = c(name = "transaction",usageType="group")),
+      xmlNode("MiningField", attrs = c(name = "item",usageType="active"))
   ))
   
   association.model <- append.xmlNode(association.model, mining.schema)

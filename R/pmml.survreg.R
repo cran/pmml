@@ -1,27 +1,19 @@
-# PMML: Predictive Modelling Markup Language
+# PMML: Predictive Model Markup Language
 #
-# Part of the Rattle package for Data Mining
+# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
-# Handle survreg regression model.
+# This file is part of the PMML package for R.
 #
-# Time-stamp: <2009-11-23 20:30:08 Graham Williams>
+# The PMML package is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of 
+# the License, or (at your option) any later version.
 #
-# Copyright (c) 2009 Togaware Pty Ltd
-#
-# This files is part of the Rattle suite for Data Mining in R.
-#
-# Rattle is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
-#
-# Rattle is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
+# The PMML package is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
+# GNU General Public License for details (http://www.gnu.org/licenses/).
+######################################################################################
 
 ########################################################################
 # Linear Model PMML exporter
@@ -38,8 +30,6 @@
 {
   if (! inherits(model, "survreg")) stop("Not a legitimate survreg object")
   
-  #require(XML, quietly=TRUE)
-
   # Collect the required information.
 
   # For a regression, all variables will have been used except those
@@ -70,11 +60,6 @@
   orig.names <- field$name
   orig.class <- field$class
 
-  if (.supportTransformExport(transforms))
-  {
-    field <- .unifyTransforms(field, transforms)
-    transforms <- .activateDependTransforms(transforms)
-  }
   number.of.fields <- length(field$name)
 
   target <- field$name[1]
@@ -139,17 +124,18 @@
 
   # PMML -> RegressionModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, inactive, transformed=transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transformed=transforms))
 
   # PMML -> TreeModel -> LocalTransforms
 
-  if (.supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
+# Wen: sep 2013 : obsolete? We need to create surv-reg model to test this piece of code ...
+ # if (.supportTransformExport(transforms))
+ #   the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
 
   # test of Zementis xform functions
   if(!is.null(transforms))
   {
-    the.model <- append.XMLNode(the.model, pmmlLocalTransformations(field, transforms, NULL))
+    the.model <- append.XMLNode(the.model, .pmmlLocalTransformations(field, transforms, NULL))
   }
   
   # PMML -> RegressionModel -> RegressionTable

@@ -1,25 +1,21 @@
 # PMML: Predictive Model Markup Language
 #
-# This part of the pmml package handles random survival forest models
+# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
-# Time-stamp: <2013-06-05 19:48:25 Tridivesh Jena>
+# This file is part of the PMML package for R.
 #
-# Copyright (c) 2013 Zementis, Inc.
+# The PMML package is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of 
+# the License, or (at your option) any later version.
 #
-# This file is part of the pmml package.
+# The PMML package is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
+# GNU General Public License for details (http://www.gnu.org/licenses/).
+#####################################################################################
 #
-# The pmml package is free: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
-#
-# The pmml package is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# To review the GNU General Public License see <http://www.gnu.org/licenses/>
-########################################################################
+# Author: Tridivesh Jena
 
 pmml.rfsrc <- function(model,
                      model.name="rsf_Model",
@@ -38,8 +34,7 @@ pmml.rfsrc <- function(model,
   #  if (sum(inherits(model, c("rsf", "forest"), TRUE) == c(1, 2)) != 2)
   #    stop("Not a legitimate (rsf, forest) object")
 
-  #require(XML, quietly=TRUE)
-#  require(randomForestSRC, quietly=TRUE)
+  require(randomForestSRC, quietly=TRUE)
 
   # Collect the required information.
 
@@ -127,11 +122,12 @@ pmml.rfsrc <- function(model,
   # <MiningModel>
   miningModelNode <- xmlNode("MiningModel", attrs=c(modelName="RrsfModel",functionName="regression")) 
 
-  if (.supportTransformExport(transforms))
-  {
-    field <- .unifyTransforms(field, transforms)
-    transforms <- .activateDependTransforms(transforms)
-  }
+# if (.supportTransformExport(transforms))
+# {
+#    field <- .unifyTransforms(field, transforms)
+#    transforms <- .activateDependTransforms(transforms)
+#  }
+
   # MiningModel -> MiningSchema
   miningModelNode <- append.XMLNode(miningModelNode, .pmmlMiningSchemaSurv(field, timeName=model$yvar.names[1], statusName=model$yvar.names[2], target=NULL, inactive=NULL, transformed=transforms))
 
@@ -162,12 +158,12 @@ pmml.rfsrc <- function(model,
   # test of Zementis xform functions
   if(interact && !is.null(transforms))
   {
-    ltNode <- pmmlLocalTransformations(field, transforms, ltNode)
+    ltNode <- .pmmlLocalTransformations(field, transforms, ltNode)
     mmodel <- append.XMLNode(mmodel, ltNode)
   }
   if(!interact && !is.null(transforms))
   {
-    mmodel <- append.XMLNode(mmodel,pmmlLocalTransformations(field, transforms, ltNode))
+    mmodel <- append.XMLNode(mmodel,.pmmlLocalTransformations(field, transforms, ltNode))
   }
 
   # ensemble method

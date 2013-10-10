@@ -1,27 +1,19 @@
-# PMML: Predictive Modelling Markup Language
+# PMML: Predictive Model Markup Language
 #
-# Part of the Rattle package for Data Mining
+# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
-# Time-stamp: <2012-02-19 17:54:22 Graham Williams>
+# This file is part of the PMML package for R.
 #
-# Copyright (c) 2009 Togaware Pty Ltd
+# The PMML package is free software: you can redistribute it and/or 
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation, either version 2 of 
+# the License, or (at your option) any later version.
 #
-# This files is part of the Rattle suite for Data Mining in R.
-#
-# Rattle is free software: you can redistribute it and/or modify it
-# under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 2 of the License, or
-# (at your option) any later version.
-#
-# Rattle is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Rattle. If not, see <http://www.gnu.org/licenses/>.
-
-########################################################################
+# The PMML package is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
+# GNU General Public License for details (http://www.gnu.org/licenses/).
+######################################################################################
 
 pmml.kmeans <- function(model,
                         model.name="KMeans_Model",
@@ -29,12 +21,10 @@ pmml.kmeans <- function(model,
                         description="KMeans cluster model",
                         copyright=NULL,
                         transforms=NULL,
-                        dataset=NULL,
                         algorithm.name="KMeans: Hartigan and Wong",
                         ...)
 {
   if (! inherits(model, "kmeans")) stop("Not a legitimate kmeans object")
-  #require(XML, quietly=TRUE)
   
   # Collect the required information.
 
@@ -54,22 +44,6 @@ pmml.kmeans <- function(model,
    field2$name[i+1] <- field$name[i]
    field2$class[i+1] <- field$class[i]
    names(field2$class)[i+1] <- names(field$class[i])
-  }
-
-  # 090808 Mark any categoric transforms as inactive since they won't
-  # have been used in the clustering (at least not until we automate
-  # the conversion to indicator variables.
-
-#  for (i in which(sapply(transforms, function(x) x$type) %in%
-#                  .TRANSFORMS.TO.CATEGORIC))
-#  {
-#    transforms[[i]]$status <- "inactive"
-#  }
-  
-  if (.supportTransformExport(transforms))
-  {
-    field <- .unifyTransforms(field, transforms, keep.first=FALSE)
-    transforms <- .activateDependTransforms(transforms)
   }
   
   number.of.clusters <- length(model$size)
@@ -94,7 +68,7 @@ pmml.kmeans <- function(model,
   # PMML -> ClusteringModel
 
   the.model <- xmlNode("ClusteringModel",
-                      attrs=c(modelName=model.name,
+                        attrs=c(modelName=model.name,
                         functionName="clustering", # Required
                         algorithmName=algorithm.name,
                         modelClass="centerBased", # Required
@@ -106,7 +80,7 @@ pmml.kmeans <- function(model,
   the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field2,transformed=transforms))
 
   #-----------------------------------------------------------------
-  # Outputs
+  # PMML -> ClusteringModel -> Output
   
   output <- xmlNode("Output")
   out <- xmlNode("OutputField",attrs=c(name="predictedValue", feature="predictedValue"))
@@ -122,15 +96,11 @@ pmml.kmeans <- function(model,
   the.model <- append.XMLNode(the.model, output)
 
   #-----------------------------------------------------------------
-  # PMML -> ClusteringModel -> LocalTransformations -> DerivedField -> NormContiuous
-
-  if (.supportTransformExport(transforms))
-    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
-
+  # PMML -> ClusteringModel -> LocalTransformations
   # test of Zementis xform functions
   if(!is.null(transforms))
   {
-    the.model <- append.XMLNode(the.model, pmmlLocalTransformations(field2, transforms))
+    the.model <- append.XMLNode(the.model, .pmmlLocalTransformations(field2, transforms))
   }
  
   #------------------------------------------------------------------
@@ -149,14 +119,15 @@ pmml.kmeans <- function(model,
   
   #-------------------------------------------------------------------
   # PMML -> ClusteringModel -> Cluster -> Array
-  
- # clusters <- list()
+
   for (i in 1:number.of.clusters)
   {
     the.model <- append.XMLNode(the.model,xmlNode("Cluster",attrs=c(name=cluster.names[i],size=model$size[i],id=i),
                                        xmlNode("Array",attrs=c(n=number.of.fields,type="real"),
                                                paste(model$centers[i,],collapse=" "))))
   }
+  
+  #---------------------------------------------
   pmml <- append.XMLNode(pmml, the.model)
 
   return(pmml)

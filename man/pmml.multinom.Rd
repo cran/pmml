@@ -1,80 +1,42 @@
 \name{pmml.multinom}
 \alias{pmml.multinom}
-\title{Generate PMML for a multinomial (multinom) object}
+\title{Generate PMML for multinom objects}
 \description{
   
-  Generate the Predictive Model Markup Language (PMML) representation of
-  a \pkg{nnet} multinomial object.  In particular, this function 
-  gives the user the ability to save a multinomial regression object 
-  as a PMML XML document.
-
+  Generate the PMML representation for a multinom object from package \pkg{nnet}.
 }
 \usage{
 \method{pmml}{multinom}(model, model.name="multinom_Model", app.name="Rattle/PMML",
-     description="Multinomial Logistic Model", copyright = NULL, transforms = NULL, ...)
+     description="Multinomial Logistic Model", copyright = NULL,
+     transforms = NULL, ...)
 }
 \arguments{
   
-  \item{model}{the \code{multinom} object contained in an object of class
-      \pkg{nnet}, as that contained in the object returned by
-      the function \code{multinom}.}
+  \item{model}{a \code{multinom} object.}
 
-  \item{model.name}{a name to give to the model in the PMML.}
+  \item{model.name}{a name to be given to the model in the PMML code.}
 
-  \item{app.name}{the name of the application that generated the PMML.}
+  \item{app.name}{the name of the application that generated the PMML code.}
 
-  \item{description}{a descriptive text for the header of the PMML.}
+  \item{description}{a descriptive text for the Header element of the PMML code.}
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{transforms.}
+  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
 
   \item{\dots}{further arguments passed to or from other methods.}
 }
 \details{
 
-  The Predictive Model Markup Language is an XML based language which
-  provides a way for applications to define statistical and data mining
-  models and to share models between PMML compliant applications.  More
-  information about PMML and the Data Mining Group can be found at
-  http://www.dmg.org.  
-
-  Use of PMML and \code{pmml.multinom} requires the \pkg{XML} package.  Be
-  aware that XML is a very verbose data format. 
-
-  This function is used to export the structure of the multinomial logistic 
-  regression model to any PMML consuming applications, such as the Zementis ADAPA and UPPI 
-  scoring engines which allow for predictive models built in R to be deployed and 
-  executed on site, in the cloud (Amazon, IBM, and FICO), in-database (IBM Netezza, 
-  Pivotal, Sybase IQ, Teradata and Teradata Aster) or Hadoop (Datameer and Hive). 
-
+  This function outputs the multinomial logistic model in the PMML GenerealRegressionModel format.
+  It implements the use of numerical, categorical and multiplicative terms involving
+  both numerical and categorical variables.
 }    
-\value{
-  
-  An object of class \code{XMLNode} as that defined by the \pkg{XML}
-  package.  This represents the top level, or root node, of the XML
-  document and is of type PMML. It can be written to file with
-  \code{saveXML}.
-  
-}
+
 \references{
-
-  Venables, W.N. and Ripley, B.D. (2002) /emph{Modern Applied Statistics with S}.
-	Fourth edition. Springer.
-
-  PMML home page: \url{http://www.dmg.org}
-
-  A. Guazzelli, W. Lin, T. Jena (2012), /emph{PMML in Action: Unleashing the Power 
-     of Open Standards for Data Mining and Predictive Analytics}. CreativeSpace                
-     (Second Edition) - Available on Amazon.com - \url{http://www.amazon.com/dp/1470003244}.
-
-  A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), /emph{PMML: An Open Standard for 
-     Sharing Models}. The R journal, Volume 1/1, 60-65
- 
+  R project CRAN package:\cr
+  \emph{\bold{nnet}: Feed-forward Neural Networks and Multinomial Log-Linear Models} \cr
+  \url{http://cran.r-project.org/web/packages/nnet/index.html}
 }
-\author{\email{info@zementis.com}}	
-\seealso{
-  \code{\link{pmml}}.
-}
-\keyword{interface}
-\keyword{tree}
+
+\author{Zementis Inc. \email{info@zementis.com}}	
