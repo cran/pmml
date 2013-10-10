@@ -38,10 +38,6 @@ pmml <- function(model=NULL,
 
     return(.pmmlLocalTransformations(field, transforms, NULL))
   }
-  else if(grepl("XMLNode",toString(class(model))))
-  {
-    return(.addLT(model, transforms))
-  }
   else
   {
     UseMethod("pmml")
@@ -94,6 +90,10 @@ pmml <- function(model=NULL,
                       "xmlns:xsi"="http://www.w3.org/2001/XMLSchema-instance", 
                       "xsi:schemaLocation"=paste("http://www.dmg.org/PMML-4_1",
                         "http://www.dmg.org/v4-1/pmml-4-1.xsd")))
+#   node <- xmlNode("PMML",
+#                    attrs=c(version="4.1",
+#                      xmlns="http://www.dmg.org/PMML-4_1",
+#                      "xmlns:xsi"="http://www.w3.org/2001/XMLSchema-instance"))
   else
     node <- xmlNode("PMML",
                     attrs=c(version="4.0",

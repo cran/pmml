@@ -1,8 +1,7 @@
-161a32909d8b6309eced360b04da06ae *DESCRIPTION
+c9e18bd74ff1fc278c17cdbd70281288 *DESCRIPTION
 8b54e5a89fbda3af5e077053d40bec76 *NAMESPACE
-83c68f55243566ed418c8af1b9db45cd *R/addLT.R
 faaafc7cb71af9a8e7e75d534ddf59e1 *R/fileToXMLNode.R
-8c7cd8b7e367233a2d7562c28c4009b9 *R/pmml.R
+5c43c284b803acdd47e9ce3169b522fa *R/pmml.R
 cc4793a65cdb581a39de9bf2c6609cf4 *R/pmml.ada.R
 a7a7be862c1f6ba6c8ed66f0a986f465 *R/pmml.coxph.R
 10b9862c37fada27d505e13247f5f87a *R/pmml.cv.glmnet.R
@@ -24,10 +23,12 @@ eed58e7dcd7b0627ce4b061a9b30ab38 *R/pmml.miningschema.R
 74e735f84f94ec01aac032450c7369c4 *R/pmml.survreg.R
 841800c2b5c4b7c67766716932949d53 *R/pmml.svm.R
 f4edbc9b5beeeda6631da165288f51c3 *R/pmml.utils.R
+be1bb39323d8fd74bef4c97ae2b54fb9 *R/pmmlCanExport.R
+ba0b4c5fe127b5040cb247665f111a0d *R/pmmltoc.R
 60b8847012789bd2e088082d5afacd88 *data/audit.RData
 b1e9b45e9521d57ea813fdf341fbbdd0 *inst/ChangeLog
 570d5a5d8e5d9cd835277e6a90cbb490 *man/audit.Rd
-a2363893feff76d73c30ff8febf2e54e *man/fileToXMLNode.Rd
+16e4a7214ab9d693fa94905acae9c67f *man/fileToXMLNode.Rd
 28ee5cfb99d5ef4b1bff972991752ac4 *man/pmml.Rd
 63e461358e041f1276f62174242839c9 *man/pmml.ada.Rd
 35722f0250c3816ee6c18d5b972d67a2 *man/pmml.arules.Rd
@@ -45,3 +46,5 @@ d12562f98da6b7b0947afea74b33dc6e *man/pmml.naiveBayes.Rd
 8011b9d580a54bbb88d5c144f1e7a8de *man/pmml.rfsrc.Rd
 5c1b803a3f455cd11c5d80214d60d500 *man/pmml.rpart.Rd
 c21c280dd61269a5247483f8a15e669d *man/pmml.svm.Rd
+e5f9522c19a8b4714da59f261a69ed07 *man/pmmlCanExport.Rd
+b486434fe050782e517a3032042cf234 *man/pmmltoc.Rd

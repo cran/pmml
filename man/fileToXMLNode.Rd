@@ -26,11 +26,6 @@ fileToXMLNode(file)
   in an existing PMML file, convert it to an XML node and then make it available for use by
   any of the pmml functions.
 
-  The 'addLT' function in this package details a scenario where one needs data transformations
-  represented as part of the PMML file. This information is not necessarily in R since it may 
-  be stored externally in a PMML file. The example depicted here shows how one can import this
-  file as a PMML object so it can be used as an input to the 'pmml' function which will in turn
-  add it to a PMML model.
 }    
 \value{
   
