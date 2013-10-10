@@ -26,6 +26,7 @@ pmml.coxph <- function(model,
                        description="CoxPH Survival Regression Model",
                        copyright=NULL,
                        transforms=NULL,
+		       unknownValue=NULL,
                        ...)
 {
   if (! inherits(model, "coxph")) stop("Not a legitimate coxph object")
@@ -118,6 +119,12 @@ pmml.coxph <- function(model,
       isStrata <- TRUE
       strataVar0 <- gsub("strata\\(","",termVar)
       strataVar <- gsub("\\)","",strataVar0)
+  #if someone used as.factor to emphasize the strata is a factor, remove that
+      if (length(grep( "^as.factor\\(", strataVar) ))
+      {
+        strataVar <- sub("^as.factor\\((.*)\\)", "\\1", strataVar)
+      }
+
     }
   }
 
@@ -187,7 +194,7 @@ pmml.coxph <- function(model,
 
   # PMML
 
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode("4.2")
 
   # PMML -> Header
 
@@ -216,7 +223,7 @@ pmml.coxph <- function(model,
         field2$class[numFields2+2] <- "numeric"
         names(field2$class)[numFields2+2] <- field2$name[numFields2+2]
         field2$name[numFields2+3] <- strataVar
-        field2$class[numFields2+3] <- "numeric"
+        field2$class[numFields2+3] <- "factor"
         names(field2$class)[numFields2+3] <- field2$name[numFields2+3]
     } else
     {
@@ -239,7 +246,7 @@ pmml.coxph <- function(model,
         field2$class[numFields2+3] <- "numeric"
         names(field2$class)[numFields2+3] <- field2$name[numFields2+3]
         field2$name[numFields2+4] <- strataVar
-        field2$class[numFields2+4] <- "numeric"
+        field2$class[numFields2+4] <- "factor"
         names(field2$class)[numFields2+4] <- field2$name[numFields2+4]
 
     }
@@ -290,7 +297,7 @@ pmml.coxph <- function(model,
 
   # PMML -> RegressionModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field2, target, transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field2, target, transforms, unknownValue=unknownValue))
 
   # Tridi Zementis: Add output fields to output both hazard and survival
 

@@ -6,7 +6,8 @@
 }
 \usage{
 \method{pmml}{ada}(model, model.name="AdaBoost_Model", app.name="R-PMML", 
-     description="AdaBoost Model", copyright=NULL, transforms=NULL, ...)
+     description="AdaBoost Model", copyright=NULL, transforms=NULL, 
+     unknownValue=NULL, ...)
 }
 \arguments{
   
@@ -21,13 +22,15 @@
   \item{copyright}{the copyright notice for the model.}
 
   \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+
+  \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
       
   \item{\dots}{further arguments passed to or from other methods.}
 }
 \details{
 
-  The \code{pmml} function exports the ada model in the PMML MiningModel (multiple models) format. The MiningModel element
-  consists of a list of TreeModel elements, one in each model segment.
+  The \code{pmml} function exports the ada model in the PMML MiningModel (multiple models) format. 
+  The MiningModel element consists of a list of TreeModel elements, one in each model segment.
   
   Note that each segment tree is a classification model, returning either -1 or 1.
   However the MiningModel (ada algorithm) is doing a weighted sum of the returned value, -1 or 1.
@@ -53,10 +56,12 @@
 \author{Zementis Inc. \email{info@zementis.com}}	
 
 \examples{
+
 library(ada)
 library(pmml)
 data(audit)
 
 fit <- ada(Adjusted~Employment+Education+Hours+Income,iter=3, audit)
 pmml_fit <- pmml(fit)
+
 }

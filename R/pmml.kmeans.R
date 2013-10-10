@@ -21,8 +21,8 @@ pmml.kmeans <- function(model,
                         description="KMeans cluster model",
                         copyright=NULL,
                         transforms=NULL,
-                        algorithm.name="KMeans: Hartigan and Wong",
-                        ...)
+                        unknownValue=NULL,
+                        algorithm.name="KMeans: Hartigan and Wong", ...)
 {
   if (! inherits(model, "kmeans")) stop("Not a legitimate kmeans object")
   
@@ -52,7 +52,7 @@ pmml.kmeans <- function(model,
   #----------------------------------------------------------
   # PMML
   
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode("4.2")
   
   #----------------------------------------------------------
   # PMML -> Header
@@ -77,7 +77,7 @@ pmml.kmeans <- function(model,
   #---------------------------------------------------------------
   # PMML -> ClusteringModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field2,transformed=transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field2,transformed=transforms, unknownValue=unknownValue))
 
   #-----------------------------------------------------------------
   # PMML -> ClusteringModel -> Output

@@ -36,7 +36,7 @@
 
 
 \usage{
-pmml(model, model.name="Rattle_Model", app.name="Rattle/PMML",
+pmml(model=NULL, model.name="Rattle_Model", app.name="Rattle/PMML",
      description=NULL, copyright=NULL, transforms=NULL, \dots)
 }
 
@@ -52,7 +52,7 @@ pmml(model, model.name="Rattle_Model", app.name="Rattle/PMML",
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{a coded list of transforms performed.}
+  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
 
   \item{\dots}{further arguments passed to or from other methods.}
 
@@ -135,8 +135,9 @@ pmml(model, model.name="Rattle_Model", app.name="Rattle/PMML",
   \code{\link{pmml.svm}}
 }
 \examples{
+
 # Build a simple lm model
-(iris.lm <- lm(Sepal.Length ~ ., data=iris))
+iris.lm <- lm(Sepal.Length ~ ., data=iris)
 
 # Convert to pmml
 pmml(iris.lm)

@@ -40,21 +40,22 @@ fileToXMLNode(file)
 \examples{
 
 # define some transformations
-library(pmml)
-library(pmmlTransformations)
+ library(pmml)
+ library(pmmlTransformations)
 
-irisBox <- WrapData(iris)
-irisBox <- ZScoreXform(irisBox,xformInfo = "column1->d1")
-irisBox <- ZScoreXform(irisBox,xformInfo = "column2->d2")
+ irisBox <- WrapData(iris)
+ irisBox <- ZScoreXform(irisBox,xformInfo = "column1->d1")
+ irisBox <- ZScoreXform(irisBox,xformInfo = "column2->d2")
 
 #make a LocalTransformations element and save it to an external file
-pmml_trans <- pmml(NULL, transforms=irisBox)
-write(toString(pmml_trans),file = "xform_iris.pmml")
+ pmml_trans <- pmml(NULL, transforms=irisBox)
+ write(toString(pmml_trans),file = "xform_iris.pmml")
 
-# Later, we may need to read in the PMML model into R
-# 'lt' below is now a XML Node, as opposed to a string
+ # Later, we may need to read in the PMML model into R
+ # 'lt' below is now a XML Node, as opposed to a string
 
-lt <- fileToXMLNode("xform_iris.pmml")
+ lt <- fileToXMLNode("xform_iris.pmml")
+
 }
 \keyword{interface}
 

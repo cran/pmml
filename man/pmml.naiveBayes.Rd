@@ -6,7 +6,8 @@
 }
 \usage{
 \method{pmml}{naiveBayes}(model, model.name="naiveBayes_Model", app.name="Rattle/PMML",
-     description="NaiveBayes Model", copyright=NULL, transforms=NULL, predictedField, ...)
+     description="NaiveBayes Model", copyright=NULL, transforms=NULL, unknownValue=NULL,
+     predictedField, ...)
 }
 \arguments{
   
@@ -21,6 +22,8 @@
   \item{copyright}{the copyright notice for the model.}
 
   \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+
+  \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
  
   \item{predictedField}{Required parameter; the name of the predicted field.}
 
@@ -58,6 +61,7 @@
 \author{Zementis Inc. \email{info@zementis.com}}	
 
 \examples{
+
 # Build a simple Naive Bayes model
 
 # Upload the required library
@@ -74,5 +78,7 @@ model<-naiveBayes(Class~V1+V2+V3,data=house,threshold=0.003)
 
 # Output the PMML representation 
 pmml(model,dataset=house,predictedField="Class")
+
+rm(model)
 
 }

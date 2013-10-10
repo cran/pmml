@@ -6,7 +6,8 @@
 }
 \usage{
 \method{pmml}{coxph}(model, model.name="CoxPH_Survival_Regression_Model", app.name="Rattle/PMML",
-     description="CoxPH Survival Regression Model", copyright=NULL, transforms=NULL, \dots)
+     description="CoxPH Survival Regression Model", copyright=NULL, transforms=NULL, 
+     unknownValue=NULL, \dots)
 }
 \arguments{
   
@@ -21,6 +22,8 @@
   \item{copyright}{the copyright notice for the model.}
 
   \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+
+  \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
 
   \item{\dots}{further arguments passed to or from other methods.}
 }

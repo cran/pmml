@@ -8,7 +8,7 @@
 \usage{
 \method{pmml}{multinom}(model, model.name="multinom_Model", app.name="Rattle/PMML",
      description="Multinomial Logistic Model", copyright = NULL,
-     transforms = NULL, ...)
+     transforms = NULL, unknownValue=NULL, ...)
 }
 \arguments{
   
@@ -24,11 +24,13 @@
 
   \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
 
+  \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
+
   \item{\dots}{further arguments passed to or from other methods.}
 }
 \details{
 
-  This function outputs the multinomial logistic model in the PMML GenerealRegressionModel format.
+  This function outputs the multinomial logistic model in the PMML RegressionModel format.
   It implements the use of numerical, categorical and multiplicative terms involving
   both numerical and categorical variables.
 }    

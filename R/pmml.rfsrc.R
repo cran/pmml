@@ -22,7 +22,8 @@ pmml.rfsrc <- function(model,
                      app.name="Rattle/PMML",
                      description="Random Survival Forest Model",
                      copyright=NULL,
-		     transforms=NULL, ...)
+		     transforms=NULL,
+		     unknownValue=NULL, ...)
 {
   # Based on RANDOM SURVIVAL FOREST 2.0.0, Copyright 2006, Cleveland Clinic
   # Original by Hemant Ishwaran and Udaya B. Kogalur
@@ -70,7 +71,7 @@ pmml.rfsrc <- function(model,
 
   # PMML
 
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode("4.2")
 
   # PMML -> Header
 
@@ -129,7 +130,7 @@ pmml.rfsrc <- function(model,
 #  }
 
   # MiningModel -> MiningSchema
-  miningModelNode <- append.XMLNode(miningModelNode, .pmmlMiningSchemaSurv(field, timeName=model$yvar.names[1], statusName=model$yvar.names[2], target=NULL, inactive=NULL, transformed=transforms))
+  miningModelNode <- append.XMLNode(miningModelNode, .pmmlMiningSchemaSurv(field, timeName=model$yvar.names[1], statusName=model$yvar.names[2], target=NULL, inactive=NULL, transformed=transforms,unknownValue=unknownValue))
 
   #Tridi: If interaction terms do exist, define a product in LocalTransformations and use
   # it as a model variable. This step is rare as randomForest seems to avoid multiplicative
@@ -201,7 +202,7 @@ pmml.rfsrc <- function(model,
 
     # PMML --> TreeModel [b] -> MiningSchema
     
-    treeModelNode <- append.XMLNode(treeModelNode, .pmmlMiningSchemaSurv(field, timeName=model$yvar.names[1], statusName=model$yvar.names[2], NULL))
+    treeModelNode <- append.XMLNode(treeModelNode, .pmmlMiningSchemaSurv(field, timeName=model$yvar.names[1], statusName=model$yvar.names[2], NULL, unknownValue=unknownValue))
     
     
     # Initialize the root node.  This differs from the rest of the

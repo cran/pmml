@@ -26,6 +26,7 @@
                          description="Survival Regression Model",
                          copyright=NULL,
                          transforms=NULL,
+			 unknownValue=NULL,
                          ...)
 {
   if (! inherits(model, "survreg")) stop("Not a legitimate survreg object")
@@ -102,7 +103,7 @@
 
   # PMML
 
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode("4.2")
 
   # PMML -> Header
 
@@ -124,7 +125,7 @@
 
   # PMML -> RegressionModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transformed=transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transformed=transforms, unknownValue=unknownValue))
 
   # PMML -> TreeModel -> LocalTransforms
 

@@ -34,6 +34,7 @@ pmml.ksvm <- function(model,
                       description="Support Vector Machine PMML Model",
                       copyright=NULL,
                       transforms=NULL,
+		      unknownValue=NULL,
                       dataset=NULL,
                       ...)
 {
@@ -113,7 +114,7 @@ pmml.ksvm <- function(model,
 
   # PMML
 
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode("4.2")
 
   # PMML -> Header
   
@@ -142,7 +143,7 @@ pmml.ksvm <- function(model,
   # PMML -> SupportVectorMachineModel -> MiningSchema
 
   ksvm.model <- append.XMLNode(ksvm.model,
-                               .pmmlMiningSchema(field, target, transformed=transforms))
+                               .pmmlMiningSchema(field, target, transformed=transforms, unknownValue=unknownValue))
 
   # Output 
   ksvm.model <- append.XMLNode(ksvm.model, .pmmlOutput(field, target))  

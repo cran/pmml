@@ -1,1 +1,4 @@
 exportPattern("^[[:alpha:]]+")
+import("XML")
+S3method(pmml, rules)
+S3method(pmml, itemsets)

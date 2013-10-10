@@ -37,6 +37,7 @@ pmml.nnet <- function(model,
                       description="Neural Network PMML Model",
                       copyright=NULL,
                       transforms=NULL,
+		      unknownValue=NULL,
                       ...)
 {
   if (! inherits(model, "nnet")) stop("Not a legitimate nnet object")
@@ -233,7 +234,7 @@ pmml.nnet <- function(model,
   ##############################################################################
   # PMML
   
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode("4.2")
   
   # PMML -> Header
   
@@ -283,7 +284,7 @@ pmml.nnet <- function(model,
 #    target <- substring(target,11,endPos)
 #  }
 
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target,transformed=transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target,transformed=transforms,unknownValue=unknownValue))
   #091206 REMOVE the.model <- append.XMLNode(the.model, pmml.nnet.MiningSchema(field, target))
   
   #  PMML -> NeuralNetwork -> Output

@@ -8,7 +8,8 @@
 }
 \usage{
 \method{pmml}{rfsrc}(model, model.name="rsf_Model", app.name="Rattle/PMML",
-     description="Random Survival Forest Model", copyright=NULL, transforms=NULL, ...)
+     description="Random Survival Forest Model", copyright=NULL, transforms=NULL, 
+     unknownValue=NULL, ...)
 }
 \arguments{
   
@@ -26,6 +27,8 @@
   \item{copyright}{the copyright notice for the model.}
 
   \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}  
+
+  \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
   
   \item{\dots}{further arguments passed to or from other methods.}
 }
@@ -58,5 +61,6 @@
  data(veteran)
  veteran.out <- rfsrc(Surv(time, status)~., data = veteran, ntree = 5, forest = TRUE)
  pmml(veteran.out)
+
 }
 

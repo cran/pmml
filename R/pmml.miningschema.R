@@ -20,47 +20,83 @@
 # modified 081513 to add implementation of transformations generator
 # and transformations element addition;  tridivesh.jena@zementis.com
 # 
-.pmmlMiningSchema <- function(field, target=NULL, transformed=NULL)
+.pmmlMiningSchema <- function(field, target=NULL, transformed=NULL, unknownValue=NULL)
 {
-    namelist <- .origFieldList(field, transformed)
+    if(!is.null(unknownValue))
+    {
+      warning("use of the 'unknownValue' parameter is deprecated. Please use the 'addMSattributes' instead")
+    }
 
+    namelist <- .origFieldList(field, transformed)
     mining.schema <- xmlNode("MiningSchema")
+
+    if(!is.data.frame(unknownValue))
+    {
+      for(j in 1:length(namelist))
+      {
+        usage <- ifelse(namelist[j] == target, "predicted", "active")
+        mf <- xmlNode("MiningField", attrs=c(name=namelist[j], usageType=usage, missingValueReplacement=unknownValue))
+        mining.schema <- append.XMLNode(mining.schema, mf)
+      }
+      return(mining.schema)
+    }
+
+#    namelist <- .origFieldList(field, transformed)
+    fieldInfo <- as.data.frame(unknownValue)
+
+#    mining.schema <- xmlNode("MiningSchema")
     target <- .removeAsFactor(target)  
 
+    unknownVal <- NULL
+    invalidVal <- NULL
     for(j in 1:length(namelist)) {
   
         if(!is.na(namelist[j])) {        
             usage <- ifelse(namelist[j] == target, "predicted", "active")
-     
+    	    if((!is.null(target)) && (namelist[j] != target)){
+	      if(!is.null(unknownValue)){
+	 	unknownVal <- fieldInfo[namelist[j],"unknownValue"] 
+		invalidVal <- fieldInfo[namelist[j],"invalidValue"]
+	      }
+            }else if(is.null(target) && !is.null(unknownValue)) {
+                unknownVal <- fieldInfo[namelist[j],"unknownValue"]
+                invalidVal <- fieldInfo[namelist[j],"invalidValue"]
+	    }
             if(namelist[j]=="Temp" || namelist[j]=="DiscretePlaceHolder") {
             # If field name is the naive bayes categorical field place holder, add missingValueReplacement
                 if(length(field$levels[[namelist[j]]])==1) {
                      mf <- xmlNode("MiningField", attrs=c(name=namelist[j],
                             usageType=usage,missingValueReplacement=field$levels[[namelist[j]]]))
                 }
-            } else {
-                mf <- xmlNode("MiningField", attrs=c(name=namelist[j], usageType=usage))
-            }
+	     } else 
+	     {
+		mf <- xmlNode("MiningField", attrs=c(name=namelist[j], usageType=usage,
+			missingValueReplacement=unknownVal, invalidValueTreatment=invalidVal))
+	     }
             
             mining.schema <- append.XMLNode(mining.schema, mf)
          }
-    }
+	}
 
     return(mining.schema)
 }
 
-.pmmlMiningSchemaRF <- function(field, target=NULL, inactive=NULL, transformed=NULL)
+.pmmlMiningSchemaRF <- function(field, target=NULL, inactive=NULL, transformed=NULL, unknownValue=NULL)
 {
   # Generate the PMML for the MinimgSchema element.
-
   number.of.fields <- length(field$name)
   mining.fields <- list()
-
+  unknownVal <- NULL
+  invalidVal <- NULL
   namelist <- NULL
+
   for (i in 1:number.of.fields)
   {
     usage <- ifelse(field$name[i] == target, "predicted", "active")
-
+    if(field$name[i] != target){
+      unknownVal <- unknownValue
+      invalidVal <- ifelse(is.null(unknownValue),"asIs","asMissing")
+    }
    # if (field$name[i] %in% inactive) usage <- "supplementary"
 
     if(!is.null(transformed))
@@ -73,7 +109,6 @@
          }
        } else
        {
-
            ofname <- transformed$fieldData[field$name[i],"origFieldName"][[1]]
 # following for loop not needed as multiple parents via mapvalues dealt with above
            for(j in 1:length(ofname))
@@ -98,6 +133,8 @@
              }
              ofname[j] <- transformed$fieldData[ofname[j],"origFieldName"][[1]]
             }
+
+
             if(!(fname %in% namelist))
             {
              namelist <- c(namelist,fname)
@@ -110,20 +147,16 @@
        if(!is.na(namelist[ndf2]))
        {
         mining.fields[[nmbr]] <- xmlNode("MiningField", attrs=c(name=namelist[ndf2],
-                                                usageType=usage,invalidValueTreatment="asIs"))
+                                  usageType=usage,missingValueReplacement=unknownVal, invalidValueTreatment=invalidVal))
         nmbr <- nmbr + 1
        }
       }
     } else
     { 
-    #  if(length(grep("as\\.factor\\(",field$name[i])) == 1)
-    #    fName <- gsub("as.factor\\((\\w*)\\)","\\1", field$name[i], perl=TRUE)
-    #  else
-	# fName <- field$name[i]
       fName <- .removeAsFactor(field$name[i])  
      
       mining.fields[[i]] <- xmlNode("MiningField", attrs=c(name=fName,
-                                    usageType=usage,invalidValueTreatment="asIs"))
+                                    usageType=usage,missingValueReplacement=unknownVal, invalidValueTreatment=invalidVal))
     }
 
 
@@ -133,7 +166,7 @@
   return(mining.schema)
 }
 
-.pmmlMiningSchemaSurv <- function(field, timeName, statusName, target=NULL, inactive=NULL, transformed=NULL)
+.pmmlMiningSchemaSurv <- function(field, timeName, statusName, target=NULL, inactive=NULL, transformed=NULL,unknownValue=NULL)
 {
   # Tridi 012712
   # Generate the PMML for the MinimgSchema element for a survival model.
@@ -160,6 +193,7 @@
   mining.fields <- list()
   targetExists <- 0
   ii <- 0
+  unknownVal <- NULL 
   for (i in 1:number.of.fields)
   {
     if(length(grep(":",field$name[i])) == 1){
@@ -167,8 +201,12 @@
     ii <- ii+1
     if (is.null(target))
       usage <- "active"
-    else
+    else 
       usage <- ifelse(field$name[i] == target, "predicted", "active")
+
+    if(usage != "predicted"){
+      unknownVal <- unknownValue
+    } 
 
     if (usage == "predicted")
      targetExists = 1
@@ -242,7 +280,8 @@
        if(!is.na(namelist[ndf2]))
        {
         mining.fields[[nmbr]] <- xmlNode("MiningField", attrs=c(name=namelist[ndf2],
-                                                usageType=usage))
+                                                usageType=usage,missingValueReplacement=unknownVal, 
+						invalidValueTreatment="asMissing"))
         nmbr <- nmbr + 1
        }
       }
@@ -256,7 +295,8 @@
       
       mining.fields[[i]] <- xmlNode("MiningField",
                                   attrs=c(name=fName,
-                                    usageType=usage))
+                                    usageType=usage,missingValueReplacement=unknownVal, 
+					invalidValueTreatment="asMissing"))
     }
 
    }

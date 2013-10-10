@@ -26,7 +26,7 @@ pmml <- function(model=NULL,
                  app.name="Rattle/PMML",
                  description=NULL,
                  copyright=NULL,
-                 transforms=NULL,
+		 transforms=NULL,
                  ...)
 {
   if(is.null(model) && !is.null(transforms))
@@ -83,24 +83,31 @@ pmml <- function(model=NULL,
 
 .pmmlRootNode <- function(version)
 {
-  if (version == "4.1")
+  if (version == "4.2")
+  {
     node <- xmlNode("PMML",
+                    attrs=c(version="4.2",
+                      xmlns="http://www.dmg.org/PMML-4_2",
+                      "xmlns:xsi"="http://www.w3.org/2001/XMLSchema-instance", 
+                      "xsi:schemaLocation"=paste("http://www.dmg.org/PMML-4_2",
+                        "http://www.dmg.org/v4-2/pmml-4-2.xsd")))
+  } else if(version == "4.1")
+  {
+   node <- xmlNode("PMML",
                     attrs=c(version="4.1",
                       xmlns="http://www.dmg.org/PMML-4_1",
-                      "xmlns:xsi"="http://www.w3.org/2001/XMLSchema-instance", 
-                      "xsi:schemaLocation"=paste("http://www.dmg.org/PMML-4_1",
+                      "xmlns:xsi"="http://www.w3.org/2001/XMLSchema-instance",
+		      "xsi:schemaLocation"=paste("http://www.dmg.org/PMML-4_1",
                         "http://www.dmg.org/v4-1/pmml-4-1.xsd")))
-#   node <- xmlNode("PMML",
-#                    attrs=c(version="4.1",
-#                      xmlns="http://www.dmg.org/PMML-4_1",
-#                      "xmlns:xsi"="http://www.w3.org/2001/XMLSchema-instance"))
-  else
+  } else
+  {
     node <- xmlNode("PMML",
                     attrs=c(version="4.0",
                       xmlns="http://www.dmg.org/PMML-4_0",
                       "xmlns:xsi"="http://www.w3.org/2001/XMLSchema-instance",
                       "xsi:schemaLocation"=paste("http://www.dmg.org/PMML-4_0",
                         "http://www.dmg.org/v4-0/pmml-4-0.xsd")))
+  }
 
   return(node)
 }
@@ -313,10 +320,10 @@ pmml <- function(model=NULL,
 	missingVal <- inputs[fname,"missingValue"]
 	defVal <- inputs[fname,"default"]
 
-	origName <- inputs[fname,"origFieldName"] 
+	origName <- as.character(inputs[fname,"origFieldName"])
 	map <- maps[c(-1,-2),]
 	dtype <- as.character(inputs[fname,"dataType"])
-        if(dtype == "numeric")
+        if((dtype == "numeric") || (dtype == "integer") || (dtype == "double"))
         {
          dtype <- "double"
          otype <- "continuous"

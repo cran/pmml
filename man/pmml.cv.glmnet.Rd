@@ -11,7 +11,7 @@
 \usage{
 \method{pmml}{cv.glmnet}(model, model.name="Elasticnet_Model", app.name="Rattle/PMML",
      description="Generalized Linear Regression Model", copyright=NULL, 
-     transforms=NULL, dataset=NULL, s=NULL, \dots)
+     transforms=NULL, unknownValue=NULL, dataset=NULL, s=NULL, \dots)
 }
 \arguments{
   
@@ -28,6 +28,8 @@
   \item{copyright}{the copyright notice for the model.}
 
   \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+
+  \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
 
   \item{dataset}{the dataset using which the model was built.}
 

@@ -32,6 +32,7 @@ pmml.rpart <- function(model,
                        description="RPart Decision Tree Model",
                        copyright=NULL,
                        transforms=NULL,
+		       unknownValue=NULL,
                        dataset=NULL,
                         ...)
 {
@@ -108,7 +109,7 @@ pmml.rpart <- function(model,
   
   # PMML
 
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode("4.2")
 
   # PMML -> Header
 
@@ -128,7 +129,7 @@ pmml.rpart <- function(model,
 
   # PMML -> TreeModel -> MiningSchema
   
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transformed=transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transformed=transforms,unknownValue=unknownValue))
 
   # PMML -> TreeModel -> Output
   
@@ -544,7 +545,8 @@ pmml.rpart <- function(model,
                                 model.name="RPart_Model",
                                 app.name="RPart",
                                 description="RPart model as rules",
-                                copyright=NULL)
+                                copyright=NULL,
+				unknownValue=unknownValue)
 {
   #require(XML, quietly=TRUE)
   require(rpart, quietly=TRUE)
@@ -590,7 +592,7 @@ pmml.rpart <- function(model,
 
   # PMML -> MiningSchema
   
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target,unknownValue=unknownValue))
 
   # Add in actual tree nodes.
 

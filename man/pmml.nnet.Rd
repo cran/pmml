@@ -8,7 +8,8 @@
 }
 \usage{
 \method{pmml}{nnet}(model, model.name="NeuralNet_model", app.name="Rattle/PMML",
-     description="Neural Network PMML Model", copyright=NULL, transforms=NULL, \dots)
+     description="Neural Network PMML Model", copyright=NULL, transforms=NULL, 
+     unknownValue=NULL, \dots)
 }
 \arguments{
   
@@ -23,6 +24,8 @@
   \item{copyright}{the copyright notice for the model.}
 
   \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+
+  \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
 
   \item{\dots}{further arguments passed to or from other methods.}
 }
@@ -41,7 +44,11 @@
 \author{Zementis Inc. \email{info@zementis.com}}
 
 \examples{
+
 library(nnet)
 fit <- nnet(Species ~ ., data=iris, size=4)
 pmml(fit)
+
+rm(fit)
+
 }

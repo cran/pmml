@@ -32,6 +32,7 @@ pmml.lm <- function(model,
                     description="Linear Regression Model",
                     copyright=NULL,
                     transforms=NULL,
+		    unknownValue=NULL,
                     dataset=NULL,
                     weights=NULL,
                     ...)
@@ -124,7 +125,7 @@ pmml.lm <- function(model,
 
   # PMML
 
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode("4.2")
 
   # PMML -> Header
 
@@ -191,7 +192,7 @@ pmml.lm <- function(model,
 
   # PMML -> RegressionModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transformed=transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transformed=transforms, unknownValue=unknownValue))
 
   # PMML -> TreeModel -> Output
 

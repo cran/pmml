@@ -19,7 +19,8 @@ pmml.itemsets <- function(model,
                        model.name="arules_Model",
                        app.name="Rattle/PMML",
                        description="arules frequent itemsets model",
-                       copyright=NULL, ...)
+                       copyright=NULL,
+                       transforms=NULL, ...)
 {
   
   if (! inherits(model, "itemsets")) stop("Not a legitimate arules itemsets rules object")

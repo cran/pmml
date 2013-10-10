@@ -7,9 +7,9 @@
 }
 \usage{
 \method{pmml}{rules}(model, model.name="arules_Model", app.name="Rattle/PMML",
-     description="arules association rules model", copyright=NULL, \dots)
+     description="arules association rules model", copyright=NULL, transforms = NULL, \dots)
 \method{pmml}{itemsets}(model, model.name="arules_Model", app.name="Rattle/PMML",
-     description="arules frequent itemsets model", copyright=NULL, \dots)
+     description="arules frequent itemsets model", copyright=NULL, transforms = NULL, \dots)
 }
 \arguments{
   
@@ -22,6 +22,8 @@
   \item{description}{a descriptive text for the Header element of the PMML code.}
   
   \item{copyright}{the copyright notice for the model.}
+
+  \item{transforms}{not used in present version.}
 
   \item{\dots}{further arguments passed to or from other methods.}
 }

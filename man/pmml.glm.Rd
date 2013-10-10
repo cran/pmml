@@ -7,7 +7,7 @@
 \usage{
 \method{pmml}{glm}(model, model.name="General_Regression_Model", app.name="Rattle/PMML",
      description="Generalized Linear Regression Model", copyright=NULL,
-     transforms=NULL, weights=NULL, ...)
+     transforms=NULL, unknownValue=NULL, weights=NULL, ...)
 }
 \arguments{
   
@@ -22,6 +22,8 @@
   \item{copyright}{the copyright notice for the model.}
 
   \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+
+  \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
   
   \item{weights}{the weights used for building the model.}
 

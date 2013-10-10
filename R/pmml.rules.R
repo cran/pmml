@@ -30,7 +30,7 @@ pmml.rules <- function(model,
                        model.name="arules_Model",
                        app.name="Rattle/PMML",
                        description="arules association rules model",
-                       copyright=NULL, ...)
+                       copyright=NULL,transforms=NULL,...)
 {
   
   #if (!inherits(model, "rules")) stop("Not a legitimate arules rules object")

@@ -24,6 +24,7 @@ pmml.svm <- function(model,
                         description="Support Vector Machine Model",
                         copyright=NULL,
                         transforms=NULL,
+			unknownValue=NULL,
                         ...)
 {
   if (! inherits(model, "svm")) stop("Not a legitimate svm object")
@@ -49,7 +50,7 @@ pmml.svm <- function(model,
   #----------------------------------------------------------
   # PMML
   
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode("4.2")
   
   #----------------------------------------------------------
   # PMML -> Header
@@ -81,7 +82,7 @@ pmml.svm <- function(model,
   #---------------------------------------------------------------
   # PMML -> SupportVectorMachineModel -> MiningSchema
 
-  xmlModel <- append.XMLNode(xmlModel, .pmmlMiningSchema(field, target, transformed=transforms))
+  xmlModel <- append.XMLNode(xmlModel, .pmmlMiningSchema(field, target, transformed=transforms, unknownValue=unknownValue))
 
   #-----------------------------------------------------------------
   # PMML -> SupportVectorMachineModel -> Output
@@ -192,7 +193,6 @@ pmml.svm <- function(model,
 
      for(j in 1:num.vector.attr) {
         vectorAttr <- allVectorAttrName[[1]][j]
-        print(vectorAttr)
         
         if(grepl(inputName,vectorAttr) == TRUE) {
 
@@ -230,7 +230,6 @@ pmml.svm <- function(model,
    
   #------------------------------------------------------------------
   # Kernel
-  print("kernel")
   xmlKernel <- NULL
   if (model$kernel == 0) {
      xmlKernel <- xmlNode("LinearKernelType", attrs=c(description="Linear kernel type"))

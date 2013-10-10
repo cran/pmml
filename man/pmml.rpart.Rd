@@ -8,7 +8,7 @@
 \usage{
 \method{pmml}{rpart}(model, model.name="RPart_Model", app.name="Rattle/PMML",
      description="RPart Decision Tree Model", copyright=NULL, transforms=NULL,
-     dataset=NULL, \dots)
+     unknownValue=NULL, dataset=NULL, \dots)
 }
 
 \arguments{
@@ -24,6 +24,8 @@
   \item{copyright}{the copyright notice for the model.}
 
   \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+
+  \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
 
   \item{dataset}{the original dataset used to train the model.}
  
@@ -45,8 +47,12 @@
 \author{\email{Graham.Williams@togaware.com},   Zementis Inc. \email{info@zementis.com}}
 
 \examples{
+
 library(rpart)
 fit <- rpart(Species ~ ., data=iris)
 pmml(fit)
+
+rm(fit)
+
 }
 

@@ -8,7 +8,8 @@
 
 \usage{
 \method{pmml}{svm}(model, model.name="LIBSVM_Model", app.name="R-PMML",
-     description="Support Vector Machine Model", copyright=NULL, transforms=NULL, ...)
+     description="Support Vector Machine Model", copyright=NULL, transforms=NULL, 
+     unknownValue=NULL, ...)
 }
 
 \arguments{
@@ -23,6 +24,8 @@
   \item{copyright}{the copyright notice for the model.}
 
   \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+
+  \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
       
   \item{\dots}{further arguments passed to or from other methods.}
 }
@@ -67,5 +70,7 @@
 library(e1071)
 fit <- svm(Species ~ ., data=iris, kernel="polynomial")
 pmml(fit)
+
+rm(fit)
 
 }

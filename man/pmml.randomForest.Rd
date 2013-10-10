@@ -8,7 +8,8 @@
 }
 \usage{
 \method{pmml}{randomForest}(model, model.name="randomForest_Model", app.name="Rattle/PMML",
-     description="Random Forest Tree Model", copyright=NULL, transforms=NULL, ...)
+     description="Random Forest Tree Model", copyright=NULL, transforms=NULL, 
+     unknownValue=NULL,  ...)
 }
 \arguments{
   
@@ -23,6 +24,8 @@
   \item{copyright}{the copyright notice for the model.}
 
   \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+
+  \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
   
   \item{\dots}{further arguments passed to or from other methods.}
 }
@@ -41,6 +44,7 @@
 \author{Zementis Inc. \email{info@zementis.com}}	
 
 \examples{
+
 # Build a simple randomForest model
 
 library(randomForest)
@@ -49,5 +53,8 @@ iris.rf <- randomForest(Species ~ ., data=iris, ntree=20)
 # Convert to pmml
 
 pmml(iris.rf)
+
+rm(iris.rf)
+
 }
 

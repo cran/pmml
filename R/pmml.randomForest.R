@@ -26,6 +26,7 @@ pmml.randomForest <- function(model,
                               description="Random Forest Tree Model",
                               copyright=NULL,
 			      transforms=NULL,
+			      unknownValue=NULL,
                               ...)
 
 {
@@ -58,21 +59,6 @@ pmml.randomForest <- function(model,
   field$class <- attr(model$terms, "dataClasses")
   names(field$class) <- var.names
 
-#  for (i in 1:number.of.fields)
-#  {
-#    if (field$class[[field$name[i]]] == "factor") 
-#    {
-#      if (field$name[i] == target)
-#      {
-#        field$levels[[field$name[i]]] <- model$classes
-#      }
-#      else 
-#      {
-#          cat <- model$forest$xlevels[[field$name[i]]]
-#          field$levels[[field$name[i]]] <- cat
-#      }
-#    }
-#  }
 #Better implementation of the field constructor below:
 
   cat <- list() 
@@ -90,11 +76,11 @@ pmml.randomForest <- function(model,
       }
     }
   }
-  field <- c(field,list("levels"=cat))
+#  field <- c(field,list("levels"=cat))
 
   # PMML
 
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode("4.2")
 
   # PMML -> Header
 
@@ -105,11 +91,10 @@ pmml.randomForest <- function(model,
   pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field,transformed=transforms))
 
   mmodel <- xmlNode("MiningModel",attrs=c(modelName=model.name,functionName=model$type))
-  mmodel <- append.XMLNode(mmodel,.pmmlMiningSchemaRF(field, target,transformed=transforms))
+  mmodel <- append.XMLNode(mmodel,.pmmlMiningSchema(field,target,transforms,unknownValue))
 
   # Tridi: Add output fields
   mmodel <- append.XMLNode(mmodel, .pmmlOutput(field, target))
-
 
   #Tridi: If interaction terms do exist, define a product in LocalTransformations and use
   # it as a model variable. This step is rare as randomForest seems to avoid multiplicative
@@ -161,11 +146,26 @@ pmml.randomForest <- function(model,
     segmentation <- xmlNode("Segmentation",attrs=c(multipleModelMethod="majorityVote"))
   }
 
-  numTrees <- model$ntree
-  for(b in 1:numTrees)
-  {
-    #print(paste("Now converting tree ",b," to PMML"))
+  numTrees <-model$ntree
+  
+  segments <- lapply(1:numTrees,function(x){.makeSegment(x,model,model.name,field,target,unknownValue)})
+  segmentation2 <- append.XMLNode(segmentation, segments)
+  rm(segmentation)
+  rm(segments)
 
+  mmodel2 <- append.XMLNode(mmodel,segmentation2)
+  rm(mmodel)
+  rm(segmentation2)
+
+  pmml2 <- append.XMLNode(pmml, mmodel2)
+  rm(pmml)
+
+  return(pmml2)
+}
+
+   .makeSegment <- function(b,model,model.name,field,target,unknownValue=NULL)
+   {
+    print(paste("Now converting tree ",b," to PMML"))
   # PMML -> TreeModel -> Node
   # Tridi: Tree structure information here as produced by the getTree function of the 
   # randomForest package
@@ -175,35 +175,20 @@ pmml.randomForest <- function(model,
                     model$forest$rightDaughter[,b],
                     model$forest$bestvar[,b],
                     model$forest$xbestsplit[,b],
-                    model$forest$nodestatus[,b],
                     model$forest$nodepred[,b])[1:model$forest$ndbigtree[b],]
     } else 
     {
       tree <- cbind(model$forest$treemap[,,b],
                     model$forest$bestvar[,b],
                     model$forest$xbestsplit[,b],
-                    model$forest$nodestatus[,b],
                     model$forest$nodepred[,b])[1:model$forest$ndbigtree[b],]
     }
-    internalNode <- xmlNode("Null")
-    recursiveOutput <- list(internalNode = internalNode)
-    recursiveOutput$internalNode <- NULL
+    nodeList <- list()
+    rowId <- which(tree[,2] == max(tree[,2]))
+    nodeList <- lapply(1:tree[rowId,2],function(x){.makeNode(x,model,tree,field)})
+    nodeF <- .makeTree(nodeList,tree,rowId)
 
-  # Basic algorithm: Given node, add left leaf and then right leaf. Recursive algorithm as
-  # at each leaf, again add left leaf and then right leaf.
-
-     recursiveOutput <- .getRFTreeNodes2(recursiveOutput, model, -1, tree, 1, 1, field)
-
-  # skip if split var for categorical variable is negative....cannot convert negative values
-  #  to binary. Not sure why this happens sometimes...for now, just skip the tree where 
-  #  this happens.
-   if(!is.null(recursiveOutput$internalNode) && (recursiveOutput$internalNode == "skip")[[1]])
-   {
-   } else
-  {
-    segment <- xmlNode("Segment",attrs=c(id=b))
-    tru <- xmlNode("True")
-    segment <- append.XMLNode(segment, tru)
+    rm(nodeList)
 
   # PMML -> TreeModel
     if(model$type == "regression") 
@@ -224,37 +209,8 @@ pmml.randomForest <- function(model,
     }
 
   # PMML -> TreeModel -> MiningSchema
+  tree.model <- append.XMLNode(tree.model, .pmmlMiningSchema(field, target,unknownValue=unknownValue))
 
-#  tree.model <- append.XMLNode(tree.model, .pmmlMiningSchemaRF(field, target, transformed=transforms))
-  tree.model <- append.XMLNode(tree.model, .pmmlMiningSchemaRF(field, target, NULL))
-
-# Since different trees in the mining model cannot have different xformed field (7/12/2012)
-# there is no need to define the LocalTransformations in each tree
-#
-#    ltNode <- xmlNode("LocalTransformations")
-#    interact <- FALSE
-#    for(fld in 1:number.of.fields)
-#    {
-#      if(length(grep(":",field$name[fld])) == 1)
-#      {
-#       interact <- TRUE
-#       drvnode <- xmlNode("DerivedField",attrs=c(name=field$name[fld],optype="continuous",
-#                                                                 dataType="double"))
-#       applyNode <- xmlNode("Apply",attrs=c("function"="*"))
-#       for(fac in 1:length(strsplit(field$name[fld],":")[[1]]))
-#       {
-#         fldNode <- xmlNode("FieldRef",attrs=c(field=strsplit(field$name[fld],":")[[1]][fac]))
-#         if(length(grep("as\\.factor\\(",fldNode)) == 1)
-#           fldNode <- gsub("as.factor\\((\\w*)\\)","\\1", fldNode, perl=TRUE)
-#         applyNode <- append.XMLNode(applyNode, fldNode)
-#       }
-#       drvnode <- append.XMLNode(drvnode, applyNode)
-#      }
-#      if(interact)
-#        ltNode <- append.XMLNode(ltNode, drvnode)
-#    }
-#    if(interact)
-#      tree.model <- append.XMLNode(tree.model, ltNode)
 
   # Add to the top level structure.
      segment <- xmlNode("Segment",attrs=c(id=b))
@@ -262,17 +218,150 @@ pmml.randomForest <- function(model,
      segment <- append.XMLNode(segment, tru)
 
   # Add to the top level structure.
-     tree.model <- append.XMLNode(tree.model, recursiveOutput$internalNode)
+     tree.model <- append.XMLNode(tree.model, nodeF)
      segment <- append.XMLNode(segment, tree.model)
-     segmentation <- append.XMLNode(segmentation, segment)
+     return(segment)
   }
 
+.makeTree <- function(nodeLi,tre,rId)
+{
+    while(rId!=0)
+    {
+    if(tre[rId,1] != 0)
+    {
+      nodeR<-nodeLi[[tre[rId,2]]]
+      nodeL<-nodeLi[[tre[rId,1]]]
+      nodeT<-nodeLi[[rId]]
+
+      nodeT<-append.XMLNode(nodeT,nodeL)
+
+      nodeT<-append.XMLNode(nodeT,nodeR)
+
+      nodeLi[[rId]]<-nodeT
+
+      rm(nodeR)
+      rm(nodeL)
+      rm(nodeT)
+    }
+    rId=rId-1
   }
-  mmodel <- append.XMLNode(mmodel, segmentation)
-  pmml <- append.XMLNode(pmml, mmodel)
- 
-  return(pmml)
+
+  return(nodeLi[[1]])
 }
+
+
+.makeNode <- function(n, mod, tinf, fieldInfo)
+{
+
+  if(n==1)
+  {
+    return(append.XMLNode(xmlNode("Node",attrs=c(id=1)),xmlNode("True")))
+  } 
+  else 
+  {
+    side <- 2
+    if(n/2 == floor(n/2))
+    {
+      side <- 1
+    }
+    score  <- NULL
+    if(tinf[n,1] == 0)
+    {
+      if(mod$type == "regression"){
+        score <- tinf[n,5]
+      } else{
+	score <- mod$classes[tinf[n,5]]
+      }
+    }
+ 
+    if(is.null(score))
+    {
+      rfNode <- xmlNode("Node",attrs=c(id=n))
+    } else
+    {
+      rfNode <- xmlNode("Node",attrs=c(id=n,score=score))
+    }
+ # After the node, add the split info in pmml
+     # ------------------------------------------------------------------------- 
+     rowid <- which(tinf[,side]==n)
+     fname <- names(mod$forest$xlevels[tinf[rowid,3]])
+     # is the field categorical
+     logical <- FALSE
+     numeric <- FALSE
+     fieldClass <- fieldInfo$class[fname]
+     if(fieldClass == "numeric")
+	numeric <- TRUE
+     if(fieldClass == "logical")
+	logical <- TRUE
+
+  # split if var is numeric
+     if(numeric) 
+     {
+       if(side == 1)
+       { 
+         splitNode <- xmlNode("SimplePredicate",attrs=c(field=fname,operator="lessOrEqual",
+                        value=tinf[rowid,4]))
+       } else
+       {
+         splitNode <- xmlNode("SimplePredicate",attrs=c(field=fname,operator="greaterThan",
+                        value=tinf[rowid,4]))
+       }
+     } else if(logical)
+     {
+       bool = ifelse(tinf[rowid,4] <= 0.5, FALSE, TRUE)
+       splitNode <- xmlNode("SimplePredicate",attrs=c(field=fname,operator="equal",
+                        value=bool))
+     } else  
+     {
+       if(tinf[rowid,4] >= 0)
+       {
+  # split if var is categorical
+         binary <- .sdecimal2binary(tinf[rowid,4])
+         ssp <- xmlNode("SimpleSetPredicate",attrs=c(field=fname,booleanOperator="isIn"))
+         num1 <- 0
+         scat <- NULL
+         holder <- array(0,dim=c(1,mod$forest$ncat[fname][[1]]))
+         for(k in 1:length(binary))
+         {
+          holder[k] = binary[k]
+         }
+
+ # for each category allowed, if value is 1 (from the binary conversion) then go left
+         options(useFancyQuotes = FALSE)
+         for(k in 1:mod$forest$ncat[fname][[1]]) 
+         {
+           if(side == 1)
+           {
+             if(holder[k]==1)
+             {
+              num1 <- num1 + 1
+              catname <- mod$forest$xlevels[fname][[1]][k]
+              scat <- paste(scat," ",dQuote(catname))
+             }
+           } else
+           {
+             if(holder[k]==0)
+             {
+              num1 <- num1 + 1
+              catname <- mod$forest$xlevels[fname][[1]][k]
+              scat <- paste(scat," ",dQuote(catname))
+             }
+           }
+         }
+             
+ # all the gsubs are to strip intermediate, leading and trailing spaces. 
+         scat <- gsub("^[ ]*","",scat)
+         ap <- xmlNode("Array",attrs=c(n=num1,type="string"),scat)
+         ssp <- append.XMLNode(ssp,ap)
+         splitNode <- ssp
+       } 
+     }
+     rfNode <- append.XMLNode(rfNode,splitNode)
+   }
+  return(rfNode)
+}
+
+
 
 .getRFTreeNodes2 <- function(recursiveObject, model, side, tinf, rowfrom, rownext, fieldInfo)
 {
@@ -286,7 +375,7 @@ pmml.randomForest <- function(model,
 #handle trees with 1 node only
     if(is.null(dim(tinf)))
     {
-      rfNode <- xmlNode("Node",attrs=c(id="1",score=tinf[6]))
+      rfNode <- xmlNode("Node",attrs=c(id="1",score=tinf[5]))
       nodeB <- xmlNode("True")
       rfNode <- append.XMLNode(rfNode,nodeB)
       recursiveObject$internalNode <- rfNode
@@ -310,10 +399,10 @@ pmml.randomForest <- function(model,
        if(model$type == "regression") 
        {
  # The score for regresion can just be read off.
-          rfNode <- xmlNode("Node",attrs=c(id=tinf[rowfrom,1],score=tinf[rownext,6]))
+          rfNode <- xmlNode("Node",attrs=c(id=tinf[rowfrom,1],score=tinf[rownext,5]))
        } else 
        {
-          rfNode <- xmlNode("Node",attrs=c(id=tinf[rowfrom,1],score=model$classes[tinf[rownext,6]]))
+          rfNode <- xmlNode("Node",attrs=c(id=tinf[rowfrom,1],score=model$classes[tinf[rownext,5]]))
        }
      } else
      {
@@ -403,10 +492,10 @@ pmml.randomForest <- function(model,
           if(model$type == "regression") 
           {
  # The only difference is where to read off the node info from the tree structure 
-            rfNode <- xmlNode("Node",attrs=c(id=tinf[rowfrom,2],score=tinf[rownext,6]))
+            rfNode <- xmlNode("Node",attrs=c(id=tinf[rowfrom,2],score=tinf[rownext,5]))
           } else 
           {
-            rfNode <- xmlNode("Node",attrs=c(id=tinf[rowfrom,2],score=model$classes[tinf[rownext,6]]))
+            rfNode <- xmlNode("Node",attrs=c(id=tinf[rowfrom,2],score=model$classes[tinf[rownext,5]]))
          }
         }
         else

@@ -10,7 +10,7 @@
 \usage{
 \method{pmml}{ksvm}(model, model.name="SVM_model", app.name="Rattle/PMML",
      description="Support Vector Machine PMML Model", copyright=NULL,
-     transforms=NULL, dataset=NULL, \dots)
+     transforms=NULL, unknownValue=NULL, dataset=NULL, \dots)
 }
 \arguments{
   
@@ -25,6 +25,8 @@
   \item{copyright}{the copyright notice for the model.}
 
   \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+
+  \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
 
   \item{dataset}{required since the ksvm object does not record information about the used 
   categorical variable; the original dataset used to train the SVM model in ksvm.}
@@ -58,5 +60,8 @@ p <- pmml(model, dataset=iris)
 # must be provided as an input parameter for the "predict" function. 
 
 predict(model,iris[,1:4])
+
+rm(model)
+rm(p)
 
 }

@@ -26,8 +26,9 @@ pmml.cv.glmnet <- function(model,
                     description="Generalized Linear Regression Model",
                     copyright=NULL,
                     transforms=NULL,
-		            dataset=NULL,
-		            s=NULL,
+		    unknownValue=NULL,
+		     dataset=NULL,
+		     s=NULL,
                     ...)
 {
   if (! inherits(model, "cv.glmnet")) stop("Not a legitimate cross-validated glmnet object")
@@ -205,7 +206,7 @@ pmml.cv.glmnet <- function(model,
 
   # PMML
 
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode("4.2")
 
   # PMML -> Header
 
@@ -356,7 +357,7 @@ pmml.cv.glmnet <- function(model,
 
   # PMML -> RegressionModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transforms, unknownValue=unknownValue))
 
   outn <- xmlNode("Output")
   outpn <- xmlNode("OutputField",attrs=c(name="predictedValue",feature="predictedValue"))

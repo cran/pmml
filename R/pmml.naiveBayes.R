@@ -28,6 +28,7 @@ pmml.naiveBayes <- function(model,
                           description="NaiveBayes Model",
                           copyright=NULL,
                           transforms=NULL,
+			  unknownValue=NULL,
                           predictedField,
                           ...)
 {
@@ -123,7 +124,7 @@ pmml.naiveBayes <- function(model,
 
   # PMML
 
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode("4.2")
 
   # PMML -> Header
 
@@ -151,7 +152,7 @@ pmml.naiveBayes <- function(model,
   #--------------------------------------------------
   # PMML ->  MiningSchema
   
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transforms, unknownValue=unknownValue))
 
   #-----------------------------------------
   #  PMML -> OUTPUT

@@ -25,6 +25,7 @@ pmml.ada <- function(model,
                        description="AdaBoost Model",
                        copyright=NULL,
                        transforms=NULL,
+		       unknownValue=NULL,
                         ...)
 {
   if (! inherits(model, "ada")) stop("Not a legitimate ada object")
@@ -46,7 +47,7 @@ pmml.ada <- function(model,
    #----------------------------------------------------------
    # PMML
   
-   pmml <- .pmmlRootNode("4.1")
+   pmml <- .pmmlRootNode("4.2")
   
    #----------------------------------------------------------
    # PMML -> Header
@@ -75,7 +76,7 @@ pmml.ada <- function(model,
    #---------------------------------------------------------------
    # PMML -> MiningModel -> MiningSchema
 
-   xmlModel <- append.XMLNode(xmlModel, .pmmlMiningSchema(noTargetFields, NULL, transformed=transforms))
+   xmlModel <- append.XMLNode(xmlModel, .pmmlMiningSchema(noTargetFields, target=NULL, transformed=transforms, unknownValue=unknownValue))
    
    #---------------------------------------------------------------
    # PMML -> MiningModel -> Output
@@ -202,7 +203,7 @@ pmml.ada <- function(model,
       # noTargetFields contains fields directly from the ADA fitting formula,
       # which are the fields will be used in each segment Tree
       
-      xmlSegmentTree <- append.XMLNode(xmlSegmentTree, .pmmlMiningSchema(noTargetFields, NULL, NULL))
+      xmlSegmentTree <- append.XMLNode(xmlSegmentTree, .pmmlMiningSchema(noTargetFields, target=NULL, transformed=NULL, unknownValue=unknownValue))
       
       adaTree <- model$model$tree[[i]]
       xmlNode <- .buildRpartTreeNode(adaTree,"classification")

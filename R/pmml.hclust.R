@@ -21,6 +21,7 @@ pmml.hclust <- function(model,
                         description="Hierarchical cluster model",
                         copyright=NULL,
                         transforms=NULL,
+			unknownValue=NULL,
                         centers,
                         ...)
 {
@@ -62,7 +63,7 @@ pmml.hclust <- function(model,
   #-------------------------------------------------------------------
   # PMML
 
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode("4.2")
 
   #-------------------------------------------------------------------
   # PMML -> Header
@@ -85,7 +86,7 @@ pmml.hclust <- function(model,
 
   # PMML -> ClusteringModel -> MiningSchema
 
-  cl.model <- append.XMLNode(cl.model, .pmmlMiningSchema(field2,transformed=transforms))
+  cl.model <- append.XMLNode(cl.model, .pmmlMiningSchema(field2,transformed=transforms,unknownValue=unknownValue))
 
   #----------------------------------------------------------------------
   # Outputs

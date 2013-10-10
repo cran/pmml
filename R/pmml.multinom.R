@@ -35,6 +35,7 @@ pmml.multinom <- function(model,
                           description="Multinomial Logistic Model",
                           copyright=NULL,
                           transforms=NULL,
+			  unknownValue=NULL,
                           ...)
 {
   if (! inherits(model, "multinom")) stop("Not a legitimate multinom object")
@@ -91,7 +92,7 @@ pmml.multinom <- function(model,
   target <- field$name[1]
   # PMML
 
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode("4.2")
 
   # PMML -> Header
 
@@ -113,7 +114,7 @@ pmml.multinom <- function(model,
 
   # PMML -> RegressionModel -> MiningSchema
   
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transforms, unknownValue=unknownValue))
 
   #########################################
   #  OUTPUT

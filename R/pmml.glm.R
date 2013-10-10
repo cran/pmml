@@ -35,6 +35,7 @@ pmml.glm <- function(model,
                     description="Generalized Linear Regression Model",
                     copyright=NULL,
                     transforms=NULL,
+		    unknownValue=NULL,
                     weights=NULL,
                     ...)
 {
@@ -145,7 +146,7 @@ pmml.glm <- function(model,
 
   # PMML
 
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode("4.2")
 
   # PMML -> Header
 
@@ -282,7 +283,7 @@ pmml.glm <- function(model,
 
   # PMML -> RegressionModel -> MiningSchema
 
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transforms))
+  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transforms, unknownValue=unknownValue))
 
   if(categ)
   {
@@ -485,7 +486,7 @@ pmml.glm <- function(model,
     }
    } else
    {
-     stop("Model coefficients did not converge")
+#     stop("Model coefficients did not converge")
    }
   }
   the.model <- append.XMLNode(the.model,pmNode)

@@ -1,14 +1,15 @@
 Package: pmml
 Type: Package
 Title: Generate PMML for various models
-Version: 1.4.1
+Version: 1.4.2
 Date: 2013-10-10
-Author: Graham Williams, Tridivesh Jena, Michael Hahsler (arules),  
+Author: Graham Williams, Tridivesh Jena, Wen Ching Lin, Michael Hahsler (arules),  
 	Zementis Inc, Hemant Ishwaran, Udaya B. Kogalur, Rajarshi Guha
 Maintainer: Tridivesh Jena <rpmmlsupport@zementis.net>
 Depends: XML
-Suggests: ada, arules, glmnet, nnet, rpart, randomForestSRC,
-        randomForest, kernlab, e1071, mlbench, pmmlTransformations
+Suggests: ada, amap, arules, glmnet, nnet, rattle, rpart,
+        randomForestSRC, randomForest, kernlab, e1071, mlbench,
+        pmmlTransformations
 Imports: survival
 License: GPL (>= 2)
 Description: 
@@ -23,7 +24,7 @@ Description:
         the cloud (Amazon, IBM, and FICO), in-database (IBM Netezza, Pivotal, 
         Sybase IQ, Teradata and Teradata Aster) or Hadoop (Datameer and Hive).
 URL: http://rattle.togaware.com/
-Packaged: 2013-10-23 19:29:19 UTC; tjena
+Packaged: 2014-06-17 00:51:33 UTC; tjena
 Repository: CRAN
 NeedsCompilation: no
-Date/Publication: 2013-10-24 19:05:24
+Date/Publication: 2014-06-17 08:24:33
