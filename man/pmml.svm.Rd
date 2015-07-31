@@ -7,9 +7,11 @@
 }
 
 \usage{
-\method{pmml}{svm}(model, model.name="LIBSVM_Model", app.name="R-PMML",
-     description="Support Vector Machine Model", copyright=NULL, transforms=NULL, 
-     unknownValue=NULL, ...)
+\method{pmml}{svm}(model, model.name="LIBSVM_Model",
+      app.name="R-PMML",
+      description="Support Vector Machine Model",
+      copyright=NULL, transforms=NULL, 
+      unknownValue=NULL, ...)
 }
 
 \arguments{
@@ -23,7 +25,7 @@
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+  \item{transforms}{data transformations represented in PMML via \pkg{pmmlTransformations}.}
 
   \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
       
@@ -55,7 +57,7 @@
     \item
        R project CRAN package:\cr
        \emph{\bold{e1071}: Misc Functions of the Department of Statistics (e1071), TU Wien} \cr
-       \url{http://cran.r-project.org/web/packages/e1071/index.html}  
+       \url{http://cran.r-project.org/package=e1071}  
  
     \item
       Chang, Chih-Chung and Lin, Chih-Jen, \emph{LIBSVM: a library for Support Vector Machines}\cr

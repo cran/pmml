@@ -303,19 +303,19 @@ pmml.coxph <- function(model,
 
   output <- xmlNode("Output")
 
-  out1 <- xmlNode("OutputField",attrs=c(name="Predicted_survival", feature="predictedValue"))
+  out1 <- xmlNode("OutputField",attrs=c(name="Predicted_hazard", feature="predictedValue"))
   output <- append.XMLNode(output, out1)
 
-  out2 <- xmlNode("OutputField",attrs=c(name="cumulativeHazard",feature="transformedValue"))
-  applyMult <- xmlNode("Apply",attrs=c("function"="*"))
+  out2 <- xmlNode("OutputField",attrs=c(name="SurvivalProbability",feature="transformedValue"))
+  applyExp <- xmlNode("Apply",attrs=c("function"="exp"))
   const <- xmlNode("Constant","-1.0")
-  applyLn <- xmlNode("Apply",attrs=c("function"="ln"))
-  fieldref <- xmlNode("FieldRef",attrs=c(field="Predicted_survival"))
+  applyMult <- xmlNode("Apply",attrs=c("function"="*"))
+  fieldref <- xmlNode("FieldRef",attrs=c(field="Predicted_hazard"))
 
-  applyLn <- append.XMLNode(applyLn, fieldref)
   applyMult <- append.XMLNode(applyMult, const)
-  applyMult <- append.XMLNode(applyMult, applyLn)
-  out2 <- append.xmlNode(out2, applyMult)
+  applyMult <- append.XMLNode(applyMult, fieldref)
+  applyExp <- append.XMLNode(applyExp, applyMult)
+  out2 <- append.xmlNode(out2, applyExp)
 
   output <- append.XMLNode(output, out2)
   the.model <- append.XMLNode(the.model, output)

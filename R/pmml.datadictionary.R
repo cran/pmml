@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2015, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -15,12 +15,6 @@
 # GNU General Public License for details (http://www.gnu.org/licenses/).
 ######################################################################################
 
-#######################################################################
-# MAIN PMML FUNCTION
-#
-# modified 081513 to add implementation of transformations generator
-# and transformations element addition;  tridivesh.jena@zementis.com
-# 
 
 .pmmlDataDictionary <- function(field, dataset=NULL, weights=NULL, transformed=NULL)
 {
@@ -45,6 +39,7 @@
   }
 
   namelist <- list()
+  dnamelist <- list() 
   optypelist <- list()
   datypelist <- NULL
   fname <- NULL
@@ -137,79 +132,55 @@
   for (i in begin:number.of.fields)
   {
     # DataDictionary -> DataField
-
-     if(!is.null(transformed) && i!=1)
-     {
-       if(is.na(transformed$fieldData[field$name[i],"origFieldName"]))
+    if(!is.null(transformed) && i!=1)
+    {
+       if(transformed$fieldData[field$name[i],"type"] == "original")
        {
-	if(is.na(transformed$fieldData[field$name[i],"transform"]))
-	{
-	 if(!(field$name[i] %in% namelist))
+         if(!(.removeAsFactor(field$name[i]) %in% namelist))
          {
-          namelist <- c(namelist,field$name[i])
+          namelist <- c(namelist,.removeAsFactor(field$name[i]))
          }
-	}
+       
        } else
        {
-           ofname <- transformed$fieldData[field$name[i],"origFieldName"][[1]]
-# following for loop not needed as multiple parents via mapvalues dealt with above
-	   for(j in 1:length(ofname))
-	   {
-            fname <- ofname[j]
-            while(!is.na(ofname[j]))
-            {
-             fname <- ofname[j]
-	     xvalue <- transformed$fieldData[fname,"transform"]
-	     if(!is.na(xvalue) && xvalue == "MapValues")
-	     {
-	      parents <- transformed$fieldData[fname,"origFieldName"][[1]]
-	      for(j in 1:length(parents))
-              {
-               if(!(parents[j] %in% namelist))
-               {
-                namelist <- c(namelist,parents[j])
-               }
-              }
-	      fname <- NA
-	      break 
-	     }
-             ofname[j] <- transformed$fieldData[ofname[j],"origFieldName"][[1]]
-            }
-	    if(!(fname %in% namelist))
-            {
-             namelist <- c(namelist,fname)
-            }
-	   }
-       }
-
-     } else
-     {
-
+         ofnames <- strsplit(transformed$fieldData[field$name[i],"origFieldName"][[1]],",")[[1]]
+         for(j in 1:length(ofnames))
+         {
+          ofname <- gsub("^\\s+|\\s+$","",ofnames[j])
+          hname <- transformed$fieldData[ofname,"origFieldName"]
+          ancestorField <- ofname
+          while(!is.na(hname))
+          {
+           ancestorField <- hname
+           hname <- transformed$fieldData[hname,"origFieldName"]
+          }
+          fname <- .removeAsFactor(ancestorField)
+          if((!(fname %in% namelist)) && (!(fname %in% dnamelist)))
+          {
+           namelist <- c(namelist,fname)
+           if(!(.removeAsFactor(field$name[i]) %in% dnamelist)) 
+             dnamelist <- c(dnamelist, .removeAsFactor(field$name[i]))
+          }
+        }
+       } 
+    } else
+    {
       fName <- field$name[i]
       if(!is.na(field$class[fName]) && field$class[fName] == "factor")
-      {
-       optypelist[[fName]] <- "categorical"
-      }
-
+        optypelist[[fName]] <- "categorical"
+      
       if(length(grep("as\\.factor\\(",field$name[i])) == 1)
         fName <- gsub("as.factor\\((\\w*)\\)","\\1", field$name[i], perl=TRUE)
 
       if(!is.na(field$class[fName]) && field$class[fName] == "factor")
-      {
-       optypelist[[fName]] <- "categorical"
-      }
-
+        optypelist[[fName]] <- "categorical"
 
       if(!(fName %in% namelist) && fName != "ZementisClusterIDPlaceHolder")
-      {
-       namelist <- c(namelist,fName)
-      }
-
-     }
+        namelist <- c(namelist,fName)
+    }
   }
 
   # DataDictionary
-
   data.dictionary <- xmlNode("DataDictionary",
                              attrs=c(numberOfFields=length(namelist)))
 
@@ -219,17 +190,14 @@
                                                               value=weights, extender="Rattle")))
 
   nmbr <- 1
-
   for(ndf2 in 1:length(namelist))
   {
     optype <- optypelist[[namelist[ndf2][[1]]]]
-
     datype <- datypelist[[namelist[ndf2][[1]]]]
     data.fields[[nmbr]] <- xmlNode("DataField", attrs=c(name=namelist[ndf2],
                                              optype=optype, dataType=datype))
 
    # DataDictionary -> DataField -> Interval
-
    fname <- namelist[ndf2][[1]]
    if (optypelist[[fname]] == "continuous" && !is.null(dataset) && fname != "survival")
    {
@@ -263,7 +231,8 @@
        for (j in seq_along(field$levels[[namelist[nmbr][[1]]]]))
        {
          data.fields[[nmbr]][[j]] <- xmlNode("Value",
-                          attrs=c(value=.markupSpecials(field$levels[[namelist[nmbr][[1]]]][j])))
+                          attrs=c(value=field$levels[[namelist[nmbr][[1]]]][j])) 
+                          # attrs=c(value=.markupSpecials(field$levels[[namelist[nmbr][[1]]]][j])))
        }
      }
    }

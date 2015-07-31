@@ -10,7 +10,8 @@
 
 }
 \usage{
-addMSAttributes(xmlmodel=NULL,attributes=NULL,namespace="4_2",...)
+addMSAttributes(xmlmodel=NULL,attributes=NULL,
+                namespace="4_2",...)
 }
 \arguments{
   
@@ -50,18 +51,26 @@ addMSAttributes(xmlmodel=NULL,attributes=NULL,namespace="4_2",...)
  model0 <- lm(Sepal.Length~., data=iris[,-5])
  model <- pmml(model0)
 
- # Resulting model has mining fields with no information besides fieldName, dataType and optype. 
- # this object is already an xml node, not an external text file; so there is no need to convert
- # it to an xml node object.
+ # Resulting model has mining fields with no information 
+ # besides fieldName, dataType and optype. This object is 
+ # already an xml node, not an external text file; so there 
+ # is no need to convert it to an xml node object.
 
- # create data frame with attribute information
+ # Create data frame with attribute information
 
- attributes <- data.frame(c("active",1.1,"asIs"),c("active",2.2,"asIs"),c("active",NA,"asMissing"))
- rownames(attributes) <- c("usageType","missingValueReplacement","invalidValueTreatment")
- colnames(attributes) <- c("Sepal.Width","Petal.Length","Petal.Width")
+ attributes <- data.frame(c("active",1.1,"asIs"),
+                          c("active",2.2,"asIs"),
+                          c("active",NA,"asMissing"))
+ rownames(attributes) <- c("usageType","missingValueReplacement",
+                          "invalidValueTreatment")
+ colnames(attributes) <- c("Sepal.Width","Petal.Length",
+                          "Petal.Width")
 
- #although not needed in this first try, necessary to easily add new values later
- for(k in 1:ncol(attributes)){attributes[[k]]<-as.character(attributes[[k]])}
+ # Although not needed in this first try, necessary to easily 
+ # add new values later
+ for(k in 1:ncol(attributes)){
+    attributes[[k]]<-as.character(attributes[[k]])
+  }
 
  # actual command
  addMSAttributes(model,attributes,namespace="4_2")

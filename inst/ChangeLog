@@ -1,3 +1,10 @@
+pmml (1.5.0)
+  * Add functionToPMML
+  * Add addDDInfo
+  * Add addOutputInfo
+  * Edit to work with pmmlTransformations::FunctionXform: pmml, pmml.datadictionary and pmml.miningschema
+  * Add warning message to addLT; will deprecate in next version
+
 pmml (1.4)
 
   * Add support for the svm model in e1071 package

@@ -6,10 +6,14 @@
   Generate the PMML representation for a rules or an itemset object from package \pkg{arules}. 
 }
 \usage{
-\method{pmml}{rules}(model, model.name="arules_Model", app.name="Rattle/PMML",
-     description="arules association rules model", copyright=NULL, transforms = NULL, \dots)
-\method{pmml}{itemsets}(model, model.name="arules_Model", app.name="Rattle/PMML",
-     description="arules frequent itemsets model", copyright=NULL, transforms = NULL, \dots)
+\method{pmml}{rules}(model, model.name="arules_Model",
+      app.name="Rattle/PMML",
+      description="arules association rules model",
+      copyright=NULL, transforms = NULL, \dots)
+\method{pmml}{itemsets}(model, model.name="arules_Model",
+      app.name="Rattle/PMML",
+      description="arules frequent itemsets model",
+      copyright=NULL, transforms = NULL, \dots)
 }
 \arguments{
   
@@ -34,7 +38,7 @@
 
 \references{
   R project CRAN package: \emph{\bold{arules}: Mining Association Rules and Frequent Itemsets} \cr
-  \url{http://cran.r-project.org/web/packages/arules/index.html}
+  \url{http://cran.r-project.org/package=arules}
 
 }
 

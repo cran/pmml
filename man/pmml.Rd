@@ -32,12 +32,16 @@
   Please note that package \pkg{XML_3.95-0.1} or later is required to perform the
   full and correct functionality of the \pkg{pmml} package.
   
+  If data used for an R model contains features of type \code{character}, these must be
+  converted to factors before the model is trained and converted with \code{pmml}.
+
 }
 
 
 \usage{
-pmml(model=NULL, model.name="Rattle_Model", app.name="Rattle/PMML",
-     description=NULL, copyright=NULL, transforms=NULL, \dots)
+pmml(model=NULL, model.name="Rattle_Model", 
+     app.name="Rattle/PMML", description=NULL, 
+     copyright=NULL, transforms=NULL, \dots)
 }
 
 \arguments{
@@ -52,7 +56,7 @@ pmml(model=NULL, model.name="Rattle_Model", app.name="Rattle/PMML",
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+  \item{transforms}{data transformations represented in PMML via \pkg{pmmlTransformations}.}
 
   \item{\dots}{further arguments passed to or from other methods.}
 
@@ -94,45 +98,47 @@ pmml(model=NULL, model.name="Rattle_Model", app.name="Rattle/PMML",
       \item
        A. Guazzelli, W. Lin, T. Jena (2012), \emph{PMML in Action: Unleashing the Power  
      of Open Standards for Data Mining and Predictive Analytics}. CreativeSpace 
-     (Second Edition) - Available on Amazon.com \url{http://www.amazon.com/dp/1470003244}.
+     (Second Edition) - \href{http://www.amazon.com/dp/1470003244}{Available on Amazon.com}.
     
      \item
      A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), PMML: An Open Standard for 
      Sharing Models. \emph{The R journal}, Volume 1/1, 60-65
      
      \item
-     A. Guazzelli, T. Jena, W. Lin, M. Zeller (2013). Extending the Naive Bayes Model Element
-     in PMML: Adding Support for Continuous Input Variables. 
+     A. Guazzelli, T. Jena, W. Lin, M. Zeller (2013). 
+     \href{http://kdd13pmml.files.wordpress.com/2013/07/guazzelli_et_al.pdf}{Extending the Naive Bayes Model       
+     Element in PMML: Adding Support for Continuous Input Variables.}
      In \emph{Proceedings of the 19th ACM SIGKDD Conference on Knowledge Discovery 
-     and Data Mining} \cr 
-     \url{http://kdd13pmml.files.wordpress.com/2013/07/guazzelli_et_al.pdf}
+     and Data Mining}     
      
      \item
-     T. Jena, A. Guazzelli, W. Lin, M. Zeller (2013). The R pmmlTransformations Package. 
+     T. Jena, A. Guazzelli, W. Lin, M. Zeller (2013).
+     \href{http://kdd13pmml.files.wordpress.com/2013/07/jena_et_al.pdf}{The R pmmlTransformations Package.}
      In \emph{Proceedings of the 19th ACM SIGKDD Conference on Knowledge Discovery 
-     and Data Mining} \cr 
-     \url{http://kdd13pmml.files.wordpress.com/2013/07/jena_et_al.pdf}
+     and Data Mining}
+     
   }
 }
 
 \author{\email{Graham.Williams@togaware.com}}
+
 \seealso{
-  \code{\link{pmml.ada}},
-  \code{\link{pmml.rules}},
-  \code{\link{pmml.coxph}},
-  \code{\link{pmml.cv.glmnet}},
-  \code{\link{pmml.glm}},
-  \code{\link{pmml.hclust}},
-  \code{\link{pmml.kmeans}},
-  \code{\link{pmml.ksvm}},
-  \code{\link{pmml.lm}},
-  \code{\link{pmml.multinom}},
-  \code{\link{pmml.naiveBayes}},
-  \code{\link{pmml.nnet}},
-  \code{\link{pmml.randomForest}},
-  \code{\link{pmml.rfsrc}},
-  \code{\link{pmml.rpart}},
-  \code{\link{pmml.svm}}
+\code{\link{pmml.ada}},
+\code{\link{pmml.rules}},
+\code{\link{pmml.coxph}},
+\code{\link{pmml.cv.glmnet}},
+\code{\link{pmml.glm}},
+\code{\link{pmml.hclust}},
+\code{\link{pmml.kmeans}},
+\code{\link{pmml.ksvm}},
+\code{\link{pmml.lm}},
+\code{\link{pmml.multinom}},
+\code{\link{pmml.naiveBayes}},
+\code{\link{pmml.nnet}},
+\code{\link{pmml.randomForest}},
+\code{\link{pmml.rfsrc}},
+\code{\link{pmml.rpart}},
+\code{\link{pmml.svm}}
 }
 \examples{
 

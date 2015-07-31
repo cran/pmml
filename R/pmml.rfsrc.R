@@ -35,7 +35,7 @@ pmml.rfsrc <- function(model,
   #  if (sum(inherits(model, c("rsf", "forest"), TRUE) == c(1, 2)) != 2)
   #    stop("Not a legitimate (rsf, forest) object")
 
-  require(randomForestSRC, quietly=TRUE)
+  requireNamespace("randomForestSRC", quietly=TRUE)
 
   # Collect the required information.
 

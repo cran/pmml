@@ -9,9 +9,11 @@
 
 }
 \usage{
-\method{pmml}{cv.glmnet}(model, model.name="Elasticnet_Model", app.name="Rattle/PMML",
-     description="Generalized Linear Regression Model", copyright=NULL, 
-     transforms=NULL, unknownValue=NULL, dataset=NULL, s=NULL, \dots)
+\method{pmml}{cv.glmnet}(model, model.name="Elasticnet_Model", 
+    app.name="Rattle/PMML", 
+    description="Generalized Linear Regression Model", 
+    copyright=NULL, transforms=NULL, unknownValue=NULL, 
+    dataset=NULL, s=NULL, \dots)
 }
 \arguments{
   
@@ -27,14 +29,15 @@
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+  \item{transforms}{data transformations represented in PMML via \pkg{pmmlTransformations}.}
 
   \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
 
   \item{dataset}{the dataset using which the model was built.}
 
-  \item{s}{the 'lambda' parameter at which to output the model. If not given,
-	    the lambda.min parameter from the model is used instead.}
+  \item{s}{'lambda' parameter at which to output the model. 
+          If not given, the lambda.min parameter from the model 
+          is used instead.}
 
   \item{\dots}{further arguments passed to or from other methods.}
 }
@@ -62,7 +65,7 @@
 \references{
   R project CRAN package:\cr
   \emph{\bold{glmnet}: Lasso and elastic-net regularized generalized linear models} \cr
-  \url{http://cran.r-project.org/web/packages/glmnet/index.html}
+  \url{http://cran.r-project.org/package=glmnet}
 }
 
 \author{Zementis Inc. \email{info@zementis.com}}	
@@ -90,7 +93,8 @@ for(i in 1:20){
 colnames(x) <- name
 # create a simple poisson model
 model2 <- cv.glmnet(x,y,family="poisson")
-# output in PMML format the regression model at the lambda parameter = 0.006
+# output in PMML format the regression model at the lambda 
+# parameter = 0.006
 pmml(model2,s=0.006)
 
 }

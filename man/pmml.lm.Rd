@@ -7,9 +7,11 @@
   
 }
 \usage{
-\method{pmml}{lm}(model, model.name="Linear_Regression_Model", app.name="Rattle/PMML",
-     description="Linear Regression Model", copyright=NULL,
-     transforms=NULL, unknownValue=NULL, dataset=NULL, weights=NULL, \dots)
+\method{pmml}{lm}(model, model.name="Linear_Regression_Model", 
+      app.name="Rattle/PMML", 
+      description="Linear Regression Model", copyright=NULL,
+      transforms=NULL, unknownValue=NULL, dataset=NULL, 
+      weights=NULL, \dots)
 }
 \arguments{
   
@@ -23,7 +25,7 @@
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+  \item{transforms}{data transformations represented in PMML via \pkg{pmmlTransformations}.}
 
   \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
 

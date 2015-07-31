@@ -26,7 +26,7 @@
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+  \item{transforms}{data transformations represented in PMML via \pkg{pmmlTransformations}.}
 
   \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
   
@@ -48,8 +48,7 @@
 } 
 
 \references{
-  R project: \emph{\bold{Hierarchical Clustering}} \cr
-  \url{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/hclust.html}
+  \href{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/hclust.html}{R project: \emph{\bold{Hierarchical Clustering}}}
 
 }
 
@@ -57,20 +56,21 @@
 
 \examples{
 
-#\dontrun{
+\dontrun{
 # cluster the 4 numeric variables of the iris dataset
 library(amap)
 model <- hclusterpar(iris[,-5])
 
-# get the information about the cluster centers
-# the last parameter of the function used is the number of clusters desired
+# Get the information about the cluster centers. The last 
+# parameter of the function used is the number of clusters
+# desired.
  library(rattle)
-centerInfo <- centers.hclust(iris[,-5],model,3)
+ centerInfo <- centers.hclust(iris[,-5],model,3)
 
 # convert to pmml
 library(pmml)
 pmml(model,centers=centerInfo)
-#}
+}
 
 }
 

@@ -22,7 +22,7 @@
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+  \item{transforms}{data transformations represented in PMML via \pkg{pmmlTransformations}.}
 
   \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
 
@@ -38,7 +38,7 @@
 \references{
   R project CRAN package:\cr
   \emph{\bold{nnet}: Feed-forward Neural Networks and Multinomial Log-Linear Models} \cr
-  \url{http://cran.r-project.org/web/packages/nnet/index.html}
+  \url{http://cran.r-project.org/package=nnet}
 }
 
 \author{Zementis Inc. \email{info@zementis.com}}	

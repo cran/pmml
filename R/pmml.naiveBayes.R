@@ -33,7 +33,7 @@ pmml.naiveBayes <- function(model,
                           ...)
 {
   if (! inherits(model, "naiveBayes")) stop("Not a legitimate naiveBayes object")
-  require(e1071, quietly=TRUE)
+  requireNamespace("e1071", quietly=TRUE)
 
   # field names and attributes are not given 
   # They must be inferred from the information given in the tables 
@@ -63,7 +63,6 @@ pmml.naiveBayes <- function(model,
 
   field$name <- c(target,names(model$tables))
   number.of.fields <- length(field$name)
-  numfac <- 0
   field$class[[target]] <- "factor"
   field$levels[[target]] <- model$levels
 
@@ -79,38 +78,18 @@ pmml.naiveBayes <- function(model,
     {
       field$class[[name]] <- "factor"
       field$levels[[name]] <- colnames(model$tables[[i]])
-      numfac = numfac+1
     } else
     {
       # continuous variable
-      # Stop after explaining continuous NaiveBayes models not yet supported.
-      # stop("continuous variables not yet supported for NaiveBayes models.")
-      # Above no longer true 
       field$class[[name]] <- "numeric"
     }
   }
 
-  # if no categorical variables exist, make a placeholder up to satisfy schema requirements
-  if(numfac==0)
-  {
-    if("DiscretePlaceHolder" %in% field$name)
-    {
-      tname <- "Temp"
-    } else 
-    {
-      tname <- "DiscretePlaceHolder"
-    }
-    field$name <- c(field$name,tname)
-    number.of.fields = number.of.fields + 1
-    field$class[[tname]] <- "factor"
-    field$levels[[tname]] <- "pseudoValue"
-  }
-
-#  numFac <- 1
   field$origName <- NA
   for(i in 1:number.of.fields)
   { 
     #Tridi: remove any 'as.factor' from field names
+    # unecessary duplication of code? 
     if (length(grep("^as.factor\\(", field$name[i])))
     {
      field$origName[i] <- field$name[i]
@@ -205,7 +184,6 @@ pmml.naiveBayes <- function(model,
       BayesInputsNode <- append.XMLNode(BayesInputsNode,BayesInputNode)
     } else 
     {
-      ExtensionNode <- xmlNode("Extension")
       BayesInputNode <- xmlNode("BayesInput",attrs=c(fieldName=field$name[i]))
 
       TargetValueStatsNode <- xmlNode("TargetValueStats")
@@ -220,8 +198,7 @@ pmml.naiveBayes <- function(model,
 	TargetValueStatsNode <- append.xmlNode(TargetValueStatsNode,TargetValueStatNode) 
       }
       BayesInputNode <- append.xmlNode(BayesInputNode,TargetValueStatsNode)
-      ExtensionNode <- append.xmlNode(ExtensionNode,BayesInputNode)
-      BayesInputsNode <- append.XMLNode(BayesInputsNode,ExtensionNode)
+      BayesInputsNode <- append.XMLNode(BayesInputsNode,BayesInputNode)
     }
   }
 

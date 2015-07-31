@@ -59,7 +59,7 @@
 #
 
 addLT <- function(xmlmodel=NULL, transforms=NULL, namespace="4_2",...) {
-
+warning("Deprecated; use pmml() with 'transforms' argument instead")
 #to avoid malloc error
 flush.console()
  if(!is.null(namespace))
@@ -207,7 +207,6 @@ flush.console()
   {
     dd <- addAttributes(dd,numberOfFields=length(numdf))
   }
-
   return(modelInternalDocument) 
 }
 

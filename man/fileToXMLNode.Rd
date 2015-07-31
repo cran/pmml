@@ -39,6 +39,7 @@ fileToXMLNode(file)
 
 \examples{
 
+\dontrun{
 # define some transformations
  library(pmml)
  library(pmmlTransformations)
@@ -55,7 +56,7 @@ fileToXMLNode(file)
  # 'lt' below is now a XML Node, as opposed to a string
 
  lt <- fileToXMLNode("xform_iris.pmml")
-
+}
 }
 \keyword{interface}
 

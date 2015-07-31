@@ -1,13 +1,12 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2015, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
 # The PMML package is free software: you can redistribute it and/or 
 # modify it under the terms of the GNU General Public License as
 # published by the Free Software Foundation, either version 2 of 
-# the License, or (at your option) any later version.
 #
 # The PMML package is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -33,7 +32,9 @@ pmml.randomForest <- function(model,
    if (! inherits(model, "randomForest"))
     stop("Not a legitimate randomForest object")
 
-   require(randomForest, quietly=TRUE)
+   requireNamespace("randomForest",quietly=TRUE)
+
+   a <- randomForest::getTree(model,2)
 
   # Tridivesh: Collect the required information. We list all variables,
   # irrespective of whether they appear in the final model. This seems 
@@ -90,7 +91,7 @@ pmml.randomForest <- function(model,
 
   pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field,transformed=transforms))
 
-  mmodel <- xmlNode("MiningModel",attrs=c(modelName=model.name,functionName=model$type))
+  mmodel <- xmlNode("MiningModel",attrs=c(modelName=model.name,algorithmName="randomForest",functionName=model$type))
   mmodel <- append.XMLNode(mmodel,.pmmlMiningSchema(field,target,transforms,unknownValue))
 
   # Tridi: Add output fields
@@ -300,11 +301,11 @@ pmml.randomForest <- function(model,
        if(side == 1)
        { 
          splitNode <- xmlNode("SimplePredicate",attrs=c(field=fname,operator="lessOrEqual",
-                        value=tinf[rowid,4]))
+                        value=format(tinf[rowid,4],digits=18)))
        } else
        {
          splitNode <- xmlNode("SimplePredicate",attrs=c(field=fname,operator="greaterThan",
-                        value=tinf[rowid,4]))
+                        value=format(tinf[rowid,4],digits=18)))
        }
      } else if(logical)
      {
@@ -619,159 +620,4 @@ pmml.randomForest <- function(model,
   recursiveObject$internalNode <- rfNode
   return(recursiveObject)
   }
-}
-
-.genBinaryRFTreeNodes <- function(model, n=1, root=1)
-{
-  cassign <- "<-"
-  cif <- "if"
-  cthen <- ""
-  celse <- "else"
-  cendif <- ""
-  cin <- "%in%"
-
-  # Model this on .treeset.randomForest in Rattle.
-  
-  tree <- getTree(model, n)
-  tr.vars <- attr(model$terms, "dataClasses")[-1]
-  var.names <- names(tr.vars)
-
-  node <- xmlNode("Node")
-  result <- ""
-
-  return(xmlNode("True"))
-  
-  if (tree[root, 'status'] == -1) # Terminal node
-  {
-    result <- sprintf("Result %s %s", cassign,
-                      levels(model$y)[tree[root,'prediction']])
-  }
-  else
-  {
-    var.class <- tr.vars[tree[root, 'split var']]
-    node.var <- var.names[tree[root,'split var']]
-    if(var.class == "character" | var.class == "factor")
-    {
-      # Convert the binary split point to a 0/1 list for the levels.
-      
-      var.levels <- levels(eval(model$call$data)[[tree[root,'split var']]])
-      bins <- .sdecimal2binary(tree[root, 'split point'])
-      bins <- c(bins, rep(0, length(var.levels)-length(bins)))
-      node.value <- var.levels[bins==1]
-      node.value <- sprintf('("%s")', paste(node.value, collapse='", "'))
-      condition <- sprintf("%s %s %s%s", node.var, cin,
-                           ifelse(format=="R", "c", ""), node.value)
-    }
-    else if (var.class == "integer" | var.class == "numeric")
-    {
-      # Assume spliting to the left means "<=", and right ">",
-      # which is not what the man page for getTree claims!
-
-      node.value <- tree[root, 'split point']
-      condition <- sprintf("%s <= %s", node.var, node.value)
-
-    }
-    else
-    {
-      stop(sprintf("Rattle: getRFRuleSet: class %s not supported.",
-                   var.class))
-    }
-    
-
-    condition <- sprintf("%s (%s)", cif, condition)
-    
-    lresult <- .treeset.randomForest(model, n, tree[root,'left daughter'],
-                                    format=format)
-    if (cthen == "")
-      lresult <- c(condition, lresult)
-    else
-      lresult <- c(condition, cthen, lresult)
-    rresult <- .treeset.randomForest(model, n, tree[root,'right daughter'],
-                                    format=format)
-    rresult <- c(celse, rresult)
-    result <- c(lresult, rresult)
-    if (cendif != "") result <- c(result, cendif)
-  }
-  return(result)
-}
-
-########################################################################
-.treeset.randomForest <- function(model, n=1, root=1, format="R")
-{
-  # Return a string listing the decision tree form of the chosen tree
-  # from the random forest.
-  tree <- getTree(model, n)
-  if (format == "R")
-  {
-    cassign <- "<-"
-    cif <- "if"
-    cthen <- ""
-    celse <- "else"
-    cendif <- ""
-    cin <- "%in%"
-  }
-  else if (format == "VB")
-  {
-    cassign <- "="
-    cif <- "If"
-    cthen <- "Then"
-    celse <- "Else"
-    cendif <- "End If"
-    cin <- "In"
-  }
-
-  # Traverse the tree
-
-  tr.vars <- attr(model$terms, "dataClasses")[-1]
-  var.names <- names(tr.vars)
-  result <- ""
-  if (tree[root, 'status'] == -1) # Terminal node
-  {
-    result <- sprintf("Result %s %s", cassign,
-                      levels(model$y)[tree[root,'prediction']])
-  }
-  else
-  {
-    var.class <- tr.vars[tree[root, 'split var']]
-    node.var <- var.names[tree[root,'split var']]
-    if(var.class == "character" | var.class == "factor")
-    {
-      # Convert the binary split point to a 0/1 list for the levels.
-      var.levels <- levels(eval(model$call$data)[[tree[root,'split var']]])
-      bins <- .sdecimal2binary(tree[root, 'split point'])
-      bins <- c(bins, rep(0, length(var.levels)-length(bins)))
-      node.value <- var.levels[bins==1]
-      node.value <- sprintf('("%s")', paste(node.value, collapse='", "'))
-      condition <- sprintf("%s %s %s%s", node.var, cin,
-                           ifelse(format=="R", "c", ""), node.value)
-    }
-    else if (var.class == "integer" | var.class == "numeric")
-    {
-      # Assume spliting to the left means "<=", and right ">",
-      # which is not what the man page for getTree claims!
-
-      node.value <- tree[root, 'split point']
-      condition <- sprintf("%s <= %s", node.var, node.value)
-
-    }
-    else
-    {
-      stop(sprintf("Rattle: getRFRuleSet: class %s not supported.",
-                   var.class))
-    }
-
-    condition <- sprintf("%s (%s)", cif, condition)
-    lresult <- .treeset.randomForest(model, n, tree[root,'left daughter'],
-                                    format=format)
-    if (cthen == "")
-      lresult <- c(condition, lresult)
-    else
-      lresult <- c(condition, cthen, lresult)
-    rresult <- .treeset.randomForest(model, n, tree[root,'right daughter'],
-                                    format=format)
-    rresult <- c(celse, rresult)
-    result <- c(lresult, rresult)
-    if (cendif != "") result <- c(result, cendif)
-  }
-  return(result)
 }

@@ -6,9 +6,11 @@
 }
 
 \usage{
-\method{pmml}{rpart}(model, model.name="RPart_Model", app.name="Rattle/PMML",
-     description="RPart Decision Tree Model", copyright=NULL, transforms=NULL,
-     unknownValue=NULL, dataset=NULL, \dots)
+\method{pmml}{rpart}(model, model.name="RPart_Model",
+      app.name="Rattle/PMML",
+      description="RPart Decision Tree Model",
+      copyright=NULL, transforms=NULL,
+      unknownValue=NULL, dataset=NULL, \dots)
 }
 
 \arguments{
@@ -23,7 +25,7 @@
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+  \item{transforms}{data transformations represented in PMML via \pkg{pmmlTransformations}.}
 
   \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
 
@@ -40,7 +42,7 @@
 
 \references{
   R project CRAN package: \emph{\bold{rpart}: Recursive Partitioning} \cr
-  \url{http://cran.r-project.org/web/packages/rpart/index.html}
+  \url{http://cran.r-project.org/package=rpart}
 
 }
 

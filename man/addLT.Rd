@@ -52,18 +52,20 @@ library(pmml)
 model <- pmml(lm(Sepal.Length~., data=iris[,-5]))
 
 # Perform a z-score transform on the first variable of the data set. 
-# As it is created and used in the same R session, this object is already an xml node, 
-# not an external text file; so there is no need to convert it to an xml node object.
+# As it is created and used in the same R session, this object is 
+# already an xml node, not an external text file; so there is no 
+# need to convert it to an xml node object.
 
 library(pmmlTransformations)
 irisBox <- WrapData(iris)
 irisBox <- ZScoreXform(irisBox,"1")
 xforms <- pmml(,transforms=irisBox)
 
-# add the LocalTransformations element to the initial PMML model
-# since the model still uses the original fields, the usage envisioned for this function
-# is to make it easy if the modeller forgot to add the transformations when using the pmml
-# function initially. 
+# Add the LocalTransformations element to the initial PMML model.
+# Since the model still uses the original fields, the usage 
+# envisioned for this function is to make it easy if the modeller 
+# forgot to add the transformations when using the pmml function
+# initially. 
 
 modified <- addLT(model,xforms,namespace="4_2")
 }

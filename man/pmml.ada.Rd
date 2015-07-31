@@ -5,9 +5,9 @@
   Generate the PMML representation for an ada object from package \pkg{ada}.
 }
 \usage{
-\method{pmml}{ada}(model, model.name="AdaBoost_Model", app.name="R-PMML", 
-     description="AdaBoost Model", copyright=NULL, transforms=NULL, 
-     unknownValue=NULL, ...)
+\method{pmml}{ada}(model, model.name="AdaBoost_Model", 
+    app.name="R-PMML", description="AdaBoost Model", 
+    copyright=NULL, transforms=NULL, unknownValue=NULL, ...)
 }
 \arguments{
   
@@ -21,7 +21,7 @@
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+  \item{transforms}{data transformations represented in PMML via \pkg{pmmlTransformations}.}
 
   \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
       
@@ -32,6 +32,7 @@
   The \code{pmml} function exports the ada model in the PMML MiningModel (multiple models) format. 
   The MiningModel element consists of a list of TreeModel elements, one in each model segment.
   
+  This function implements the discrete adaboost algorithm only. 
   Note that each segment tree is a classification model, returning either -1 or 1.
   However the MiningModel (ada algorithm) is doing a weighted sum of the returned value, -1 or 1.
   So the value of attribute functionName of element MiningModel is set to "regression"; 
@@ -49,7 +50,7 @@
 
 \references{
   R project CRAN package: \emph{\bold{ada}: an R package for stochastic boosting} \cr
-  \url{http://cran.r-project.org/web/packages/ada/index.html}
+  \url{http://cran.r-project.org/package=ada}
 
 }
 

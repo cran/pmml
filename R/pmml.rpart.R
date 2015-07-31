@@ -37,7 +37,7 @@ pmml.rpart <- function(model,
                         ...)
 {
   if (! inherits(model, "rpart")) stop("Not a legitimate rpart object")
-  require(rpart, quietly=TRUE)
+  requireNamespace("rpart", quietly=TRUE)
 
   function.name <- "classification"
   if (model$method != "class") function.name <- "regression"
@@ -125,7 +125,8 @@ pmml.rpart <- function(model,
                                        functionName=function.name,
                                        algorithmName="rpart",
                                        splitCharacteristic="binarySplit",
-                                       missingValueStrategy="defaultChild"))
+                                       missingValueStrategy="defaultChild",
+				       noTrueChildStrategy="returnLastPrediction"))
 
   # PMML -> TreeModel -> MiningSchema
   
@@ -541,108 +542,3 @@ pmml.rpart <- function(model,
    return(node)
 }
 
-.as.rules.rpart <- function(model,
-                                model.name="RPart_Model",
-                                app.name="RPart",
-                                description="RPart model as rules",
-                                copyright=NULL,
-				unknownValue=unknownValue)
-{
-  #require(XML, quietly=TRUE)
-  require(rpart, quietly=TRUE)
-  
-  if (! inherits(model, "rpart")) stop("Not a legitimate rpart tree")
-
-  # Collect the required information
-
-  field <- NULL
-  field$name <- as.character(attr(model$terms, "variables"))[-1]
-  number.of.fields <- length(field$name)
-  field$class <- attr(model$terms, "dataClasses")
-  target <- field$name[1]
-
-  for (i in 1:number.of.fields)
-  {
-    if (field$class[[field$name[i]]] == "factor")
-      if (field$name[i] == target)
-        field$levels[[field$name[i]]] <- attr(model, "ylevels")
-      else
-        field$levels[[field$name[i]]] <- attr(model,"xlevels")[[field$name[i]]]
-  }
-
-  # PMML
-  
-  pmml <- .pmmlRootNode("3.2")
-
-  # PMML -> Header
-
-  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
-  
-  # PMML -> DataDictionary
-  
-  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field))
-
-  # PMML -> RuleSetModel
-  
-  the.model <- xmlNode("RuleSetModel",
-                        attrs=c(modelName=model.name,
-                          functionName="classification",
-                          splitCharacteristic="binary",
-                          algorithmName="rpart"))
-
-  # PMML -> MiningSchema
-  
-  the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target,unknownValue=unknownValue))
-
-  # Add in actual tree nodes.
-
-  rule.set <- xmlNode("RuleSet")
-  rule.set <- append.XMLNode(rule.set,
-                             xmlNode("RuleSelectionMethod",
-                                     attrs=c(criterion="firstHit")))
-  
-  # Visit each leaf node to generate a rule.
-
-  ordered <- rev(sort(model$frame$yval2[,5], index=TRUE)$ix)
-  names <- row.names(model$frame)
-  next.child <- 2
-  for (i in ordered)
-  {
-    if (model$frame[i,1] == "<leaf>")
-    {
-      simple.rule <- xmlNode("SimpleRule",
-                             attrs=c(id=sprintf("R%03d", as.integer(names[i])),
-                               recordCount=model$frame[i,]$n))
-      pth <- path.rpart(model, nodes=as.numeric(names[i]), print.it=FALSE)
-      pth <- unlist(pth)[-1]
-      if (length(pth) != 0)
-      {
-        predicate <- xmlNode("CompoundPredicate",
-                             attrs=c(booleanOperator="and"))
-        for (p in (1:length(pth)))
-        {
-          f <- unlist(strsplit(pth[p], "<|>=|="))[[1]]
-          o <- ifelse(length(grep("<", pth[p]))>0, "lessThen",
-               ifelse(length(grep(">=", pth[p]))>0, "greaterOrEqual",
-               ifelse(length(grep("=", pth[p]))>0, "equal", "DONTKNOW")))
-          v <- unlist(strsplit(pth[p], "<|>=|="))[[2]]
-          predicate$children[[p]] <- xmlNode("SimplePredicate",
-                                             attrs=c(field=f,
-                                               operator=o,
-                                               value=v))
-        }
-      }
-      simple.rule$children[[1]] <- predicate
-      rule.set$children[[next.child]] <- simple.rule
-      next.child <- next.child + 1
-    }
-  }
-
-  the.model <- append.XMLNode(the.model, rule.set)
-  
-  # Add to the top level structure.
-  
-  pmml <- append.XMLNode(pmml, the.model)
-  
-  return(pmml)
-}

@@ -348,7 +348,7 @@ pmml.ksvm <- function(model,
   {
     for (ix in 1:number.of.SVMs)
     {
-      coeff <- coef(model)
+      coeff <- kernlab::coef(model)
       number.of.coeff <- length(coeff[[ix]])
       
       for (i in 1:number.of.coeff)
@@ -378,7 +378,7 @@ pmml.ksvm <- function(model,
   }
   else   # Regression
   {
-    coeff <- coef(model)
+    coeff <- kernlab::coef(model)
     number.of.coeff <- length(coeff)
     
     for (i in 1:number.of.coeff)
@@ -509,7 +509,7 @@ pmml.ksvm <- function(model,
     
     if (field$function.name == "classification")
     {
-      coeff <- coef(model)
+      coeff <- kernlab::coef(model)
       number.of.coeff <- length(coeff[[ix]])
       
       if (number.of.SVMs > 2)
@@ -526,7 +526,7 @@ pmml.ksvm <- function(model,
     }
     else   # Regression
     {
-      coeff <- coef(model)
+      coeff <- kernlab::coef(model)
       number.of.coeff <- length(coeff)
       
       SupportVectorMachine <- xmlNode("SupportVectorMachine")

@@ -8,7 +8,8 @@
   environments. This is experimental.
 }
 \usage{
-pmmltoc(p, name=NULL, includePMML=TRUE, includeMetaData=TRUE, exportClass=TRUE)
+pmmltoc(p, name=NULL, includePMML=TRUE, includeMetaData=TRUE,
+        exportClass=TRUE)
 }
 \arguments{
   

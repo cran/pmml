@@ -13,7 +13,8 @@
 \usage{
 \method{pmml}{kmeans}(model, model.name="KMeans_Model", app.name="Rattle/PMML",
      description="KMeans cluster model", copyright=NULL,
-     transforms=NULL, unknownValue=NULL, algorithm.name="KMeans: Hartigan and Wong", \dots)
+     transforms=NULL, unknownValue=NULL, 
+     algorithm.name="KMeans: Hartigan and Wong", \dots)
 }
 \arguments{
   
@@ -27,7 +28,7 @@
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+  \item{transforms}{data transformations represented in PMML via \pkg{pmmlTransformations}.}
 
   \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
 
@@ -44,8 +45,7 @@
 } 
 
 \references{
-  R project: \emph{\bold{K-Means Clustering}} \cr
-  \url{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/kmeans.html}
+  \href{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/kmeans.html}{R project: \emph{\bold{K-Means Clustering}}}
 
 }
 

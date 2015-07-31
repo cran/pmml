@@ -7,9 +7,10 @@
 
 }
 \usage{
-\method{pmml}{rfsrc}(model, model.name="rsf_Model", app.name="Rattle/PMML",
-     description="Random Survival Forest Model", copyright=NULL, transforms=NULL, 
-     unknownValue=NULL, ...)
+\method{pmml}{rfsrc}(model, model.name="rsf_Model",
+      app.name="Rattle/PMML",
+      description="Random Survival Forest Model",
+      copyright=NULL, transforms=NULL, unknownValue=NULL, ...)
 }
 \arguments{
   
@@ -26,7 +27,7 @@
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}  
+  \item{transforms}{data transformations represented in PMML via \pkg{pmmlTransformations}.}  
 
   \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
   
@@ -59,7 +60,8 @@
 \examples{
  library(randomForestSRC)
  data(veteran)
- veteran.out <- rfsrc(Surv(time, status)~., data = veteran, ntree = 5, forest = TRUE)
+ veteran.out <- rfsrc(Surv(time, status)~., data = veteran, ntree = 5,
+                      forest = TRUE)
  pmml(veteran.out)
 
 }

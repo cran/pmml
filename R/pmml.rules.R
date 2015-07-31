@@ -33,12 +33,12 @@ pmml.rules <- function(model,
                        copyright=NULL,transforms=NULL,...)
 {
   
-  #if (!inherits(model, "rules")) stop("Not a legitimate arules rules object")
-  #require(XML, quietly=TRUE)
-  #require(arules, quietly=TRUE)
-  
-  # PMML
+  if (!inherits(model, "rules")) stop("Not a legitimate arules rules object")
 
+  requireNamespace("arules", quietly=TRUE)
+
+  # PMML
+  
   pmml <- .pmmlRootNode("4.1")
 
   # PMML -> Header
@@ -60,7 +60,7 @@ pmml.rules <- function(model,
   # Association rule model
 
   quality <- quality(model)
-  is <- c(lhs(model),rhs(model))
+  is <- c(arules::lhs(model),arules::rhs(model))
 
   # fixme: why does the S4 dispatch not work?
 
@@ -68,10 +68,10 @@ pmml.rules <- function(model,
 
   association.model <- xmlNode("AssociationModel", 
       attrs=c(functionName="associationRules",
-          numberOfTransactions=info(model)$ntransactions, 
-          numberOfItems=length(itemLabels(model)),
-          minimumSupport=info(model)$support,     
-          minimumConfidence=info(model)$confidence,
+          numberOfTransactions=arules::info(model)$ntransactions, 
+          numberOfItems=length(arules::itemLabels(model)),
+          minimumSupport=arules::info(model)$support,     
+          minimumConfidence=arules::info(model)$confidence,
           numberOfItemsets=length(is.unique),     
           numberOfRules=length(model)))
 
@@ -86,7 +86,7 @@ pmml.rules <- function(model,
 
   ## items
   items <- list()
-  il <- .markupSpecials(itemLabels(model))
+  il <- .markupSpecials(arules::itemLabels(model))
   for (i in 1:length(il)) 
   items[[i]] <- xmlNode("Item", attrs = list(id = i, value = il[i]))
 
@@ -94,8 +94,8 @@ pmml.rules <- function(model,
 
   ## itemsets
   itemsets <- list()
-  sizes <- size(is.unique)
-  isl <- LIST(is.unique, decode=FALSE)
+  sizes <- arules::size(is.unique)
+  isl <- arules::LIST(is.unique, decode=FALSE)
   for (i in 1:length(isl)){
       itemsets[[i]] <- xmlNode("Itemset", attrs = list(id = i, 
               numberOfItems = sizes[i])) 
@@ -113,8 +113,8 @@ pmml.rules <- function(model,
   
   ## rules
   ## fixme: why does the S4 dispatch not work?
-  mlhs <- getMethod("match",c("itemMatrix","itemMatrix"))(lhs(model), is.unique)
-  mrhs <- getMethod("match",c("itemMatrix","itemMatrix"))(rhs(model), is.unique)
+  mlhs <- getMethod("match",c("itemMatrix","itemMatrix"))(arules::lhs(model), is.unique)
+  mrhs <- getMethod("match",c("itemMatrix","itemMatrix"))(arules::rhs(model), is.unique)
   rules <- list()
 
   for (i in 1:length(model)) {

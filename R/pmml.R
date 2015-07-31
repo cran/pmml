@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2015, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -15,12 +15,7 @@
 # GNU General Public License for details (http://www.gnu.org/licenses/).
 ######################################################################################
 
-#######################################################################
-# MAIN PMML FUNCTION
-#
-# modified 081513 to add implementation of transformations generator
-# and transformations element addition;  tridivesh.jena@zementis.com
-# 
+
 pmml <- function(model=NULL,
                  model.name="Rattle_Model",
                  app.name="Rattle/PMML",
@@ -29,6 +24,13 @@ pmml <- function(model=NULL,
 		 transforms=NULL,
                  ...)
 {
+  if(!is.null(transforms)) {
+    if(compareVersion(as.character(packageVersion("pmmlTransformations")),"1.3") < 0) {
+      warning("This version of the 'pmml' package only works with version >= 1.3 of the 
+	       'pmmlTransformations' package")
+    }
+  }
+
   if(is.null(model) && !is.null(transforms))
   {
     field <- NULL
@@ -159,6 +161,8 @@ pmml <- function(model=NULL,
 # not used code to make sure list of unique elements 
 #       flist <- flist[!duplicate(flist)]
 
+
+
 # code to output all fields, possibly to allow user to output any derived fields via OutputField element
    for(i in 1:nrow(inputs))
    {
@@ -228,8 +232,8 @@ pmml <- function(model=NULL,
        dtype <- map[2,ncol(map)]
        if(dtype == "numeric")
        {
-	dtype <- "double"
-	otype <- "continuous"
+      	dtype <- "double"
+      	otype <- "continuous"
        } else if(dtype == "boolean")
        {
         dtype <- "boolean"
@@ -237,7 +241,7 @@ pmml <- function(model=NULL,
        } else 
        {
         dtype <- "string"
-	otype <- "categorical"
+	      otype <- "categorical"
        }
 
        dfNode <- xmlNode("DerivedField",attrs=c(name=fname,dataType=as.character(dtype),optype=otype))
@@ -316,13 +320,13 @@ pmml <- function(model=NULL,
        dfNode <- append.XMLNode(dfNode,normNode)
       } else if(inputs[fname,"transform"] == "discretize")
       {
-	maps <- inputs[fname,"fieldsMap"][[1]]
-	missingVal <- inputs[fname,"missingValue"]
-	defVal <- inputs[fname,"default"]
-
-	origName <- as.character(inputs[fname,"origFieldName"])
-	map <- maps[c(-1,-2),]
-	dtype <- as.character(inputs[fname,"dataType"])
+        maps <- inputs[fname,"fieldsMap"][[1]]
+      	missingVal <- inputs[fname,"missingValue"]
+      	defVal <- inputs[fname,"default"]
+      
+      	origName <- as.character(inputs[fname,"origFieldName"])
+      	map <- maps[c(-1,-2),]
+      	dtype <- as.character(inputs[fname,"dataType"])
         if((dtype == "numeric") || (dtype == "integer") || (dtype == "double"))
         {
          dtype <- "double"
@@ -385,27 +389,47 @@ pmml <- function(model=NULL,
 
 	for(i in 1:nrow(map))
 	{ 
-	 dbinNode <- xmlNode("DiscretizeBin",attrs=c(binValue=map[i,2]))
-	 clsr <- paste(map[1,3],map[i,5],sep="")
-	 if(!is.na(map[i,4]))
+# 	 dbinNode <- xmlNode("DiscretizeBin",attrs=c(binValue=map[i,2]))
+	 dbinNode <- xmlNode("DiscretizeBin",attrs=c(binValue=as.character(map[i,2])))
+	 
+# 	 clsr <- paste(map[1,3],map[i,5],sep="")
+	 clsr <- as.character(paste(map[i,3],map[i,5],sep=""))
+	 
+         if(!is.na(map[i,4]))
   	 {
 	  if(!is.na(map[i,6]))
 	  {
-	   intrNode <- xmlNode("Interval",attrs=c(closure=clsr,leftMargin=map[i,4],rightMargin=map[i,6]))
+# 	   intrNode <- xmlNode("Interval",attrs=c(closure=clsr,leftMargin=map[i,4],rightMargin=map[i,6]))
+	    intrNode <- xmlNode("Interval",attrs=c(closure=clsr,leftMargin=as.character(map[i,4]),rightMargin=as.character(map[i,6])))
 	  } else
 	  {
-	   intrNode <- xmlNode("Interval",attrs=c(closure=clsr,leftMargin=map[i,4]))
+# 	   intrNode <- xmlNode("Interval",attrs=c(closure=clsr,leftMargin=map[i,4]))
+	    intrNode <- xmlNode("Interval",attrs=c(closure=clsr,leftMargin=as.character(map[i,4])))
 	  }
 	 } else
 	 {
-	  intrNode <- xmlNode("Interval",attrs=c(closure=clsr,rightMargin=map[i,6]))
+# 	  intrNode <- xmlNode("Interval",attrs=c(closure=clsr,rightMargin=map[i,6]))
+	   intrNode <- xmlNode("Interval",attrs=c(closure=clsr,rightMargin=as.character(map[i,6])))
 	 }
 	 dbinNode <- append.XMLNode(dbinNode,intrNode)
 	 discNode <- append.XMLNode(discNode,dbinNode)
 	}
 	dfNode <- append.XMLNode(dfNode,discNode) 
 
+      } else if(!is.na(inputs[fname,"functionXform"]))
+      {
+        origName <- inputs[fname,"origFieldName"]
+        missing <- inputs[fname,"missingValue"]
+        
+        dfNode <- xmlNode("DerivedField",attrs=c(name=fname,dataType="double",optype="continuous"))
+        
+        funcNode <- .pmmlU(inputs[fname,"functionXform"])
+        
+#         addChildren(dfNode,funcNode[[1]])
+        dfNode <- append.XMLNode(dfNode,funcNode)
+        
       }
+
 
       if(is.null(LTelement))
       {
@@ -414,6 +438,7 @@ pmml <- function(model=NULL,
       {
        LTelement <- append.XMLNode(LTelement, dfNode)
       }
+
      }
      }
     }
@@ -477,3 +502,102 @@ pmml <- function(model=NULL,
   output$children <- output.fields
   return(output)
 }
+
+
+
+.addXML <- function(x) {
+  if (is.numeric(x)) {
+    node <- newXMLNode(name="Constant", attrs = c("dataType"=toString(typeof(x))), text=x)
+  } else if (is.character(x)) {
+    node <- newXMLNode(name="Constant", attrs = c("dataType"="string"), text=x)
+  } else {
+    node <- newXMLNode(name="FieldRef", attrs = c("field"=toString(x)))
+#     node <- newXMLNode(name="FieldRef", attrs = c("mapMissingTo"=missing,"field"=toString(x)))
+  }
+  return(node)
+}
+
+.addXMLfunc <- function(x) {
+  #addXMLfunc is used only when x is assumed to be a function
+  
+#   op_list <- c("+","-","/","*","pow","lessThan","lessOrEqual","greaterThan","greaterOrEqual","and","and","equal")
+#   names(op_list) <- c("+","-","/","*","^","<","<=",">",">=","&&","&","==")
+  
+  op_list <- c("+","-","/","*","pow","lessThan","lessOrEqual","greaterThan","greaterOrEqual","and","and","or","or","equal","notEqual","not","ceil","product","ln")
+  names(op_list) <- c("+","-","/","*","^","<","<=",">",">=","&&","&","|","||","==","!=","!","ceiling","prod","log")
+  
+  
+  if (toString(x) %in% names(op_list)) {
+    node <- newXMLNode(name="Apply", attrs = c("function"=op_list[toString(x)][[1]]))
+  } else {
+    node <- newXMLNode(name="Apply", attrs = c("function"=toString(x)[[1]]))
+  }
+  return(node)
+}
+
+.trans <- function(x) {
+  
+  if (length(x)>=3) {
+    #if length>3, then assume a function with multiple arguments
+    #assume that first element is the function, and all others are arguments
+    
+    #rewrite for-loop as lapply
+    #add children to a list first, then use only one call to addChildren?
+    
+    node <- .addXMLfunc(x[[1]]) #first element assumed to be an operator or function
+    
+    #     child_list <- list()
+    
+    for (k in 2:length(x)) { #starting from second element
+      if (length(x[[k]])==1) {
+        c1 <- .addXML(x[[k]])
+      } else {
+        c1 <- .trans(as.list(x[[k]]))
+      }
+      #       append(child_list, c1)
+      addChildren(node,c1)
+    }
+    
+  } else if (length(x)==2) {
+    
+    
+    #if grouping with parentheses      
+    if (x[[1]]=="(" || x[[1]]=="{") {
+      #do not assign ( as a node
+      node <- .trans(as.list(x[[2]]))
+      
+      #if length is 2 and first element is not "(", then it must be a function
+    } else {
+      #       node <- addXML(x[[1]])
+      node <- .addXMLfunc(x[[1]])  #first element is a function
+      
+      if (length(x[[2]])==1) { #check if second element is a grouping
+        c1 <- .addXML(x[[2]])
+      } else {
+        c1 <- .trans(as.list(x[[2]]))
+      }
+      addChildren(node,c1)
+    }
+    
+  } else if (length(x)==1) {
+    node <- .addXML(x[[1]])     #always assumes a field or constant
+  }
+  
+  #else length = 0
+  
+  return(node)
+}
+.pmmlU <- function(expr0) {
+  
+  expr <- parse(text=expr0)
+  
+  
+  sub_expr <- substitute(z,list(z=expr))[[1]]
+  list_expr <- as.list(sub_expr)
+  
+  trans_expr <- .trans(list_expr)
+  
+  return(trans_expr)
+  
+}
+

@@ -5,9 +5,10 @@
   Generate the PMML representation for a naiveBayes object from package \pkg{e1071}.
 }
 \usage{
-\method{pmml}{naiveBayes}(model, model.name="naiveBayes_Model", app.name="Rattle/PMML",
-     description="NaiveBayes Model", copyright=NULL, transforms=NULL, unknownValue=NULL,
-     predictedField, ...)
+\method{pmml}{naiveBayes}(model, model.name="naiveBayes_Model", 
+      app.name="Rattle/PMML", description="NaiveBayes Model",
+      copyright=NULL, transforms=NULL, unknownValue=NULL,
+      predictedField, ...)
 }
 \arguments{
   
@@ -21,7 +22,7 @@
   
   \item{copyright}{the copyright notice for the model.}
 
-  \item{transforms}{data transformations represented in PMML via package \pkg{pmmlTransformations}.}
+  \item{transforms}{data transformations represented in PMML via \pkg{pmmlTransformations}.}
 
   \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
  
@@ -46,7 +47,7 @@
     \item
        R project CRAN package:\cr
        \emph{\bold{e1071}: Misc Functions of the Department of Statistics (e1071), TU Wien} \cr
-       \url{http://cran.r-project.org/web/packages/e1071/index.html}
+       \url{http://cran.r-project.org/package=e1071}
   
  
     \item
@@ -67,11 +68,10 @@
 # Upload the required library
 library(e1071)
 library(pmml)
-library(mlbench)
 
 # download an example dataset
-data(HouseVotes84)
-house <- na.omit(HouseVotes84)
+data(houseVotes84)
+house <- na.omit(houseVotes84)
 
 # Construct an example model defining a threshold value of 0.003
 model<-naiveBayes(Class~V1+V2+V3,data=house,threshold=0.003)

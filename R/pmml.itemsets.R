@@ -25,7 +25,7 @@ pmml.itemsets <- function(model,
   
   if (! inherits(model, "itemsets")) stop("Not a legitimate arules itemsets rules object")
 
-  require(arules, quietly=TRUE)
+  requireNamespace("arules", quietly=TRUE)
   
   ## PMML
   pmml <- .pmmlRootNode("4.0")
@@ -54,7 +54,7 @@ pmml.itemsets <- function(model,
       attrs=c(functionName="associationRules",
           ## fixme: this is currently a hack
           numberOfTransactions=attr(quality(model), "size.data"), 
-          numberOfItems=length(itemLabels(model)),
+          numberOfItems=length(arules::itemLabels(model)),
           minimumSupport=min(quality$support),     
           minimumConfidence=0L,
           numberOfItemsets=length(is),     
@@ -71,7 +71,7 @@ pmml.itemsets <- function(model,
 
   ## items
   items <- list()
-  il <- .markupSpecials(itemLabels(model))
+  il <- .markupSpecials(arules::itemLabels(model))
   for (i in 1:length(il)) 
   items[[i]] <- xmlNode("Item", attrs = list(id = i, value = il[i]))
 
@@ -79,8 +79,8 @@ pmml.itemsets <- function(model,
 
   ## itemsets
   itemsets <- list()
-  sizes <- size(is)
-  isl <- LIST(is, decode=FALSE)
+  sizes <- arules::size(is)
+  isl <- arules::LIST(is, decode=FALSE)
   for (i in 1:length(isl)){
       itemsets[[i]] <- xmlNode("Itemset", attrs = list(id = i, 
               numberOfItems = sizes[i], support=quality$support[i])) 

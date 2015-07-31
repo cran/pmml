@@ -39,7 +39,7 @@ pmml.multinom <- function(model,
                           ...)
 {
   if (! inherits(model, "multinom")) stop("Not a legitimate multinom object")
-  require(nnet, quietly=TRUE)
+  requireNamespace("nnet", quietly=TRUE)
 
   #------------------------------------------------
   # models built with formulae have 2 main pieces of information missing from the
