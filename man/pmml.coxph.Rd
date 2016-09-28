@@ -40,7 +40,7 @@
 
 \references{
   R project CRAN package: \emph{\bold{survival}: Survival Analysis} \cr
-  \url{http://cran.r-project.org/package=survival}
+  \url{https://CRAN.R-project.org/package=survival}
 
 }
 

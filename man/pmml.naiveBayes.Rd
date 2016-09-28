@@ -47,7 +47,7 @@
     \item
        R project CRAN package:\cr
        \emph{\bold{e1071}: Misc Functions of the Department of Statistics (e1071), TU Wien} \cr
-       \url{http://cran.r-project.org/package=e1071}
+       \url{https://CRAN.R-project.org/package=e1071}
   
  
     \item

@@ -61,7 +61,7 @@
  library(randomForestSRC)
  data(veteran)
  veteran.out <- rfsrc(Surv(time, status)~., data = veteran, ntree = 5,
-                      forest = TRUE)
+                      forest = TRUE, membership = TRUE)
  pmml(veteran.out)
 
 }

@@ -65,7 +65,7 @@
 \references{
   R project CRAN package:\cr
   \emph{\bold{glmnet}: Lasso and elastic-net regularized generalized linear models} \cr
-  \url{http://cran.r-project.org/package=glmnet}
+  \url{https://CRAN.R-project.org/package=glmnet}
 }
 
 \author{Zementis Inc. \email{info@zementis.com}}	

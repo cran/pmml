@@ -38,7 +38,7 @@
 
 \references{
   R project CRAN package: \emph{\bold{arules}: Mining Association Rules and Frequent Itemsets} \cr
-  \url{http://cran.r-project.org/package=arules}
+  \url{https://CRAN.R-project.org/package=arules}
 
 }
 

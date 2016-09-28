@@ -50,7 +50,7 @@
 
 \references{
   R project CRAN package: \emph{\bold{ada}: an R package for stochastic boosting} \cr
-  \url{http://cran.r-project.org/package=ada}
+  \url{https://CRAN.R-project.org/package=ada}
 
 }
 

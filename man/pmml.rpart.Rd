@@ -42,7 +42,7 @@
 
 \references{
   R project CRAN package: \emph{\bold{rpart}: Recursive Partitioning} \cr
-  \url{http://cran.r-project.org/package=rpart}
+  \url{https://CRAN.R-project.org/package=rpart}
 
 }
 

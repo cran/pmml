@@ -42,7 +42,7 @@
 
 \references{
   R project CRAN package: \emph{\bold{kernlab}: Kernel-based Machine Learning Lab} \cr
-  \url{http://cran.r-project.org/package=kernlab}
+  \url{https://CRAN.R-project.org/package=kernlab}
 }
 
 \author{Zementis Inc. \email{info@zementis.com}}

@@ -38,7 +38,7 @@
 \references{
   R project CRAN package:\cr
   \emph{\bold{randomForest}: Breiman and Cutler's random forests for classification and regression} \cr
-  \url{http://cran.r-project.org/package=randomForest}
+  \url{https://CRAN.R-project.org/package=randomForest}
 
 }
 

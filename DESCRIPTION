@@ -1,10 +1,11 @@
 Package: pmml
 Type: Package
 Title: Generate PMML for Various Models
-Version: 1.5.0
-Date: 2015-07-31
-Author: Graham Williams, Tridivesh Jena, Wen Ching Lin, Michael Hahsler (arules),  
-	Zementis Inc, Hemant Ishwaran, Udaya B. Kogalur, Rajarshi Guha, Dmitriy Bolotov
+Version: 1.5.1
+Date: 2016-09-27
+Author: Graham Williams, Tridivesh Jena, Wen Ching Lin, Michael Hahsler
+    (arules), Zementis Inc, Hemant Ishwaran, Udaya B. Kogalur, Rajarshi Guha,
+    Dmitriy Bolotov
 Maintainer: Tridivesh Jena <rpmmlsupport@zementis.net>
 Depends: XML
 Suggests: ada, amap, arules, glmnet, nnet, rpart, randomForestSRC,
@@ -12,19 +13,18 @@ Suggests: ada, amap, arules, glmnet, nnet, rpart, randomForestSRC,
         1.3.0),testthat
 Imports: survival, methods, stats, utils
 License: GPL (>= 2.1)
-Description: 
-        The Predictive Model Markup Language (PMML) is an XML-based language
-        which provides a way for applications to define statistical and data 
-        mining models and to share models between PMML compliant applications. 
-        More information about PMML and the Data Mining Group can be found at 
-        http://www.dmg.org.
-        The generated PMML can be imported into any PMML consuming application, 
-        such as the Zementis ADAPA and UPPI scoring engines which allow for 
-        predictive models built in R to be deployed and executed on site, in 
-        the cloud (Amazon, IBM, and FICO), in-database (IBM Netezza, Pivotal, 
-        Sybase IQ, Teradata and Teradata Aster) or Hadoop (Datameer and Hive).
+Description: The Predictive Model Markup Language (PMML) is an XML-based
+    language which provides a way for applications to define statistical and
+    data mining models and to share models between PMML compliant applications.
+    More information about PMML and the Data Mining Group can be found at http://
+    www.dmg.org. The generated PMML can be imported into any PMML consuming
+    application, such as the Zementis ADAPA and UPPI scoring engines which allow for
+    predictive models built in R to be deployed and executed on site, in the cloud
+    (Amazon, IBM, and FICO), in-database (IBM Netezza, Pivotal, Sybase IQ, Teradata
+    and Teradata Aster) or Hadoop (Datameer and Hive).
 URL: http://zementis.com/
 NeedsCompilation: no
-Packaged: 2015-08-04 01:16:35 UTC; tjena
+RoxygenNote: 5.0.1
+Packaged: 2016-09-28 18:24:58 UTC; dmitriy
 Repository: CRAN
-Date/Publication: 2015-08-05 09:30:50
+Date/Publication: 2016-09-28 22:54:59
