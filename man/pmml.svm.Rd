@@ -65,7 +65,7 @@
    }      
 }
 
-\author{Zementis Inc. \email{info@zementis.com}}
+\author{Zementis Inc.}
 
 \examples{
 

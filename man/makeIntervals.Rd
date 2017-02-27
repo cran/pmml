@@ -5,7 +5,7 @@
 \title{Create Interval elements, most likely to add to a DataDictionary element}
 \usage{
 makeIntervals(closure = NULL, leftMargin = NULL, rightMargin = NULL,
-  namespace = "4_2")
+  namespace = "4_3")
 }
 \arguments{
 \item{closure}{The 'closure' attribute of each 'Interval' element to be created in order.}
@@ -34,11 +34,10 @@ mi<-makeIntervals(list("openClosed","openOpen","closedOpen"),
                    list(NULL,1,2),list(1,2,NULL))
 
 }
-\author{
-Tridivesh Jena
-}
 \seealso{
 \code{\link{makeValues}} to make Values child elements, \code{\link{addDFChildren}}
 to add these xml fragments to the DataDictionary PMML element.
 }
-
+\author{
+Tridivesh Jena
+}

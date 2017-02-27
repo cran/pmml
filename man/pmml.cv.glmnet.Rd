@@ -36,7 +36,7 @@
   \item{dataset}{the dataset using which the model was built.}
 
   \item{s}{'lambda' parameter at which to output the model. 
-          If not given, the lambda.min parameter from the model 
+          If not given, the lambda.1se parameter from the model 
           is used instead.}
 
   \item{\dots}{further arguments passed to or from other methods.}
@@ -68,7 +68,7 @@
   \url{https://CRAN.R-project.org/package=glmnet}
 }
 
-\author{Zementis Inc. \email{info@zementis.com}}	
+\author{Zementis Inc.}	
 
 \examples{
 

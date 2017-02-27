@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -16,8 +16,6 @@
 ######################################################################################
 #
 # Author: Tridivesh Jena
-# Date: Aug 2013
-#
 #
 # Possible future functions:
 # Node -> InternalNode
@@ -58,7 +56,7 @@
 # doesnt require a namespace 
 #
 
-addLT <- function(xmlmodel=NULL, transforms=NULL, namespace="4_2",...) {
+addLT <- function(xmlmodel=NULL, transforms=NULL, namespace="4_3",...) {
 warning("Deprecated; use pmml() with 'transforms' argument instead")
 #to avoid malloc error
 flush.console()
@@ -67,7 +65,7 @@ flush.console()
   namespace <- .getNamespace(namespace)
  } else
  {
-  namespace <- .getNamespace("4_2")
+  namespace <- .getNamespace("4_3")
  }
 
 # we expect the input to be always a XML Node

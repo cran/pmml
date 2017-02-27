@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -15,16 +15,8 @@
 # GNU General Public License for details (http://www.gnu.org/licenses/).
 ######################################################################################
 #
-# ARules Module
-#
-# Implements a PMML exporter for arules objects (Association Rules)
-#
 # Author: Graham Williams / Michael Hahsler
-# E-mail: 
-# Date: 
-#
-# Conform to PMML 3.2 Graham Williams 080622
-# This also would conform to PMML 4.0 Michael Hahsler 110106 
+
 
 pmml.rules <- function(model,
                        model.name="arules_Model",
@@ -39,7 +31,7 @@ pmml.rules <- function(model,
 
   # PMML
   
-  pmml <- .pmmlRootNode("4.1")
+  pmml <- .pmmlRootNode()
 
   # PMML -> Header
 

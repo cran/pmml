@@ -1,17 +1,17 @@
 Package: pmml
 Type: Package
 Title: Generate PMML for Various Models
-Version: 1.5.1
-Date: 2016-09-27
+Version: 1.5.2
+Date: 2017-02-24
 Author: Graham Williams, Tridivesh Jena, Wen Ching Lin, Michael Hahsler
     (arules), Zementis Inc, Hemant Ishwaran, Udaya B. Kogalur, Rajarshi Guha,
     Dmitriy Bolotov
 Maintainer: Tridivesh Jena <rpmmlsupport@zementis.net>
 Depends: XML
-Suggests: ada, amap, arules, glmnet, nnet, rpart, randomForestSRC,
-        randomForest, kernlab, e1071, pmmlTransformations(>=
-        1.3.0),testthat
-Imports: survival, methods, stats, utils
+Suggests: ada, amap, arules, gbm, glmnet, neighbr, nnet, rpart,
+        randomForestSRC, randomForest, kernlab, e1071, testthat,
+        survival, xgboost, pmmlTransformations(>= 1.3.1)
+Imports: methods, stats, utils, stringr
 License: GPL (>= 2.1)
 Description: The Predictive Model Markup Language (PMML) is an XML-based
     language which provides a way for applications to define statistical and
@@ -24,7 +24,7 @@ Description: The Predictive Model Markup Language (PMML) is an XML-based
     and Teradata Aster) or Hadoop (Datameer and Hive).
 URL: http://zementis.com/
 NeedsCompilation: no
-RoxygenNote: 5.0.1
-Packaged: 2016-09-28 18:24:58 UTC; dmitriy
+RoxygenNote: 6.0.0
+Packaged: 2017-02-27 09:21:28 UTC; tjena
 Repository: CRAN
-Date/Publication: 2016-09-28 22:54:59
+Date/Publication: 2017-02-27 10:58:20

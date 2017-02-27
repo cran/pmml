@@ -16,13 +16,17 @@ PMML version of the input expression
 Convert an R expression to PMML.
 }
 \details{
-As long as the expression passed to the function is a valid R expression (e.g., no unbalanced parenthesis), 
-it can contain arbitrary function names not defined in R. Variables in the expression passed 
-to `FunctionXform` are always assumed to be fields, and not substituted. That is, even if `x` has a value in the 
+As long as the expression passed to the function is a valid R expression (e.g., no unbalanced parenthesis),
+it can contain arbitrary function names not defined in R. Variables in the expression passed
+to `FunctionXform` are always assumed to be fields, and not substituted. That is, even if `x` has a value in the
 R environment, the resulting expression will still use `x`.
 
-An expression such as `foo(x)` is treated as a function `foo` with argument `x`. Consequently, passing in an 
+An expression such as `foo(x)` is treated as a function `foo` with argument `x`. Consequently, passing in an
 R vector `c(1,2,3)` to `functionToPMML()` will produce PMML where `c` is a function and `1,2,3` are the arguments.
+
+An expression starting with '-' or '+' (for example, "-3" or "-(a+b)") will be treated as if there is a 0
+before the initial '-' or '+' sign. This makes it possible to represent expressions that start with a sign,
+since PMML's '-' and '+' functions require two arguments. The resulting PMML node will have a constant 0 as a child.
 }
 \examples{
 
@@ -37,8 +41,10 @@ functionToPMML("if (x==3) { 3 } else { 0 }")
 
 # Function with string argument types
 functionToPMML("colors('red','green','blue')")
+
+# Sign in front of expression
+functionToPMML("-(x/y)")
 }
 \author{
 Dmitriy Bolotov
 }
-

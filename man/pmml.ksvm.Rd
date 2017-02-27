@@ -38,6 +38,8 @@
 \details{
 
    Both classification (multi-class and binary) as well as regression cases are supported.
+   
+   The following ksvm kernels are currently supported: rbfdot, polydot, vanilladot, tanhdot.
 }
 
 \references{
@@ -45,7 +47,7 @@
   \url{https://CRAN.R-project.org/package=kernlab}
 }
 
-\author{Zementis Inc. \email{info@zementis.com}}
+\author{Zementis Inc.}
 
 \examples{
 # Train a support vector machine to perform classification.

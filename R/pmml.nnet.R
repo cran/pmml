@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -14,22 +14,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
 # GNU General Public License for details (http://www.gnu.org/licenses/).
 ######################################################################################
-
-#######################################################################
-# Neural Networks
 #
-# Author: Zementis, Inc. (www.zementis.com) E-mail: info@zementis.com
-# Date: 6 Feb 2008
-# Implements a PMML exporter for nnet objects (Neural Networks)
-#
-# 090824 gjw Instead of two output nodes should there only be one for
-# a single output node neural network?
-#
-
-
-###################################################################
-# Function pmml.nnet
-#
+# Author: Zementis, Inc.
 
 pmml.nnet <- function(model,
                       model.name="NeuralNet_model",
@@ -234,7 +220,7 @@ pmml.nnet <- function(model,
   ##############################################################################
   # PMML
   
-  pmml <- .pmmlRootNode("4.2")
+  pmml <- .pmmlRootNode()
   
   # PMML -> Header
   

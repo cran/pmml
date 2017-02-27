@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2015, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -38,7 +38,7 @@
 #' @seealso \code{\link{makeIntervals}} to make Interval child elements, \code{\link{addDFChildren}}
 #' to add these xml fragments to the DataDictionary PMML element.
 
-makeValues <- function(value=NULL,displayValue=NULL,property=NULL,namespace="4_2")
+makeValues <- function(value=NULL,displayValue=NULL,property=NULL,namespace="4_3")
 {
  namespace <- .getNamespace(namespace)
 # if(is.vector(value))

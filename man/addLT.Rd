@@ -10,7 +10,7 @@
 
 }
 \usage{
-addLT(xmlmodel=NULL, transforms=NULL, namespace="4_2",...)
+addLT(xmlmodel=NULL, transforms=NULL, namespace="4_3",...)
 }
 \arguments{
   
@@ -67,7 +67,7 @@ xforms <- pmml(,transforms=irisBox)
 # forgot to add the transformations when using the pmml function
 # initially. 
 
-modified <- addLT(model,xforms,namespace="4_2")
+modified <- addLT(model,xforms,namespace="4_3")
 }
 
 }

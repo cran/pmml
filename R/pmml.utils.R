@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #

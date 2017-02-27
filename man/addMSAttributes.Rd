@@ -11,7 +11,7 @@
 }
 \usage{
 addMSAttributes(xmlmodel=NULL,attributes=NULL,
-                namespace="4_2",...)
+                namespace="4_3",...)
 }
 \arguments{
   
@@ -31,7 +31,7 @@ addMSAttributes(xmlmodel=NULL,attributes=NULL,
   one new attribute to one variable. This function may be used multiple times to add new attribute values
   step-by-step. This function overwrites any pre-existing attribute values, so it must be used with care.
   However, this is by design as this feature is meant to help an user defined new attribute values at 
-  different times. For example, one may use this to impute missing values in a model at fifferent times.
+  different times. For example, one may use this to impute missing values in a model at different times.
 
 }    
 \value{
@@ -73,7 +73,7 @@ addMSAttributes(xmlmodel=NULL,attributes=NULL,
   }
 
  # actual command
- addMSAttributes(model,attributes,namespace="4_2")
+ addMSAttributes(model,attributes,namespace="4_3")
 
 }
 \keyword{interface}

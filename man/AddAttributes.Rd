@@ -10,7 +10,7 @@
 }
 \usage{
 AddAttributes(xmlmodel=NULL, xpath=NULL, attributes=NULL, 
-              namespace="4_2",...)
+              namespace="4_3",...)
 }
 \arguments{
   
@@ -52,7 +52,7 @@ AddAttributes(xmlmodel=NULL, xpath=NULL, attributes=NULL,
  model <- pmml(model0)
 
  # The resulting PMML:
- # <PMML version="4.2" ... xmlns="http://www.dmg.org/PMML-4_2">
+ # <PMML version="4.3" ... xmlns="http://www.dmg.org/PMML-4_3">
  # <Header ... description="Linear Regression Model"/>
  # <DataDictionary numberOfFields="4">
  # .

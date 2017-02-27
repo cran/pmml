@@ -29,6 +29,8 @@
   of transformations starting from an original field and mutiple fields derived from 
   the same original field. 
   
+  This package converts models to PMML version 4.3. 
+  
   Please note that package \pkg{XML_3.95-0.1} or later is required to perform the
   full and correct functionality of the \pkg{pmml} package.
   
@@ -134,11 +136,13 @@ pmml(model=NULL, model.name="Rattle_Model",
 \code{\link{pmml.lm}},
 \code{\link{pmml.multinom}},
 \code{\link{pmml.naiveBayes}},
+\code{\link{pmml.neighbr}},
 \code{\link{pmml.nnet}},
 \code{\link{pmml.randomForest}},
 \code{\link{pmml.rfsrc}},
 \code{\link{pmml.rpart}},
-\code{\link{pmml.svm}}
+\code{\link{pmml.svm}},
+\code{\link{pmml.xgb.Booster}}
 }
 \examples{
 

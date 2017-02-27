@@ -6,7 +6,7 @@
 \usage{
 addOutputField(xmlmodel = NULL, outputNodes = NULL, at = "End",
   xformText = NULL, nodeName = NULL, attributes = NULL, whichOutput = 1,
-  namespace = "4_2")
+  namespace = "4_3")
 }
 \arguments{
 \item{xmlmodel}{The PMML model to which the OutputField elements are to be added}
@@ -24,7 +24,7 @@ This expression will be processed by the functionToPMML function}
 
 \item{attributes}{The attributes to be added}
 
-\item{whichOutput}{The name of the OutputField element}
+\item{whichOutput}{The index of the Output element}
 
 \item{namespace}{The namespace of the PMML model}
 }
@@ -42,13 +42,15 @@ not automatically added to the model output.
 elements to be added. 'whichOutput' lets the function know which of the Output elements we want to 
 work with; there may be more than one in a multiple model file. One can then add those elements there,
 at the desired index given by the 'at' parameter; the elements are inserted after the OutputField 
-element at the 'at' index.
+element at the 'at' index. In other words, find the 'whichOutput' Output element, add the 'outputNodes'
+child elements (which should be OutputField nodes) at the 'at' position in the child nodes.
   This function can also be used with the 'nodeName' and 'attributes' to add the list of attributes to 
-an OutputField element with name 'nodeName'
-element using the 'xmlmodel', 'outputNodes' and 'at' parameters. 
+an OutputField element with name 'nodeName' element using the 'xmlmodel', 'outputNodes' and 'at' parameters. 
   Finally, one can use this to add the transformation expression given by the 'xformText' parameter
 to the node with name 'nodeName'. The string given via 'xformText' is converted to an XML expression similarly
-to the functionToPMML function.
+to the functionToPMML function. In other words, find the OutputField node with tha name 'nodeName' and add
+the list of attributes given with 'attributes' and also, add the child transformations given in the 'xformText'
+parameter.
 }
 \examples{
 # Load the standard iris dataset
@@ -88,4 +90,3 @@ addOutputField(xmlmodel=pmod2, nodeName="Predicted_Sepal.Length",
 \author{
 Tridivesh Jena
 }
-

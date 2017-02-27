@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -21,7 +21,7 @@
 # Implemented: 070528 rguha@indiana.edu based on Graham's template for
 # handling rpart trees.
 #
-# Modified: 080201 by Zementis, Inc. (info@zementis.com) to add the
+# Modified: 080201 by Zementis, Inc. to add the
 # capability to export binary logistic regression models using glm.
 #
 # Modified: 090103 by Graham Williams to add transforms framework.
@@ -146,7 +146,7 @@ pmml.glm <- function(model,
 
   # PMML
 
-  pmml <- .pmmlRootNode("4.2")
+  pmml <- .pmmlRootNode()
 
   # PMML -> Header
 

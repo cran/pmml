@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2015, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -14,7 +14,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
 # GNU General Public License for details (http://www.gnu.org/licenses/).
 ######################################################################################
-
 
 .pmmlDataDictionary <- function(field, dataset=NULL, weights=NULL, transformed=NULL)
 {
@@ -125,6 +124,11 @@
     {
       optypelist[[fname]] <- "categorical"
       datypelist[[fname]] <- "string"
+    }
+    else #catch any other class, including character
+    {
+      disallowed_class <- field$class[[field$name[i]]]
+      stop(paste(disallowed_class, "class is not supported for features. Supported classes: numeric, logical, factor."))
     }
    }
   }

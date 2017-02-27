@@ -5,7 +5,7 @@
 \title{Add Output nodes to a PMML object.}
 \usage{
 makeOutputNodes(name = "OutputField", attributes = NULL,
-  expression = NULL, namespace = "4_2")
+  expression = NULL, namespace = "4_3")
 }
 \arguments{
 \item{name}{The name of the element to be created}
@@ -39,4 +39,3 @@ TwoNodes <- makeOutputNodes(name=list("OutputField","OutputField"),
 \author{
 Tridivesh Jena
 }
-

@@ -1,3 +1,14 @@
+pmml (1.5.2)
+  * Add converter for xgboost models
+  * Add convertor for gbm models
+  * Add converter for neighbr model
+  * Output error on detecting an unsupported kernel in kernlab::ksvm() models
+  * Add examples and note to pmml.glm.Rd
+  * Output error on detecting unsupported feature classes
+  * Output error on detecting interaction terms in linear models
+  * Fix error created when fitting random forest model with 1 tree
+  * Update references to PMML spec 4.3
+
 pmml (1.5.1)
   * Fix example in documentation for pmml.rfsrc.R after randomForestSRC was updated
 

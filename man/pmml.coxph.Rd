@@ -44,4 +44,4 @@
 
 }
 
-\author{\email{Graham.Williams@togaware.com},   Zementis Inc. \email{info@zementis.com}}
+\author{\email{Graham.Williams@togaware.com},   Zementis Inc.}

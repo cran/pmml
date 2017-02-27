@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2015, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -15,9 +15,6 @@
 ######################################################################################
 #
 # Author: Tridivesh Jena
-#
-# Implemented: by Tridivesh Jena (info@zementis.com) to add the
-# capability to export random forest models.
 
 pmml.randomForest <- function(model,
                               model.name="randomForest_Model",
@@ -33,8 +30,6 @@ pmml.randomForest <- function(model,
     stop("Not a legitimate randomForest object")
 
    requireNamespace("randomForest",quietly=TRUE)
-
-   a <- randomForest::getTree(model,2)
 
   # Tridivesh: Collect the required information. We list all variables,
   # irrespective of whether they appear in the final model. This seems 
@@ -81,7 +76,7 @@ pmml.randomForest <- function(model,
 
   # PMML
 
-  pmml <- .pmmlRootNode("4.2")
+  pmml <- .pmmlRootNode()
 
   # PMML -> Header
 
@@ -148,7 +143,6 @@ pmml.randomForest <- function(model,
   }
 
   numTrees <-model$ntree
-  
   segments <- lapply(1:numTrees,function(x){.makeSegment(x,model,model.name,field,target,unknownValue)})
   segmentation2 <- append.XMLNode(segmentation, segments)
   rm(segmentation)
@@ -209,8 +203,8 @@ pmml.randomForest <- function(model,
                           splitCharacteristic="binarySplit"))
     }
 
-  # PMML -> TreeModel -> MiningSchema
-  tree.model <- append.XMLNode(tree.model, .pmmlMiningSchema(field, target,unknownValue=unknownValue))
+    # PMML -> TreeModel -> MiningSchema
+    tree.model <- append.XMLNode(tree.model, .pmmlMiningSchema(field, target,unknownValue=unknownValue))
 
 
   # Add to the top level structure.
@@ -314,7 +308,10 @@ pmml.randomForest <- function(model,
                         value=bool))
      } else  
      {
-       if(tinf[rowid,4] >= 0)
+       if(tinf[rowid,4] < 0) {
+         stop(paste("Unable to determine categorical split. Possible cause is number of categories of variable",
+               fname,"is higher than the randomForest function can accomodate."))
+       } else
        {
   # split if var is categorical
          binary <- .sdecimal2binary(tinf[rowid,4])

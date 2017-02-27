@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2015, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -39,7 +39,7 @@
 #'              attributes=list(list(name="dbl",optype="continuous"),NULL),
 #'              expression=list("ln(x)","ln(x/(1-x))"))
 
-makeOutputNodes <- function(name="OutputField",attributes=NULL,expression=NULL,namespace="4_2")
+makeOutputNodes <- function(name="OutputField",attributes=NULL,expression=NULL,namespace="4_3")
 {
   #Eg: (if dont want attributes, say, just omit it in input; it is NULL by default
   #    name <- list("O1","O2","O3")
@@ -58,7 +58,7 @@ makeOutputNodes <- function(name="OutputField",attributes=NULL,expression=NULL,n
     nodes[[i]] <- newXMLNode(name[[i]])
     if(!is.null(attributes[[i]])){
       if(length(name) == 1) {
-        addAttributes(nodes[[i]],.attrs=attributes[i])
+        addAttributes(nodes[[i]],.attrs=attributes)
       } else {
         addAttributes(nodes[[i]],.attrs=attributes[[i]])
       }

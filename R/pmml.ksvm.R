@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -14,19 +14,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
 # GNU General Public License for details (http://www.gnu.org/licenses/).
 ######################################################################################
-
 #
-# SVM Module
-#
-# Implements a PMML exporter for ksvm objects (Support Vector Machines)
-#
-# Author: Zementis, Inc. (www.zementis.com)
-# E-mail: info@zementis.com
-# Date: 17 Jan 2008
-
-##################################################################
-# Function pmml.ksvm
-#
+# Author: Zementis, Inc.
 
 pmml.ksvm <- function(model,
                       model.name="SVM_model",
@@ -114,7 +103,7 @@ pmml.ksvm <- function(model,
 
   # PMML
 
-  pmml <- .pmmlRootNode("4.2")
+  pmml <- .pmmlRootNode()
 
   # PMML -> Header
   
@@ -315,6 +304,11 @@ pmml.ksvm <- function(model,
                                 attrs=c(gamma=model@kernelf@kpar$scale,
                                   coef0=model@kernelf@kpar$offset,
                                   description="Sigmoid kernel type"))
+    }
+    else
+    {
+      unsupported_kernel <- model@kcall[["kernel"]]
+      stop(paste(unsupported_kernel,"kernel is not supported. Supported ksvm kernels: rbfdot, polydot, vanilladot, tanhdot."))
     }
   }
   

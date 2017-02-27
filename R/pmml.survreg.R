@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -14,9 +14,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
 # GNU General Public License for details (http://www.gnu.org/licenses/).
 ######################################################################################
-
-########################################################################
-# Linear Model PMML exporter
 #
 # Implemented: 091015 Graham Williams based on pmml.lm
 
@@ -103,7 +100,7 @@
 
   # PMML
 
-  pmml <- .pmmlRootNode("4.2")
+  pmml <- .pmmlRootNode()
 
   # PMML -> Header
 

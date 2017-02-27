@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -16,18 +16,6 @@
 #####################################################################################
 #
 # Author: Tridivesh Jena
-# 
-
-########################################################################
-# multinom PMML exporter
-#
-# 081103 Decide to target Regression (rather than GeneralRegression)
-# to reuse as much as possible. This means it will have multiple
-# RegressionTables.
-
-# This might just become a variation of the lm code in which case
-# there could be a possibility of merging it into that. But there are
-# some sublte differences.
 
 pmml.multinom <- function(model,
                           model.name="multinom_Model",
@@ -92,7 +80,7 @@ pmml.multinom <- function(model,
   target <- field$name[1]
   # PMML
 
-  pmml <- .pmmlRootNode("4.2")
+  pmml <- .pmmlRootNode()
 
   # PMML -> Header
 

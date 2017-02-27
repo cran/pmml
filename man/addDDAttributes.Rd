@@ -10,7 +10,7 @@
 }
 \usage{
 addDDAttributes(xmlmodel=NULL,attributes=NULL,field=NULL,
-                namespace="4_2",...)
+                namespace="4_3",...)
 }
 \arguments{
   
@@ -73,7 +73,7 @@ addDDAttributes(xmlmodel=NULL,attributes=NULL,field=NULL,
  attributes[] <- lapply(attributes,as.character)
 
  # actual command
- addDDAttributes(model,attributes,namespace="4_2")
+ addDDAttributes(model,attributes,namespace="4_3")
 
  # Alternative method to add attributes to a single field, 
  # "Sepal.Width"

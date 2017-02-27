@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -14,17 +14,6 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. Please see the
 # GNU General Public License for details (http://www.gnu.org/licenses/).
 ######################################################################################
-
-########################################################################
-# rpart PMML exporter
-#
-# Original by Togaware
-# Updated by Zementis 080605 to add ScoreDistribution, missingValueStrategy 
-# Updated by Zementis 090705 to add Output element
-# Updated by Togaware 091003 to add other attributes to Output element
-#
-# To Do
-#   Add the optional ModelStats, ModelExplanation and ModelVerification elements
 
 pmml.rpart <- function(model,
                        model.name="RPart_Model",
@@ -109,7 +98,7 @@ pmml.rpart <- function(model,
   
   # PMML
 
-  pmml <- .pmmlRootNode("4.2")
+  pmml <- .pmmlRootNode()
 
   # PMML -> Header
 

@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -16,8 +16,7 @@
 ######################################################################################
 #
 # Author: Wen Lin
-# Date: Aug 2013
-#-------------------------------------------------------------------------------------
+
 pmml.svm <- function(model,
                         model.name="LIBSVM_Model",
                         app.name="R-PMML",
@@ -50,7 +49,7 @@ pmml.svm <- function(model,
   #----------------------------------------------------------
   # PMML
   
-  pmml <- .pmmlRootNode("4.2")
+  pmml <- .pmmlRootNode()
   
   #----------------------------------------------------------
   # PMML -> Header
@@ -295,14 +294,19 @@ pmml.svm <- function(model,
   svmCount <- 0
   
   if(functionName == "classification") {
-  
+    trgtAltTrgts <- attributes(model$decision.values)$dimnames[[2]]
+    #for(i in 1:length(trgtAltTrgt){ 
     for(i in 1:(model$nclasses-1)) {
        for(j in (i+1):model$nclasses) {
-     
           svmCount <- svmCount+1
-         
+          trgtAltTrgt <- strsplit(trgtAltTrgts[svmCount],"/")[[1]]
+          trgt <- trgtAltTrgt[1]
+          altTrgt <- trgtAltTrgt[2]
+       
+          #xmlSVM = xmlNode("SupportVectorMachine", 
+          #              attrs=c(targetCategory=model$levels[i], alternateTargetCategory=model$levels[j]))
           xmlSVM = xmlNode("SupportVectorMachine", 
-                        attrs=c(targetCategory=model$levels[i], alternateTargetCategory=model$levels[j]))
+                        attrs=c(targetCategory=trgt, alternateTargetCategory=altTrgt))
 
           si <- startVectorIndex[i]
           sj <- startVectorIndex[j]
@@ -314,7 +318,6 @@ pmml.svm <- function(model,
 
           xmlSVs <- xmlNode("SupportVectors",attrs=c(numberOfAttributes=num.vector.attr, numberOfSupportVectors=ci+cj))
           xmlCFs <- xmlNode("Coefficients", attrs=c(absoluteValue=model$rho[svmCount], numberOfCoefficients=ci+cj))
-          
           for(k in 0:(ci-1)) {
              xmlSV <- xmlNode("SupportVector", attrs=c(vectorId=si+k))
              xmlCF <- xmlNode("Coefficient",  attrs=c(value=-1*coef1Array[si+k]))

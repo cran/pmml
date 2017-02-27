@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -16,9 +16,6 @@
 ######################################################################################
 # 
 # Author: Tridivesh Jena
-#
-# Implemented: 080201 by Tridivesh Jena (info@zementis.com) to add the
-# capability to export glmnet models.
 
 pmml.cv.glmnet <- function(model,
                     model.name="Elasticnet_Model",
@@ -206,7 +203,7 @@ pmml.cv.glmnet <- function(model,
 
   # PMML
 
-  pmml <- .pmmlRootNode("4.2")
+  pmml <- .pmmlRootNode()
 
   # PMML -> Header
 

@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2015, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -26,7 +26,7 @@
 #'		This expression will be processed by the functionToPMML function
 #' @param nodeName The name of the element to be added
 #' @param attributes The attributes to be added 
-#' @param whichOutput The name of the OutputField element
+#' @param whichOutput The index of the Output element
 #' @param namespace The namespace of the PMML model 
 #' 
 #' @details
@@ -37,13 +37,15 @@
 #' elements to be added. 'whichOutput' lets the function know which of the Output elements we want to 
 #' work with; there may be more than one in a multiple model file. One can then add those elements there,
 #' at the desired index given by the 'at' parameter; the elements are inserted after the OutputField 
-#' element at the 'at' index.
+#' element at the 'at' index. In other words, find the 'whichOutput' Output element, add the 'outputNodes'
+#' child elements (which should be OutputField nodes) at the 'at' position in the child nodes.
 #'   This function can also be used with the 'nodeName' and 'attributes' to add the list of attributes to 
-#' an OutputField element with name 'nodeName'
-#' element using the 'xmlmodel', 'outputNodes' and 'at' parameters. 
+#' an OutputField element with name 'nodeName' element using the 'xmlmodel', 'outputNodes' and 'at' parameters. 
 #'   Finally, one can use this to add the transformation expression given by the 'xformText' parameter
 #' to the node with name 'nodeName'. The string given via 'xformText' is converted to an XML expression similarly
-#' to the functionToPMML function. 
+#' to the functionToPMML function. In other words, find the OutputField node with tha name 'nodeName' and add
+#' the list of attributes given with 'attributes' and also, add the child transformations given in the 'xformText'
+#' parameter. 
 #' 
 #' @return Output node with the OutputField elements inserted.
 #' 
@@ -86,8 +88,8 @@
 
 
 addOutputField <- function(xmlmodel=NULL, outputNodes=NULL, at="End", xformText=NULL, nodeName=NULL,
-                           attributes=NULL, whichOutput=1, namespace="4_2") {
-
+                           attributes=NULL, whichOutput=1, namespace="4_3") {
+  
 #to avoid malloc error
  flush.console()
  namespace <- .getNamespace(namespace)
@@ -102,14 +104,14 @@ addOutputField <- function(xmlmodel=NULL, outputNodes=NULL, at="End", xformText=
     warning("OutputField given, childNode and attributes ignored.")
     outNode <- getNodeSet(modelInternalDocument,paste0("/p:PMML/descendant::p:Output[",whichOutput,"]"), c(p=namespace))
     if(length(outNode) == 0)
-      warning(paste0("No OutputField node with the name ",nodeName," found")) 
+      warning(paste0("Could not find ",whichOutput," Output nodes")) 
     if(at == "End") {
       addChildren(outNode[[1]],kids=list(outputNodes),append=TRUE,supressNamespaceWarning=TRUE)
     } else {
     # inserted after 'at' OutputField element 
       addChildren(outNode[[1]],kids=list(outputNodes),at=at,append=TRUE,supressNamespaceWarning=TRUE)
     }
-  } 
+  } else
   if(!is.null(attributes))
   {
     warning("attributes given, outputNode and childNode will be ignored")
@@ -122,7 +124,7 @@ addOutputField <- function(xmlmodel=NULL, outputNodes=NULL, at="End", xformText=
         addAttributes(outputNode[[1]],.attrs=attributes[[i]])
       }
     }
-  }
+  } else
   if(!is.null(xformText))
   {
     warning("childNode will be added. outputNode and attributes will be ignored.") 
@@ -134,5 +136,4 @@ addOutputField <- function(xmlmodel=NULL, outputNodes=NULL, at="End", xformText=
  
   return(modelInternalDocument)
 }
-
 

@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2015, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -15,7 +15,7 @@
 # GNU General Public License for details (http://www.gnu.org/licenses/).
 ######################################################################################
 
-addDDAttributes <- function(xmlmodel=NULL, attributes=NULL, field=NULL, namespace="4_2", ...) {
+addDDAttributes <- function(xmlmodel=NULL, attributes=NULL, field=NULL, namespace="4_3", ...) {
 
 #to avoid malloc error
  flush.console()

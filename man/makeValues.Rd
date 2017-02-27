@@ -5,7 +5,7 @@
 \title{Create Values element, most likely to add to a DataDictionary element}
 \usage{
 makeValues(value = NULL, displayValue = NULL, property = NULL,
-  namespace = "4_2")
+  namespace = "4_3")
 }
 \arguments{
 \item{value}{The 'value' attribute of each 'Value' element to be created in order.}
@@ -32,11 +32,10 @@ The 'makeValues' function is used the same way as the 'makeIntervals' function. 
 mv <- makeValues(list(1.1,2.2,3.3),list(NULL,NULL,NULL),
                  list("valid",NULL,"invalid"))
 }
-\author{
-Tridivesh Jena
-}
 \seealso{
 \code{\link{makeIntervals}} to make Interval child elements, \code{\link{addDFChildren}}
 to add these xml fragments to the DataDictionary PMML element.
 }
-
+\author{
+Tridivesh Jena
+}

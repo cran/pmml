@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -21,7 +21,7 @@
 # Implemented: 070528 rguha@indiana.edu based on Graham's template for
 # handling rpart trees.
 #
-# Modified: 080201 by Zementis, Inc. (info@zementis.com) to add the
+# Modified: 080201 by Zementis, Inc. to add the
 # capability to export binary logistic regression models using glm.
 #
 # Modified: 090103 by Graham Williams to add transforms framework.
@@ -121,10 +121,34 @@ pmml.lm <- function(model,
         field$levels[[field$name[i]]] <- levels(model$data[[field$name[i]]])
   }
 
+  coeff <- coefficients(model)
+
+  # 100519 From Wen of Zementis For singularities the coefficient is
+  # NA. From DMG the specification says:
+  #
+  # <xs:attribute name="coefficient" type="REAL-NUMBER" use="required" />
+  #
+  # So replace NAs with 0. The effect should be the same.
+
+  coeff[is.na(coeff)] <- 0
+
+  coeffnames <- names(coeff)
+  if(grepl(":",toString(coeffnames)))
+    stop("Possible interaction terms detected. Please note that interaction terms for regression models are not presently supported.")
+
+  # 090306 Handle the case where the intercept is not in the
+  # coefficients, and hence is 0?
+
+  if (coeffnames[[1]] == "(Intercept)")
+    intercept <- as.numeric(coeff[[1]])
+  else
+    intercept <- 0
+
+
   # PMML
 
-  pmml <- .pmmlRootNode("4.2")
-
+  pmml <- .pmmlRootNode()
+  
   # PMML -> Header
 
   pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app.name))
@@ -207,27 +231,6 @@ pmml.lm <- function(model,
 
   # PMML -> RegressionModel -> RegressionTable
 
-  coeff <- coefficients(model)
-
-  # 100519 From Wen of Zementis For singularities the coefficient is
-  # NA. From DMG the specification says:
-  #
-  # <xs:attribute name="coefficient" type="REAL-NUMBER" use="required" />
-  #
-  # So replace NAs with 0. The effect should be the same.
-  
-  coeff[is.na(coeff)] <- 0 
-
-  coeffnames <- names(coeff)
-
-  # 090306 Handle the case where the intercept is not in the
-  # coefficients, and hence is 0?
-  
-  if (coeffnames[[1]] == "(Intercept)")
-    intercept <- as.numeric(coeff[[1]])
-  else
-    intercept <- 0
-  
   # Added by Graham Williams so that code identifies a targetCategory
   # for binary logistic regression glm models built with
   # binomial(logit) and 091009 adds an extra RegressionTable

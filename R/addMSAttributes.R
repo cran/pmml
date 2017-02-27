@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2013, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
 #
 # This file is part of the PMML package for R.
 #
@@ -16,22 +16,12 @@
 ######################################################################################
 #
 # Author: Tridivesh Jena
-# Date: May 2014
-#
-#
-#######################################################################
 
-addMSAttributes <- function(xmlmodel=NULL, attributes=NULL, namespace="4_2", ...) {
-
+addMSAttributes <- function(xmlmodel=NULL, attributes=NULL, namespace="4_3", ...) {
 #to avoid malloc error
  flush.console()
-# if(!is.null(namespace))
-# {
+
   namespace <- .getNamespace(namespace)
-# } else
-# {
-#  namespace <- .getNamespace("4_2")
-# }
 
  if(!is.data.frame(attributes))
  {

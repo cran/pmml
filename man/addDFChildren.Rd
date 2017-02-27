@@ -10,7 +10,7 @@
 }
 \usage{
 addDFChildren(xmlmodel=NULL,field=NULL,intervals=NULL,
-              values=NULL,namespace="4_2",...)
+              values=NULL,namespace="4_3",...)
 }
 \arguments{
   
