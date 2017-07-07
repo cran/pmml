@@ -1,0 +1,6 @@
+# R/Rstudio
+*.Rapp.history
+*.Rhistory
+*.RData
+*.Rproj
+*.Rproj.user
