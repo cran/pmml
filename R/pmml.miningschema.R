@@ -27,30 +27,30 @@
     for(j in 1:length(namelist)) {
         if(!is.na(namelist[[j]])) {        
             usage <- ifelse(namelist[[j]] == target, "predicted", "active")
-    	    if((!is.null(target)) && (namelist[[j]] != target)){
-	      if(!is.null(unknownValue)){
-	 	unknownVal <- unknownValue
-		invalidVal <- "asMissing"
-	      }
+          if((!is.null(target)) && (namelist[[j]] != target)){
+        if(!is.null(unknownValue)){
+    unknownVal <- unknownValue
+    invalidVal <- "asMissing"
+        }
             }else if(is.null(target) && !is.null(unknownValue)) {
                 unknownVal <- unknownValue
                 invalidVal <- "asMissing"
-	    }
+      }
             if(namelist[[j]]=="Temp" || namelist[[j]]=="DiscretePlaceHolder") {
             # If field name is the naive bayes categorical field place holder, add missingValueReplacement
                 if(length(field$levels[[namelist[[j]]]])==1) {
                      mf <- xmlNode("MiningField", attrs=c(name=namelist[[j]],
                             usageType=usage,missingValueReplacement=field$levels[[namelist[[j]]]]))
                 }
-	     } else 
-	     {
-		mf <- xmlNode("MiningField", attrs=c(name=namelist[[j]], usageType=usage,
-			missingValueReplacement=unknownVal, invalidValueTreatment=invalidVal))
-	     }
+       } else 
+       {
+    mf <- xmlNode("MiningField", attrs=c(name=namelist[[j]], usageType=usage,
+      missingValueReplacement=unknownVal, invalidValueTreatment=invalidVal))
+       }
             
             mining.schema <- append.XMLNode(mining.schema, mf)
          }
-	}
+  }
 
     return(mining.schema)
 }
@@ -91,30 +91,14 @@
         ofnames <- strsplit(transformed$fieldData[field$name[i],"origFieldName"][[1]],",")[[1]]
         for(j in 1:length(ofnames))
         {
-          ofname <- gsub("^\\s+|\\s+$","",ofnames[j])
-          #hname <- transformed$fieldData[ofname,"origFieldName"]
-          ofnames2 = strsplit(transformed$fieldData[ofname,"origFieldName"][[1]],",")[[1]]
-          for (k in 1:length(ofnames2)){
-            ofname <- gsub("^\\s+|\\s+$","",ofnames2[k])
-            if (is.na(ofname)){
-              ofname <- gsub("^\\s+|\\s+$","",ofnames[j])
-            } else {
-              ofnames3 = strsplit(transformed$fieldData[ofname,"origFieldName"][[1]],",")[[1]]
-              for (l in 1:length(ofnames3)){
-                ofname <- gsub("^\\s+|\\s+$","",ofnames3[l])
-                if (is.na(ofname)){
-                  ofname <- gsub("^\\s+|\\s+$","",ofnames2[k])
-                }
-              }
-            }  
-            hname <- transformed$fieldData[ofname,"origFieldName"]
-            ancestorField <- ofname
-            while(!is.na(hname))
-            {
-              ancestorField <- hname
-              hname <- transformed$fieldData[hname,"origFieldName"]
-              # should need a new strsplit. dynamic programming style
-            }
+         ofname <- gsub("^\\s+|\\s+$","",ofnames[j])
+         hname <- transformed$fieldData[ofname,"origFieldName"]
+         ancestorField <- ofname
+         while(!is.na(hname))
+         {
+          ancestorField <- hname
+          hname <- transformed$fieldData[hname,"origFieldName"]
+         }
          fname <- .removeAsFactor(ancestorField)
          if((!(fname %in% namelist)) && (!(fname %in% dnamelist)))
          {
@@ -215,7 +199,7 @@
        {
 
            ofname <- transformed$fieldData[field$name[i],"origFieldName"][[1]]
-# following for loop not needed as multiple parents via mapvalues dealt with above
+        # following for loop not needed as multiple parents via mapvalues dealt with above
            for(j in 1:length(ofname))
            {
             fname <- ofname[j]
@@ -251,7 +235,7 @@
        {
         mining.fields[[nmbr]] <- xmlNode("MiningField", attrs=c(name=namelist[ndf2],
                                                 usageType=usage,missingValueReplacement=unknownVal, 
-						invalidValueTreatment="asMissing"))
+            invalidValueTreatment="asMissing"))
         nmbr <- nmbr + 1
        }
       }
@@ -266,7 +250,7 @@
       mining.fields[[i]] <- xmlNode("MiningField",
                                   attrs=c(name=fName,
                                     usageType=usage,missingValueReplacement=unknownVal, 
-					invalidValueTreatment="asMissing"))
+          invalidValueTreatment="asMissing"))
     }
 
    }
@@ -334,11 +318,11 @@
           }
           fname <- .removeAsFactor(ancestorField)
           if((!(fname %in% namelist)) && (!(fname %in% dnamelist)))
- 	  {
-	   namelist <- c(namelist,fname)
+    {
+     namelist <- c(namelist,fname)
            if(!(.removeAsFactor(fname) %in% dnamelist))
-	     dnamelist <- c(dnamelist, .removeAsFactor(field$name[i]))
-	  }
+       dnamelist <- c(dnamelist, .removeAsFactor(field$name[i]))
+    }
         }
        } 
     } else 
@@ -353,4 +337,3 @@
 
   return(namelist)
 }
-
