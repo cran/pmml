@@ -146,27 +146,45 @@
          }
        
        } else
-       {
-         ofnames <- strsplit(transformed$fieldData[field$name[i],"origFieldName"][[1]],",")[[1]]
-         for(j in 1:length(ofnames))
-         {
+        {
+        ofnames <- strsplit(transformed$fieldData[field$name[i],"origFieldName"][[1]],",")[[1]]
+        for(j in 1:length(ofnames))
+        {
           ofname <- gsub("^\\s+|\\s+$","",ofnames[j])
-          hname <- transformed$fieldData[ofname,"origFieldName"]
-          ancestorField <- ofname
-          while(!is.na(hname))
-          {
-           ancestorField <- hname
-           hname <- transformed$fieldData[hname,"origFieldName"]
-          }
-          fname <- .removeAsFactor(ancestorField)
-          if((!(fname %in% namelist)) && (!(fname %in% dnamelist)))
-          {
-           namelist <- c(namelist,fname)
-           if(!(.removeAsFactor(field$name[i]) %in% dnamelist)) 
-             dnamelist <- c(dnamelist, .removeAsFactor(field$name[i]))
+          #hname <- transformed$fieldData[ofname,"origFieldName"]
+          ofnames2 = strsplit(transformed$fieldData[ofname,"origFieldName"][[1]],",")[[1]]
+          for (k in 1:length(ofnames2)){
+            ofname <- gsub("^\\s+|\\s+$","",ofnames2[k])
+            if (is.na(ofname)){
+              ofname <- gsub("^\\s+|\\s+$","",ofnames[j])
+            } else {
+              ofnames3 = strsplit(transformed$fieldData[ofname,"origFieldName"][[1]],",")[[1]]
+              for (l in 1:length(ofnames3)){
+                ofname <- gsub("^\\s+|\\s+$","",ofnames3[l])
+                if (is.na(ofname)){
+                  ofname <- gsub("^\\s+|\\s+$","",ofnames2[k])
+                }
+              }
+            }  
+            hname <- transformed$fieldData[ofname,"origFieldName"]
+            ancestorField <- ofname
+            while(!is.na(hname))
+            {
+              ancestorField <- hname
+              hname <- transformed$fieldData[hname,"origFieldName"]
+              # should need a new strsplit. dynamic programming style
+            }
+            fname <- .removeAsFactor(ancestorField)
+            if((!(fname %in% namelist)) && (!(fname %in% dnamelist)))
+            {
+              namelist <- c(namelist,fname)
+              check <<- namelist
+              if(!(.removeAsFactor(field$name[i]) %in% dnamelist)) 
+                dnamelist <- c(dnamelist, .removeAsFactor(field$name[i]))
+            }
           }
         }
-       } 
+      }
     } else
     {
       fName <- field$name[i]
