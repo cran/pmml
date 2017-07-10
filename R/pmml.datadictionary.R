@@ -163,6 +163,14 @@
                 ofname <- gsub("^\\s+|\\s+$","",ofnames3[l])
                 if (is.na(ofname)){
                   ofname <- gsub("^\\s+|\\s+$","",ofnames2[k])
+                } else {
+                  ofnames4 = strsplit(transformed$fieldData[ofname,"origFieldName"][[1]],",")[[1]]
+                  for (m in 1:length(ofnames4)){
+                    ofname <- gsub("^\\s+|\\s+$","",ofnames3[m])
+                    if (is.na(ofname)){
+                      ofname <- gsub("^\\s+|\\s+$","",ofnames2[l])
+                    }
+                  }
                 }
               }
             }  
