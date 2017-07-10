@@ -1,7 +1,7 @@
 Package: pmml
 Type: Package
 Title: GeneratePMML
-Version: 1.5.2
+Version: 1.5.3
 Date: 2017-02-24
 Author: Graham Williams, Tridivesh Jena, Wen Ching Lin, Michael Hahsler
     (arules), Zementis Inc, Hemant Ishwaran, Udaya B. Kogalur, Rajarshi Guha,
@@ -24,6 +24,7 @@ Description: The Predictive Model Markup Language (PMML) is an XML-based
     and Teradata Aster) or Hadoop (Datameer and Hive).
 URL: http://zementis.com/
 NeedsCompilation: no
+LazyData: true
 RoxygenNote: 6.0.0
 Packaged: 2017-02-27 09:21:28 UTC; tjena
 Repository: CRAN
