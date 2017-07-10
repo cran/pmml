@@ -57,13 +57,13 @@ FunctionXform2 <- function (boxdata,origFieldName,newFieldName="newField",
   return(boxdata)
 }
 
-library(pmmlTransformations)
-library('XML')
+require(pmmlTransformations)
+require('XML')
 
-file.sources = list.files(pattern="*.R")
-for (i in 1:(length(file.sources)-1)){
-  source(file.sources[i])
-}
+#file.sources = list.files(pattern="*.R")
+#for (i in 1:(length(file.sources)-1)){
+#  source(file.sources[i])
+#}
 
 #source('pmml.datadictionary.R')
 #source('pmml.miningschema.R')
