@@ -1,6 +1,6 @@
 Package: pmml
 Type: Package
-Title: Generate PMML for Various Models
+Title: Generate PMML for Various Models modified
 Version: 1.5.2
 Date: 2017-02-24
 Author: Graham Williams, Tridivesh Jena, Wen Ching Lin, Michael Hahsler
