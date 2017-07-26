@@ -25,6 +25,8 @@
     unknownVal <- NULL
     invalidVal <- NULL
     for(j in 1:length(namelist)) {
+      unknownVal <- NULL
+      invalidVal <- NULL
         if(!is.na(namelist[[j]])) {        
             usage <- ifelse(namelist[[j]] == target, "predicted", "active")
           if((!is.null(target)) && (namelist[[j]] != target)){
