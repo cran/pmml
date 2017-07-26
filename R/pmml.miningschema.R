@@ -30,14 +30,14 @@
           if((!is.null(target)) && (namelist[[j]] != target)){
         #if(!is.null(unknownValue)){
         #unknownVal <- unknownValue
-        if(namelist[[j]] %in% unknownValue){
-    unknownVal <- unknownValue[[names(unknownValue) == namelist[[j]]]]
+        if(namelist[[j]] %in% names(unknownValue)){
+    unknownVal <- unknownValue[[which(names(unknownValue) == namelist[[j]])]]
     invalidVal <- "asMissing"
         }
             #}else if(is.null(target) && !is.null(unknownValue)) {
             #    unknownVal <- unknownValue
-              }else if(is.null(target) && (namelist[[j]] %in% unknownValue)) {
-                unknownVal <- unknownValue[[names(unknownValue) == namelist[[j]]]]
+              }else if(is.null(target) && (namelist[[j]] %in% names(unknownValue))) {
+                unknownVal <- unknownValue[[which(names(unknownValue) == namelist[[j]])]]
                 invalidVal <- "asMissing"
       }
             if(namelist[[j]]=="Temp" || namelist[[j]]=="DiscretePlaceHolder") {
