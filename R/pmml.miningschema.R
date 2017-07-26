@@ -28,12 +28,16 @@
         if(!is.na(namelist[[j]])) {        
             usage <- ifelse(namelist[[j]] == target, "predicted", "active")
           if((!is.null(target)) && (namelist[[j]] != target)){
-        if(!is.null(unknownValue)){
-    unknownVal <- unknownValue
+        #if(!is.null(unknownValue)){
+        #unknownVal <- unknownValue
+        if(namelist[[j]] %in% unknownValue){
+    unknownVal <- unknownValue[[names(unknownValue) == namelist[[j]]]]
     invalidVal <- "asMissing"
         }
-            }else if(is.null(target) && !is.null(unknownValue)) {
-                unknownVal <- unknownValue
+            #}else if(is.null(target) && !is.null(unknownValue)) {
+            #    unknownVal <- unknownValue
+              }else if(is.null(target) && (namelist[[j]] %in% unknownValue)) {
+                unknownVal <- unknownValue[[names(unknownValue) == namelist[[j]]]]
                 invalidVal <- "asMissing"
       }
             if(namelist[[j]]=="Temp" || namelist[[j]]=="DiscretePlaceHolder") {
