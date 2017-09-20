@@ -18,7 +18,7 @@ In the regular package, having nested data transformations would result in a fai
 
 Example: 
 ```{r}
-dataBox = WrapData(reference_index)
+dataBox = WrapData(data)
 
 dataBox <- FunctionXform(dataBox,
                            origFieldName="x1,x2",
