@@ -33,7 +33,7 @@
 #' 
 #' @return PMML representation of the \code{xgb.Booster} object.
 #' 
-#' @details The xgboost function takes as its input either an \code{xgb.DMatrix} object or
+#' @details The \code{xgboost} function takes as its input either an \code{xgb.DMatrix} object or
 #' a numeric matrix. The input field information is not stored in the R model object, 
 #' hence the field information must be passed on as inputs. This enables the PMML 
 #' to specify field names in its model representation. The R model object does not store 
@@ -41,6 +41,13 @@
 #' be extracted from the \code{xgb.model.dt.tree} function and the file saved using the
 #' \code{xgb.dump} function. The xgboost library is therefore needed in the environmant and this 
 #' saved file is needed as an input as well.
+#' 
+#' The following objectives are currently supported: \code{multi:softprob},
+#' \code{multi:softmax}, \code{binary:logistic}.
+#' 
+#' The pmml exporter will throw an error if the xgboost model model only has one tree.
+#' 
+#'
 #' 
 #' @examples 
 #' # Standard example using the xgboost package example model
@@ -96,11 +103,11 @@ pmml.xgb.Booster <- function(model,
                               description="Extreme Gradient Boosting Model",
                               copyright=NULL,
                               transforms=NULL,
-			                        inputFeatureNames=NULL,
-			                        outputLabelName=NULL,
-			                        outputCategories=NULL,
-			                        xgbDumpFile=NULL,
-			                        unknownValue=NULL,
+	                      inputFeatureNames=NULL,
+	                      outputLabelName=NULL,
+	                      outputCategories=NULL,
+	                      xgbDumpFile=NULL,
+	                      unknownValue=NULL,
                               ...)
 
 {
@@ -127,6 +134,10 @@ pmml.xgb.Booster <- function(model,
    #	3. Test for xgb.train as well as xgboost
    #	4. Test for xgb.DMatrix and Matrix inputs
 
+   if (!(model$params$objective %in% c("multi:softprob", "multi:softmax", "binary:logistic"))) {
+     stop("Only the following objectives are supported: multi:softprob, multi:softmax, binary:logistic.")
+   }
+  
    if(is.null(inputFeatureNames)) {
      stop("Input feature names required at present version. Try using colnames function on Matrix, matrix or xgb.DMatrix$data")
    }
@@ -138,6 +149,8 @@ pmml.xgb.Booster <- function(model,
      warning("No output categories given; regression model assumed.")
      functionName <- "regression"
    }
+
+
    # get tree split information
    dtable <- xgboost::xgb.model.dt.tree(inputFeatureNames,model)
    # get all features used
@@ -153,8 +166,8 @@ pmml.xgb.Booster <- function(model,
    inputFeatureNames <- inputFeatureNames[!str_detect(inputFeatureNames,"=")]
    # if given, remove output field name
    if(!is.null(outputLabelName)) {
-     inputFeatureNames <- inputFeatureNames[!str_detect(inputFeatureNames,outputLabelName)]
-     usedFieldsOthers <- usedFieldsOthers[!str_detect(usedFieldsOthers,outputLabelName)]
+     inputFeatureNames <- inputFeatureNames[!str_detect(inputFeatureNames,paste0("^",outputLabelName,"$"))]
+     usedFieldsOthers <- usedFieldsOthers[!str_detect(usedFieldsOthers,paste0("^",outputLabelName,"$"))]
    }
    
    # make vector of field names used by model. Go through the used features
@@ -182,23 +195,33 @@ pmml.xgb.Booster <- function(model,
        field$class[[fields1[i]]] <- "factor"
      }
    }
+
+   # Assume all fields without '=' are numeric. Original code wad to assume categorical fields could still be
+   # denoted by fieldname(separator)category where separatoe could be '-' or '_' but now has been decided that
+   # this assumption is too arbitary
+   # if(length(fields2) > 0) {
+   #   for(i in 1:length(fields2)) {
+   #     s <- fields2[i]
+   #     leqs <- unique(str_replace(usedFieldsOthers[str_detect(usedFieldsOthers,str_interp("^${s}[^-_]"))],str_interp("^${s}"),""))
+   #     if(length(leqs) > maxLevels) {
+   #       maxLevels <- length(leqs)
+   #     }
+   #     if(length(leqs) > 0) {
+   #       field$levels[[fields2[i]]] <- list(leqs)
+   #       field$levels[[fields2[i]]] <- field$levels[[fields2[i]]][[1]]
+   #       field$class[[fields2[i]]] <- "factor"
+   #     } else {
+   #       #field$levels[[fields2[i]]] <- NULL
+   #       field$class[[fields2[i]]] <- "numeric"
+   #     }
+   #   }
+   # }
    if(length(fields2) > 0) {
      for(i in 1:length(fields2)) {
-       s <- fields2[i]
-       leqs <- unique(str_replace(usedFieldsOthers[str_detect(usedFieldsOthers,str_interp("^${s}[^-_]"))],str_interp("^${s}"),""))
-       if(length(leqs) > maxLevels) {
-         maxLevels <- length(leqs)
-       }
-       if(length(leqs) > 0) {
-         field$levels[[fields2[i]]] <- list(leqs)
-         field$levels[[fields2[i]]] <- field$levels[[fields2[i]]][[1]]
-         field$class[[fields2[i]]] <- "factor"
-       } else {
-         #field$levels[[fields2[i]]] <- NULL
          field$class[[fields2[i]]] <- "numeric"
-       }
      }
    }
+
    if(functionName == "regression") {
      field$class[outputLabelName] <- "numeric"
    } else {
@@ -206,20 +229,6 @@ pmml.xgb.Booster <- function(model,
      field$levels[[outputLabelName]] <- outputCategories
    }
    
-   
-   #-------------------------------------------
-   #FILL IN: use pmmlDataDictionary etc to make DD and MiningSchema
-   #---------------------------------------------
-
-   # dt <- data.table(tmp=rep(NA,maxLevels))
-   # for(fname in field$name) {
-   #   if(fname != outputLabelName) {
-   #     l <- rep(field$levels[[fname]][1],maxLevels)
-   #     l[1:length(field$levels[[fname]])] <- field$levels[[fname]]
-   #     dt[,fname:=l]
-   #   }
-   # }
-   # dt[,tmp:=NULL]
    if(maxLevels > 0){
      dt <- data.frame(tmp=rep(NA,maxLevels))
      for(fname in field$name) {
@@ -235,23 +244,12 @@ pmml.xgb.Booster <- function(model,
        xbox <- pmmlTransformations::NormDiscreteXform(xbox,xformInfo=colnames(dt)[i],levelSeparator="=",ignoreOperatorSigns=T)
      }
    }
-   #------------------------------------------------------
-   #FILL IN: use something like pmml(,transforms=xbox) to get LocalTransformations
-   #------------------------------------------------------
-   
+
    # read in xgb dump file
    dumpFile <- file(xgbDumpFile)
    treelines <- readLines(dumpFile)
    close(dumpFile)
-   # get all lines representing leaves. Use to get category names
-   # r <- ":leaf="
-   # xtracts <- str_detect(treelines,r)
-   # preds <- str_replace(treelines[xtracts],"[\t]*[0-9]+:leaf=","")
-   # 
-   # picks <- which(dtable[,4]=="Leaf")
-   # dtable[,"prediction":="NA"]
-   # dtable[,"prediction"][picks] <- as.numeric(preds)
-   # dtable[,"prediction":="NA"]
+
    dtable[,"prediction"] <- as.double(NA)
    for(lin in treelines) {
      if(str_detect(lin,"^booster")) {
@@ -283,11 +281,7 @@ pmml.xgb.Booster <- function(model,
 
    # Tridi: Add output fields
    mmodel <- append.XMLNode(mmodel, .pmmlOutput(field, target))
-   # mmodel <- append.XMLNode(mmodel,.pmmlLocalTransformations(field, xbox))
-   # if(maxLevels > 0){
-   #   mmodel <- append.xmlNode(mmodel,pmml(,transforms=xbox))
-   # }
-   
+
    #Tridi: If interaction terms do exist, define a product in LocalTransformations and use
    # it as a model variable. This step is rare.
    interact <- FALSE
@@ -330,53 +324,34 @@ pmml.xgb.Booster <- function(model,
    }
 
    segmentation <- xmlNode("Segmentation",attrs=c(multipleModelMethod="modelChain"))
-   # if(functionName == "regression") 
-   # {
-   #   segmentation <- xmlNode("Segmentation",attrs=c(multipleModelMethod="average"))
-   # } 
-   # if(model$type == "classification") 
-   # {
-   #   segmentation <- xmlNode("Segmentation",attrs=c(multipleModelMethod="majorityVote"))
-   # }
 
    numTrees <- as.numeric(dtable[nrow(dtable),1]+1)
+   objective <- model$params$objective
+   # if((objective=="binary:logistic") | (objective=="multi:softprob")) {
+   #   type <- "classification"
+   # } else {
+   #   type <- "regression"
+   # }
+
+   if(objective %in% c("binary:logistic","multi:softprob","multi:softmax")) {
+     type <- "classification"
+   } else {
+     type <- "regression"
+   }
    
-   if(functionName != "regression") {
+   
+   if(functionName == "classification" && objective != "binary:logistic") {
      if((numTrees/length(outputCategories)) != floor(numTrees/length(outputCategories))) {
        stop("Number of trees not a multiple of number of categories provided.")
      }
    }
    
    segments <- lapply(1:numTrees,function(x){.makeXgSegment(x,dtable,model.name,field,target,unknownValue)})
-   # print("Z")
-   # print(segments)
-   # treeEndRow <- 0
-   # for(treeNum in 1:numTrees) {
-   #   treeBeginRow <- treeEndRow + 1
-   #   treeEndRow <- max(which(dtable[,1]==treeNum))
-   #   tinf <- data.frame(Node=dtable[treeBeginRow:treeEndRow,2],feature=dtable[treeBeginRow:treeEndRow,4],
-   #                      split=dtable[treeBeginRow:treeEndRow,5],left=dtable[treeBeginRow:treeEndRow,6],
-   #                      right=dtable[treeBeginRow:treeEndRow,7],missingChild=dtable[treeBeginRow:treeEndRow,8],
-   #                      prediction=dtable[treeBeginRow:treeEndRow,11])
-   #   tinf[,left] <- suppressWarnings(as.numeric(unlist(lapply(1:(treeEndRow- treeBeginRow + 1),
-   #                                                            function(x){str_replace(tinf[,left],paste0(treeNum,"-"),"")}))))
-   #   tinf[,right] <- suppressWarnings(as.numeric(unlist(lapply(1:(treeEndRow- treeBeginRow + 1),
-   #                                                            function(x){str_replace(tinf[,right],paste0(treeNum,"-"),"")}))))
-   #   tinf[,missingChild] <- suppressWarnings(as.numeric(unlist(lapply(1:(treeEndRow- treeBeginRow + 1),
-   #                                                            function(x){str_replace(tinf[,missingChild],paste0(treeNum,"-"),"")}))))
-   # }
 
-   objective <- model$params$objective
-   if((objective=="binary:logistic") | (objective=="multi:softprob")) {
-     type <- "classification"
-   } else {
-     type <- "regression"
-   }
-   
    segmentation <- append.XMLNode(segmentation, segments)
    if(type == "classification") {
      lastSegment <- append.xmlNode(xmlNode("Segment",attrs=c(id=numTrees)),xmlNode("True"))
-     lastModel <- .makeClassificationRegressionModel(field,target,outputCategories,numTrees,type)
+     lastModel <- .makeClassificationRegressionModel(field,target,outputCategories,numTrees,type,objective)
      lastSegment <- append.xmlNode(lastSegment,lastModel)
      segmentation <- append.xmlNode(segmentation,lastSegment)
    }
@@ -405,18 +380,12 @@ pmml.xgb.Booster <- function(model,
      tinf[,"Missing"] <- suppressWarnings(as.numeric(unlist(lapply(1:(treeEndRow- treeBeginRow + 1),
                                                       function(x){str_replace(tinf[x,"Missing"],paste0(treeNum,"-"),"")}))))
 
-     # listLengthLeft <- min(which(!is.na(tinf[,4])))
-     # listLengthRight <- min(which(!is.na(tinf[,5])))
-     # listLengthMissing <- min(which(!is.na(tinf[,6])))
-     # listLength <- max(listLengthLeft,listLengthRight,listLengthMissing)
-     # listLength <- min(which(!is.na(tinf[,4])))
-
-     nodeList <- .make3Nodes(tinf)
-     # print("ZZZ")
-     # print(nodeList)
-     # print(tinf)
-     nodeF <- .make3Tree(nodeList,tinf)
-
+     if(is.na(tinf[1,'Split'])){
+       nodeF <- append.xmlNode(xmlNode("Node",attrs=c(score=tinf[1,'prediction'])),xmlNode("True"))
+     } else {
+       nodeList <- .make3Nodes(tinf)
+       nodeF <- .make3Tree(nodeList,tinf)
+     }
      # PMML -> TreeModel
      tree.model <- xmlNode("TreeModel", 
                           attrs=c(modelName=model.name, functionName="regression", algorithmName="xgboost", 
@@ -428,8 +397,6 @@ pmml.xgb.Booster <- function(model,
      treeOutput <- append.xmlNode(treeOutput,treeOutputField)
      tree.model <- append.XMLNode(tree.model,treeOutput)
 
-     # print("B")
-     # print(tree.model)
      # Add to the top level structure.
      segment <- xmlNode("Segment",attrs=c(id=treeNum))
      tru <- xmlNode("True")
@@ -438,8 +405,6 @@ pmml.xgb.Booster <- function(model,
      tree.model <- append.XMLNode(tree.model, nodeF)
      segment <- append.XMLNode(segment, tree.model)
      
-     # print("A")
-     # print(segment)
      return(segment)
   }
 
@@ -512,14 +477,10 @@ pmml.xgb.Booster <- function(model,
       nodeListMissing[[i]] <- append.xmlNode(node,predM)
     }
 
-    # print("A")
-    # print(nodeListLeft)
-    # print("B")
-    # print(c(nodeListLeft,nodeListRight,nodeListMissing))
     return(c(nodeListLeft,nodeListRight,nodeListMissing))
   }
 
-.makeClassificationRegressionModel <- function(field,target,outputCategories,numTrees,type)
+.makeClassificationRegressionModel <- function(field,target,outputCategories,numTrees,type,objective)
 {
   numCategories <- length(outputCategories)
   numTreesPerCategories <- as.integer(numTrees/numCategories)
@@ -535,21 +496,42 @@ pmml.xgb.Booster <- function(model,
   mfs <- lapply(1:numTrees,function(x){xmlNode("MiningField",attrs=c(name=paste0("predictedValueTree",x-1),usageType="active",optype="continuous"))})
   ms <- append.xmlNode(ms,mfs)
   regrModel <- append.xmlNode(regrModel,ms)
+
   ltNode <- xmlNode("LocalTransformations")
-  for(i in 1:numCategories) {
-    dfNode <- xmlNode("DerivedField",attrs=c(name=paste0("SumCat",outputCategories[i]),dataType="double",optype="continuous"))
+  if(objective=="binary:logistic") {
+    dfNode <- xmlNode("DerivedField",attrs=c(name=paste0("SumCat",outputCategories[1]),dataType="double",optype="continuous"))
     applyNode <- xmlNode("Apply",attrs=c('function'="sum"))
-    summedNodes <- lapply(seq(i,numTrees,numCategories),function(x){xmlNode("FieldRef",attrs=c(field=paste0("predictedValueTree",x-1)))})
+    summedNodes <- lapply(seq(1,numTrees,1),function(x){xmlNode("FieldRef",attrs=c(field=paste0("predictedValueTree",x-1)))})
     applyNode <- append.xmlNode(applyNode,summedNodes)
     dfNode <- append.xmlNode(dfNode,applyNode)
     ltNode <- append.xmlNode(ltNode,dfNode)
-  }
-  regrModel <- append.XMLNode(regrModel,ltNode)
-  for(i in 1:numCategories) {
-    tableElement <- xmlNode("RegressionTable",attrs=c(intercept="0",targetCategory=outputCategories[i]))
-    numericElement <- xmlNode("NumericPredictor",attrs=c(name=paste0("SumCat",outputCategories[i]),coefficient="1.0"))
+    
+    regrModel <- append.XMLNode(regrModel,ltNode)
+
+    tableElement <- xmlNode("RegressionTable",attrs=c(intercept="0",targetCategory=outputCategories[1]))
+    numericElement <- xmlNode("NumericPredictor",attrs=c(name=paste0("SumCat",outputCategories[1]),coefficient="0.0"))
     tableElement <- append.xmlNode(tableElement,numericElement)
     regrModel <- append.xmlNode(regrModel,tableElement)
+    tableElement <- xmlNode("RegressionTable",attrs=c(intercept="0",targetCategory=outputCategories[2]))
+    numericElement <- xmlNode("NumericPredictor",attrs=c(name=paste0("SumCat",outputCategories[1]),coefficient="-1.0"))
+    tableElement <- append.xmlNode(tableElement,numericElement)
+    regrModel <- append.xmlNode(regrModel,tableElement) 
+  } else {
+    for(i in 1:numCategories) {
+      dfNode <- xmlNode("DerivedField",attrs=c(name=paste0("SumCat",outputCategories[i]),dataType="double",optype="continuous"))
+      applyNode <- xmlNode("Apply",attrs=c('function'="sum"))
+      summedNodes <- lapply(seq(i,numTrees,numCategories),function(x){xmlNode("FieldRef",attrs=c(field=paste0("predictedValueTree",x-1)))})
+      applyNode <- append.xmlNode(applyNode,summedNodes)
+      dfNode <- append.xmlNode(dfNode,applyNode)
+      ltNode <- append.xmlNode(ltNode,dfNode)
+    }
+    regrModel <- append.XMLNode(regrModel,ltNode)
+    for(i in 1:numCategories) {
+      tableElement <- xmlNode("RegressionTable",attrs=c(intercept="0",targetCategory=outputCategories[i]))
+      numericElement <- xmlNode("NumericPredictor",attrs=c(name=paste0("SumCat",outputCategories[i]),coefficient="1.0"))
+      tableElement <- append.xmlNode(tableElement,numericElement)
+      regrModel <- append.xmlNode(regrModel,tableElement)
+    }
   }
   return(regrModel)
 }

@@ -1,6 +1,6 @@
 \name{pmml.rfsrc}
 \alias{pmml.rfsrc}
-\title{Generate PMML for rsf objects}
+\title{Generate PMML for rfsrc objects}
 \description{
   
   Generate the PMML representation for a \pkg{randomSurvivalForest} forest object.
@@ -16,7 +16,7 @@
   
   \item{model}{a \code{forest} object contained in an object of class
       \pkg{randomSurvivalForest}, as that contained in the object
-      returned by the function \code{rsf} with the parameter
+      returned by the function \code{rfsrc} with the parameter
       \dQuote{forest=TRUE}.}
 
   \item{model.name}{a name to be given to the model in the PMML code.}
@@ -40,6 +40,8 @@
   capable of printing binary trees.  In addition, the user may wish to
   save the geometry of the forest for later retrieval and prediction on
   new data sets using \code{pmml.rfsrc} together with \code{pmml_to_rsf}.
+  
+  The pmml package supports randomSurvivalForest up to version 2.5.0.
 
 }    
 
@@ -58,11 +60,13 @@
 \author{Zementis Inc.}
 
 \examples{
- library(randomForestSRC)
- data(veteran)
- veteran.out <- rfsrc(Surv(time, status)~., data = veteran, ntree = 5,
+\dontrun{
+ # Works with randomForestSRC version 2.5.0.
+ # library(randomForestSRC)
+ # data(veteran)
+ # veteran.out <- rfsrc(Surv(time, status)~., data = veteran, ntree = 5,
                       forest = TRUE, membership = TRUE)
- pmml(veteran.out)
-
+ # pmml(veteran.out)
+}
 }
 

@@ -42,6 +42,7 @@ must be left as \code{NULL}), sets \code{categoricalScoringMethod} to "majorityV
 # continuous features with continuous target, categorical target,
 # and neighbor ranking
 
+\dontrun{
 library(neighbr)
 data(iris)
 
@@ -100,6 +101,7 @@ fit <- knn(train_set=train_set,test_set=test_set,
            id="ID")
 
 pmml(fit)
+}
 
 }
 \seealso{

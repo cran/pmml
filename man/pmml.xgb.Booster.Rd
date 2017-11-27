@@ -42,7 +42,7 @@ PMML representation of the \code{xgb.Booster} object.
 Generate PMML for a xgb.Booster object from the xgboost package
 }
 \details{
-The xgboost function takes as its input either an \code{xgb.DMatrix} object or
+The \code{xgboost} function takes as its input either an \code{xgb.DMatrix} object or
 a numeric matrix. The input field information is not stored in the R model object, 
 hence the field information must be passed on as inputs. This enables the PMML 
 to specify field names in its model representation. The R model object does not store 
@@ -50,6 +50,11 @@ information about the fitted tree structure either. However, this information ca
 be extracted from the \code{xgb.model.dt.tree} function and the file saved using the
 \code{xgb.dump} function. The xgboost library is therefore needed in the environmant and this 
 saved file is needed as an input as well.
+
+The following objectives are currently supported: \code{multi:softprob},
+\code{multi:softmax}, \code{binary:logistic}.
+
+The pmml exporter will throw an error if the xgboost model model only has one tree.
 }
 \examples{
 # Standard example using the xgboost package example model

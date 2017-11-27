@@ -39,6 +39,7 @@
 #' # continuous features with continuous target, categorical target,
 #' # and neighbor ranking
 #' 
+#' \dontrun{
 #' library(neighbr)
 #' data(iris)
 #' 
@@ -97,7 +98,8 @@
 #'            id="ID")
 #' 
 #' pmml(fit)
-#'
+#' }
+#' 
 #' @seealso \code{\link[pmml]{pmml}},
 #' \href{http://dmg.org/pmml/v4-3/KNN.html}{PMML KNN specification}
 #'
