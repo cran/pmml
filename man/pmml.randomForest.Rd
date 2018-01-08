@@ -10,7 +10,9 @@
 \method{pmml}{randomForest}(model, model.name="randomForest_Model",
       app.name="Rattle/PMML", 
       description="Random Forest Tree Model",
-      copyright=NULL, transforms=NULL, unknownValue=NULL,  ...)
+      copyright=NULL, transforms=NULL, unknownValue=NULL,
+      parentInvalidValueTreatment="returnInvalid",
+      childInvalidValueTreatment="asIs", ...)
 }
 \arguments{
   
@@ -28,6 +30,10 @@
 
   \item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
   
+  \item{parentInvalidValueTreatment}{invalid value treatment at the top MiningField level.}
+  
+  \item{childInvalidValueTreatment}{invalid value treatment at the model segment MiningField level.}
+
   \item{\dots}{further arguments passed to or from other methods.}
 }
 \details{

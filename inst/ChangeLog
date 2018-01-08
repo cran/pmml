@@ -1,13 +1,17 @@
+pmml (1.5.4)
+  * Add invalidValueTreatment="returnInvalid" in MiningSchema by default for all models
+  * Add arguments for invalidValueTreatment attributes to pmml.xgboost() and pmml.randomForest()
+
 pmml (1.5.3)
-  * fix bug due to 1- vs 0-based indexing in gbm converter
-  * change default pmml version to 4.3 in gbm converter
-  * fix comment added at top of XML doc by savePMML()
-  * fix bug in xgboost regression end element
-  * fix bug in xgboost when feature names are substrings of each other
-  * fix bug in xgboost binomial model
-  * add check for xgboost objectives
-  * add support for multi:softmax objective in xgboost
-  * update pmml.rfsrc.R doc to state dependency on version 2.5.0 or earlier
+  * Fix bug due to 1- vs 0-based indexing in gbm converter
+  * Change default pmml version to 4.3 in gbm converter
+  * Fix comment added at top of XML doc by savePMML()
+  * Fix bug in xgboost regression end element
+  * Fix bug in xgboost when feature names are substrings of each other
+  * Fix bug in xgboost binomial model
+  * Add check for xgboost objectives
+  * Add support for multi:softmax objective in xgboost
+  * Update pmml.rfsrc.R doc to state dependency on version 2.5.0 or earlier
 
 
 pmml (1.5.2)

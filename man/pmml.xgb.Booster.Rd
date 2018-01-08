@@ -8,7 +8,8 @@
   app.name = "R", description = "Extreme Gradient Boosting Model",
   copyright = NULL, transforms = NULL, inputFeatureNames = NULL,
   outputLabelName = NULL, outputCategories = NULL, xgbDumpFile = NULL,
-  unknownValue = NULL, ...)
+  unknownValue = NULL, parentInvalidValueTreatment = "returnInvalid",
+  childInvalidValueTreatment = "asIs", ...)
 }
 \arguments{
 \item{model}{an object created by the 'xgboost' function}
@@ -32,6 +33,10 @@
 \item{xgbDumpFile}{name of file saved using 'xgb.dump' function.}
 
 \item{unknownValue}{optional; a missing value replacement.}
+
+\item{parentInvalidValueTreatment}{invalid value treatment at the top MiningField level.}
+
+\item{childInvalidValueTreatment}{invalid value treatment at the model segment MiningField level.}
 
 \item{...}{further arguments passed to other methods.}
 }

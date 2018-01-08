@@ -29,6 +29,8 @@
 #' @param outputLabelName name of the predicted field
 #' @param outputCategories possible values of the predicted field, for classification models.
 #' @param xgbDumpFile name of file saved using 'xgb.dump' function.
+#' @param parentInvalidValueTreatment invalid value treatment at the top MiningField level.
+#' @param childInvalidValueTreatment invalid value treatment at the model segment MiningField level.
 #' @param ... further arguments passed to other methods.
 #' 
 #' @return PMML representation of the \code{xgb.Booster} object.
@@ -108,6 +110,8 @@ pmml.xgb.Booster <- function(model,
 	                      outputCategories=NULL,
 	                      xgbDumpFile=NULL,
 	                      unknownValue=NULL,
+	                      parentInvalidValueTreatment="returnInvalid",
+	                      childInvalidValueTreatment="asIs",
                               ...)
 
 {
@@ -150,6 +154,16 @@ pmml.xgb.Booster <- function(model,
      functionName <- "regression"
    }
 
+   invalidValueTreatment_values <- c("returnInvalid", "asIs", "asMissing")
+   if(!(parentInvalidValueTreatment %in% invalidValueTreatment_values)) {
+     stop(paste0(c("\"", parentInvalidValueTreatment, "\" is not a valid enumeration value for parentInvalidValueTreatment. Use one of the following: ", 
+                   paste(invalidValueTreatment_values, sep=",", collapse=", "))), ".")
+   }
+   
+   if(!(childInvalidValueTreatment %in% invalidValueTreatment_values)) {
+     stop(paste0(c("\"", childInvalidValueTreatment, "\" is not a valid enumeration value for childInvalidValueTreatment. Use one of the following: ", 
+                   paste(invalidValueTreatment_values, sep=",", collapse=", "))), ".")
+   }
 
    # get tree split information
    dtable <- xgboost::xgb.model.dt.tree(inputFeatureNames,model)
@@ -277,10 +291,14 @@ pmml.xgb.Booster <- function(model,
      pmml <- append.xmlNode(pmml,pmml(,transforms=xbox,transformationDictionary=T))
    }
    mmodel <- xmlNode("MiningModel",attrs=c(modelName=model.name,algorithmName="xgboost",functionName=functionName))
-   mmodel <- append.XMLNode(mmodel,.pmmlMiningSchema(field,target,transforms,unknownValue))
+   mmodel <- append.XMLNode(mmodel,.pmmlMiningSchema(field,target,transforms,unknownValue,
+                                                     invalidValueTreatment=parentInvalidValueTreatment))
 
    # Tridi: Add output fields
-   mmodel <- append.XMLNode(mmodel, .pmmlOutput(field, target))
+   # TODO 
+   # THIS IS ONLY TRUE FOR CLASSIFICATION MODELS
+   # TEST AND CHANGE IF/WHEN REGRESSION MODELS ARE IMPLEMENTED
+   mmodel <- append.XMLNode(mmodel, .pmmlOutput(field, target, "categorical"))
 
    #Tridi: If interaction terms do exist, define a product in LocalTransformations and use
    # it as a model variable. This step is rare.
@@ -346,12 +364,13 @@ pmml.xgb.Booster <- function(model,
      }
    }
    
-   segments <- lapply(1:numTrees,function(x){.makeXgSegment(x,dtable,model.name,field,target,unknownValue)})
+   # segments <- lapply(1:numTrees,function(x){.makeXgSegment(x,dtable,model.name,field,target,unknownValue,asIs=TRUE)})
+   segments <- lapply(1:numTrees,function(x){.makeXgSegment(x,dtable,model.name,field,target,unknownValue,childInvalidValueTreatment)})
 
    segmentation <- append.XMLNode(segmentation, segments)
    if(type == "classification") {
      lastSegment <- append.xmlNode(xmlNode("Segment",attrs=c(id=numTrees)),xmlNode("True"))
-     lastModel <- .makeClassificationRegressionModel(field,target,outputCategories,numTrees,type,objective)
+     lastModel <- .makeClassificationRegressionModel(field,target,outputCategories,numTrees,type,objective,childInvalidValueTreatment)
      lastSegment <- append.xmlNode(lastSegment,lastModel)
      segmentation <- append.xmlNode(segmentation,lastSegment)
    }
@@ -362,7 +381,7 @@ pmml.xgb.Booster <- function(model,
    return(pmml)
 }
 
-   .makeXgSegment <- function(treeNum,dtable,model.name,field,target,unknownValue=NULL)
+   .makeXgSegment <- function(treeNum,dtable,model.name,field,target,unknownValue=NULL,childInvalidValueTreatment)
    {
      treeNum <- treeNum - 1
      print(paste("Now converting tree ",treeNum," to PMML"))
@@ -391,7 +410,8 @@ pmml.xgb.Booster <- function(model,
                           attrs=c(modelName=model.name, functionName="regression", algorithmName="xgboost", 
                           splitCharacteristic="multiSplit"))
      # PMML -> TreeModel -> MiningSchema
-     tree.model <- append.XMLNode(tree.model, .pmmlMiningSchema(field, target,unknownValue=unknownValue))
+     tree.model <- append.XMLNode(tree.model, .pmmlMiningSchema(field, target,unknownValue=unknownValue,
+                                                                invalidValueTreatment=childInvalidValueTreatment))
      treeOutput <- xmlNode("Output")
      treeOutputField <- xmlNode("OutputField",attrs=c(name=paste0("predictedValueTree",treeNum),dataType="double",optype="continuous",feature="predictedValue"))
      treeOutput <- append.xmlNode(treeOutput,treeOutputField)
@@ -480,20 +500,22 @@ pmml.xgb.Booster <- function(model,
     return(c(nodeListLeft,nodeListRight,nodeListMissing))
   }
 
-.makeClassificationRegressionModel <- function(field,target,outputCategories,numTrees,type,objective)
+.makeClassificationRegressionModel <- function(field,target,outputCategories,numTrees,type,objective,childInvalidValueTreatment)
 {
   numCategories <- length(outputCategories)
   numTreesPerCategories <- as.integer(numTrees/numCategories)
   
   regrSegment <- append.xmlNode(xmlNode("Segment"),xmlNode("True"))
   if(type=="regression") {
-    regrModel <- xmlNode("RegressionModel",attrs=c(functionName="regression"))
+    regrModel <- xmlNode("RegressionModel",attrs=c(functionName="regression",modelName="CollectingModel"))
   } else {
-    regrModel <- xmlNode("RegressionModel",attrs=c(functionName="classification",normalizationMethod="softmax"))
+    regrModel <- xmlNode("RegressionModel",attrs=c(functionName="classification",normalizationMethod="softmax",modelName="CollectingModel"))
   }
   # regrModel <- append.xmlNode(regrModel,.pmmlMiningSchema(field,target))
   ms <- xmlNode("MiningSchema")
-  mfs <- lapply(1:numTrees,function(x){xmlNode("MiningField",attrs=c(name=paste0("predictedValueTree",x-1),usageType="active",optype="continuous"))})
+  mfs <- lapply(1:numTrees,function(x){xmlNode("MiningField",attrs=c(name=paste0("predictedValueTree",x-1),
+                                                                     usageType="active",optype="continuous",
+                                                                     invalidValueTreatment=childInvalidValueTreatment))})
   ms <- append.xmlNode(ms,mfs)
   regrModel <- append.xmlNode(regrModel,ms)
 

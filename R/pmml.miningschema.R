@@ -15,43 +15,49 @@
 # GNU General Public License for details (http://www.gnu.org/licenses/).
 ######################################################################################
 
-.pmmlMiningSchema <- function(field, target=NULL, transformed=NULL, unknownValue=NULL)
+.pmmlMiningSchema <- function(field, target=NULL, transformed=NULL, 
+                              unknownValue=NULL, 
+                              invalidValueTreatment="returnInvalid")
 {
     namelist <- .origFieldList(field, transformed)
 
     mining.schema <- xmlNode("MiningSchema")
     target <- .removeAsFactor(target)  
 
+    # if(asIs){
+    #     invalidVal <- invalidVal
+    # } else {
+    #     invalidVal <- "returnInvalid"
+    # } 
     unknownVal <- NULL
-    invalidVal <- NULL
     for(j in 1:length(namelist)) {
-        if(!is.na(namelist[[j]])) {        
-            usage <- ifelse(namelist[[j]] == target, "predicted", "active")
-    	    if((!is.null(target)) && (namelist[[j]] != target)){
-	      if(!is.null(unknownValue)){
-	 	unknownVal <- unknownValue
-		invalidVal <- "asMissing"
-	      }
-            }else if(is.null(target) && !is.null(unknownValue)) {
-                unknownVal <- unknownValue
-                invalidVal <- "asMissing"
-	    }
-            if(namelist[[j]]=="Temp" || namelist[[j]]=="DiscretePlaceHolder") {
-            # If field name is the naive bayes categorical field place holder, add missingValueReplacement
-                if(length(field$levels[[namelist[[j]]]])==1) {
-                     mf <- xmlNode("MiningField", attrs=c(name=namelist[[j]],
-                            usageType=usage,missingValueReplacement=field$levels[[namelist[[j]]]]))
-                }
-	     } else 
-	     {
-		mf <- xmlNode("MiningField", attrs=c(name=namelist[[j]], usageType=usage,
-			missingValueReplacement=unknownVal, invalidValueTreatment=invalidVal))
-	     }
-            
-            mining.schema <- append.XMLNode(mining.schema, mf)
-         }
-	}
-
+      if(!is.na(namelist[[j]])) {        
+        usage <- ifelse(namelist[[j]] == target, "predicted", "active")
+        if((!is.null(target)) && (namelist[[j]] != target)){
+          if(!is.null(unknownValue)){
+            unknownVal <- unknownValue
+            invalidValueTreatment <- "asMissing"
+          }
+        }else if(is.null(target) && !is.null(unknownValue)) {
+          unknownVal <- unknownValue
+          invalidValueTreatment <- "asMissing"
+        }
+        if(namelist[[j]]=="Temp" || namelist[[j]]=="DiscretePlaceHolder") {
+          # If field name is the naive bayes categorical field place holder, add missingValueReplacement
+          if(length(field$levels[[namelist[[j]]]])==1) {
+            mf <- xmlNode("MiningField", attrs=c(name=namelist[[j]],
+                                                 usageType=usage,missingValueReplacement=field$levels[[namelist[[j]]]]))
+          }
+        } else 
+        {
+          mf <- xmlNode("MiningField", attrs=c(name=namelist[[j]], usageType=usage,
+                                               missingValueReplacement=unknownVal, invalidValueTreatment=invalidValueTreatment))
+        }
+        
+        mining.schema <- append.XMLNode(mining.schema, mf)
+      }
+    }
+    
     return(mining.schema)
 }
 

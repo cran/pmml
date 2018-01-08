@@ -23,6 +23,8 @@ pmml.randomForest <- function(model,
                               copyright=NULL,
 			      transforms=NULL,
 			      unknownValue=NULL,
+			      parentInvalidValueTreatment="returnInvalid",
+			      childInvalidValueTreatment="asIs",
                               ...)
 
 {
@@ -87,7 +89,8 @@ pmml.randomForest <- function(model,
   pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field,transformed=transforms))
 
   mmodel <- xmlNode("MiningModel",attrs=c(modelName=model.name,algorithmName="randomForest",functionName=model$type))
-  mmodel <- append.XMLNode(mmodel,.pmmlMiningSchema(field,target,transforms,unknownValue))
+  mmodel <- append.XMLNode(mmodel,.pmmlMiningSchema(field,target,transforms,unknownValue,
+                                                    invalidValueTreatment=parentInvalidValueTreatment))
 
   # Tridi: Add output fields
   mmodel <- append.XMLNode(mmodel, .pmmlOutput(field, target))
@@ -143,7 +146,7 @@ pmml.randomForest <- function(model,
   }
 
   numTrees <-model$ntree
-  segments <- lapply(1:numTrees,function(x){.makeSegment(x,model,model.name,field,target,unknownValue)})
+  segments <- lapply(1:numTrees,function(x){.makeSegment(x,model,model.name,field,target,unknownValue,childInvalidValueTreatment)})
   segmentation2 <- append.XMLNode(segmentation, segments)
   rm(segmentation)
   rm(segments)
@@ -158,65 +161,66 @@ pmml.randomForest <- function(model,
   return(pmml2)
 }
 
-   .makeSegment <- function(b,model,model.name,field,target,unknownValue=NULL)
-   {
-    print(paste("Now converting tree ",b," to PMML"))
-  # PMML -> TreeModel -> Node
-  # Tridi: Tree structure information here as produced by the getTree function of the 
-  # randomForest package
-    if(model$type == "regression") 
-    {
-      tree <- cbind(model$forest$leftDaughter[,b],
-                    model$forest$rightDaughter[,b],
-                    model$forest$bestvar[,b],
-                    model$forest$xbestsplit[,b],
-                    model$forest$nodepred[,b])[1:model$forest$ndbigtree[b],]
-    } else 
-    {
-      tree <- cbind(model$forest$treemap[,,b],
-                    model$forest$bestvar[,b],
-                    model$forest$xbestsplit[,b],
-                    model$forest$nodepred[,b])[1:model$forest$ndbigtree[b],]
-    }
-    nodeList <- list()
-    rowId <- which(tree[,2] == max(tree[,2]))
-    nodeList <- lapply(1:tree[rowId,2],function(x){.makeNode(x,model,tree,field)})
-    nodeF <- .makeTree(nodeList,tree,rowId)
-
-    rm(nodeList)
-
-  # PMML -> TreeModel
-    if(model$type == "regression") 
-    {
-          tree.model <- xmlNode("TreeModel",
-                        attrs=c(modelName=model.name,
-                          functionName="regression",
-                          algorithmName="randomForest",
-                          splitCharacteristic="binarySplit"))
-    }
-    if(model$type == "classification") 
-    {
-  	tree.model <- xmlNode("TreeModel",
-                        attrs=c(modelName=model.name,
-                          functionName="classification",
-                          algorithmName="randomForest",
-                          splitCharacteristic="binarySplit"))
-    }
-
-    # PMML -> TreeModel -> MiningSchema
-    tree.model <- append.XMLNode(tree.model, .pmmlMiningSchema(field, target,unknownValue=unknownValue))
-
-
-  # Add to the top level structure.
-     segment <- xmlNode("Segment",attrs=c(id=b))
-     tru <- xmlNode("True")
-     segment <- append.XMLNode(segment, tru)
-
-  # Add to the top level structure.
-     tree.model <- append.XMLNode(tree.model, nodeF)
-     segment <- append.XMLNode(segment, tree.model)
-     return(segment)
+ .makeSegment <- function(b,model,model.name,field,target,unknownValue=NULL,childInvalidValueTreatment)
+ {
+  print(paste("Now converting tree ",b," to PMML"))
+# PMML -> TreeModel -> Node
+# Tridi: Tree structure information here as produced by the getTree function of the 
+# randomForest package
+  if(model$type == "regression") 
+  {
+    tree <- cbind(model$forest$leftDaughter[,b],
+                  model$forest$rightDaughter[,b],
+                  model$forest$bestvar[,b],
+                  model$forest$xbestsplit[,b],
+                  model$forest$nodepred[,b])[1:model$forest$ndbigtree[b],]
+  } else 
+  {
+    tree <- cbind(model$forest$treemap[,,b],
+                  model$forest$bestvar[,b],
+                  model$forest$xbestsplit[,b],
+                  model$forest$nodepred[,b])[1:model$forest$ndbigtree[b],]
   }
+  nodeList <- list()
+  rowId <- which(tree[,2] == max(tree[,2]))
+  nodeList <- lapply(1:tree[rowId,2],function(x){.makeNode(x,model,tree,field)})
+  nodeF <- .makeTree(nodeList,tree,rowId)
+
+  rm(nodeList)
+
+# PMML -> TreeModel
+  if(model$type == "regression") 
+  {
+        tree.model <- xmlNode("TreeModel",
+                      attrs=c(modelName=model.name,
+                        functionName="regression",
+                        algorithmName="randomForest",
+                        splitCharacteristic="binarySplit"))
+  }
+  if(model$type == "classification") 
+  {
+	tree.model <- xmlNode("TreeModel",
+                      attrs=c(modelName=model.name,
+                        functionName="classification",
+                        algorithmName="randomForest",
+                        splitCharacteristic="binarySplit"))
+  }
+
+  # PMML -> TreeModel -> MiningSchema
+  tree.model <- append.XMLNode(tree.model, .pmmlMiningSchema(field, target,unknownValue=unknownValue,
+                                                             invalidValueTreatment=childInvalidValueTreatment))
+
+
+# Add to the top level structure.
+   segment <- xmlNode("Segment",attrs=c(id=b))
+   tru <- xmlNode("True")
+   segment <- append.XMLNode(segment, tru)
+
+# Add to the top level structure.
+   tree.model <- append.XMLNode(tree.model, nodeF)
+   segment <- append.XMLNode(segment, tree.model)
+   return(segment)
+}
 
 .makeTree <- function(nodeLi,tre,rId)
 {
