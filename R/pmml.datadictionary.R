@@ -166,9 +166,9 @@
                 } else {
                   ofnames4 = strsplit(transformed$fieldData[ofname,"origFieldName"][[1]],",")[[1]]
                   for (m in 1:length(ofnames4)){
-                    ofname <- gsub("^\\s+|\\s+$","",ofnames3[m])
+                    ofname <- gsub("^\\s+|\\s+$","",ofnames4[m])
                     if (is.na(ofname)){
-                      ofname <- gsub("^\\s+|\\s+$","",ofnames2[l])
+                      ofname <- gsub("^\\s+|\\s+$","",ofnames3[l])
                     }
                   }
                 }
