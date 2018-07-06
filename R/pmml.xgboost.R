@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2016-2017, Zementis, Inc. 
+# Copyright (c) 2016-2018, Software AG. 
 #
 # This file is part of the PMML package for R.
 #
@@ -48,6 +48,9 @@
 #' \code{multi:softmax}, \code{binary:logistic}.
 #' 
 #' The pmml exporter will throw an error if the xgboost model model only has one tree.
+#' 
+#' The exporter only works with numeric matrices. Sparse matrices must be converted to 
+#' \code{matrix} objects before training an xgboost model for the export to work correctly.
 #' 
 #'
 #' 
@@ -278,7 +281,7 @@ pmml.xgb.Booster <- function(model,
        # Remove suppressWarnings?
      }
    }
-
+   
    # PMML
    pmml <- .pmmlRootNode()
 
@@ -294,12 +297,17 @@ pmml.xgb.Booster <- function(model,
    mmodel <- append.XMLNode(mmodel,.pmmlMiningSchema(field,target,transforms,unknownValue,
                                                      invalidValueTreatment=parentInvalidValueTreatment))
 
-   # Tridi: Add output fields
-   # TODO 
-   # THIS IS ONLY TRUE FOR CLASSIFICATION MODELS
+   objective <- model$params$objective
+   if(objective %in% c("binary:logistic","multi:softprob","multi:softmax")) {
+     type <- "classification"
+   } else {
+     type <- "regression"
+   }
    # TEST AND CHANGE IF/WHEN REGRESSION MODELS ARE IMPLEMENTED
-   mmodel <- append.XMLNode(mmodel, .pmmlOutput(field, target, "categorical"))
-
+   if(type == "classification"){
+     mmodel <- append.XMLNode(mmodel, .pmmlOutput(field, target, "categorical"))
+   }
+   
    #Tridi: If interaction terms do exist, define a product in LocalTransformations and use
    # it as a model variable. This step is rare.
    interact <- FALSE
@@ -309,6 +317,7 @@ pmml.xgb.Booster <- function(model,
      if(length(grep(":",field$name[fld])) == 1)
      {
        interact <- TRUE
+       ltNode <- xmlNode("LocalTransformations")
        drvnode <- xmlNode("DerivedField",attrs=c(name=field$name[fld],optype="continuous",
                                                                dataType="double"))
        applyNode <- xmlNode("Apply",attrs=c("function"="*"))
@@ -325,37 +334,27 @@ pmml.xgb.Booster <- function(model,
         ltNode <- append.XMLNode(ltNode, drvnode)
    }
    if(interact && is.null(transforms))
-   {
-     ltNode <- xmlNode("LocalTransformations")
      mmodel <- append.XMLNode(mmodel, ltNode)
-   }
 
-   # test of Zementis xform functions
+   # test of xform functions
    if(interact && !is.null(transforms))
-   {
-      ltNode <- .pmmlLocalTransformations(field, transforms, ltNode)
       mmodel <- append.XMLNode(mmodel, ltNode)
-   }
+ 
    if(!interact && !is.null(transforms))
    {
-      mmodel <- append.XMLNode(mmodel,.pmmlLocalTransformations(field, transforms, ltNode))
+      ltNode <- xmlNode("LocalTransformations")
+      mmodel <- append.XMLNode(mmodel,.pmmlLocalTransformations(field, transforms, ltNode, target))
    }
 
    segmentation <- xmlNode("Segmentation",attrs=c(multipleModelMethod="modelChain"))
 
    numTrees <- as.numeric(dtable[nrow(dtable),1]+1)
-   objective <- model$params$objective
-   # if((objective=="binary:logistic") | (objective=="multi:softprob")) {
+   # objective <- model$params$objective
+   # if(objective %in% c("binary:logistic","multi:softprob","multi:softmax")) {
    #   type <- "classification"
    # } else {
    #   type <- "regression"
    # }
-
-   if(objective %in% c("binary:logistic","multi:softprob","multi:softmax")) {
-     type <- "classification"
-   } else {
-     type <- "regression"
-   }
    
    
    if(functionName == "classification" && objective != "binary:logistic") {
@@ -365,7 +364,7 @@ pmml.xgb.Booster <- function(model,
    }
    
    # segments <- lapply(1:numTrees,function(x){.makeXgSegment(x,dtable,model.name,field,target,unknownValue,asIs=TRUE)})
-   segments <- lapply(1:numTrees,function(x){.makeXgSegment(x,dtable,model.name,field,target,unknownValue,childInvalidValueTreatment)})
+   segments <- lapply(1:numTrees,function(x){.makeXgSegment(x,dtable,model.name,field,target,transforms,unknownValue,childInvalidValueTreatment)})
 
    segmentation <- append.XMLNode(segmentation, segments)
    if(type == "classification") {
@@ -381,7 +380,7 @@ pmml.xgb.Booster <- function(model,
    return(pmml)
 }
 
-   .makeXgSegment <- function(treeNum,dtable,model.name,field,target,unknownValue=NULL,childInvalidValueTreatment)
+   .makeXgSegment <- function(treeNum,dtable,model.name,field,target,transforms,unknownValue=NULL,childInvalidValueTreatment)
    {
      treeNum <- treeNum - 1
      print(paste("Now converting tree ",treeNum," to PMML"))
@@ -410,7 +409,7 @@ pmml.xgb.Booster <- function(model,
                           attrs=c(modelName=model.name, functionName="regression", algorithmName="xgboost", 
                           splitCharacteristic="multiSplit"))
      # PMML -> TreeModel -> MiningSchema
-     tree.model <- append.XMLNode(tree.model, .pmmlMiningSchema(field, target,unknownValue=unknownValue,
+     tree.model <- append.XMLNode(tree.model, .pmmlMiningSchema(field, target, unknownValue=unknownValue,
                                                                 invalidValueTreatment=childInvalidValueTreatment))
      treeOutput <- xmlNode("Output")
      treeOutputField <- xmlNode("OutputField",attrs=c(name=paste0("predictedValueTree",treeNum),dataType="double",optype="continuous",feature="predictedValue"))

@@ -60,6 +60,9 @@ The following objectives are currently supported: \code{multi:softprob},
 \code{multi:softmax}, \code{binary:logistic}.
 
 The pmml exporter will throw an error if the xgboost model model only has one tree.
+
+The exporter only works with numeric matrices. Sparse matrices must be converted to 
+\code{matrix} objects before training an xgboost model for the export to work correctly.
 }
 \examples{
 # Standard example using the xgboost package example model

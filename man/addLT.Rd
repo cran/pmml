@@ -41,7 +41,7 @@ addLT(xmlmodel=NULL, transforms=NULL, namespace="4_3",...)
   \code{saveXML}.
   
 }
-\author{\email{tridivesh.jena@zementis.com}}
+\author{\email{tridivesh.jena@softwareag.com}}
 
 \examples{
 

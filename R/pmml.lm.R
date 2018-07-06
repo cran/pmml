@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2018, some parts by Togaware Pty Ltd and other by Software AG. 
 #
 # This file is part of the PMML package for R.
 #
@@ -21,10 +21,6 @@
 # Implemented: 070528 rguha@indiana.edu based on Graham's template for
 # handling rpart trees.
 #
-# Modified: 080201 by Zementis, Inc. to add the
-# capability to export binary logistic regression models using glm.
-#
-# Modified: 090103 by Graham Williams to add transforms framework.
 
 pmml.lm <- function(model,
                     model.name="Linear_Regression_Model",
@@ -123,7 +119,7 @@ pmml.lm <- function(model,
 
   coeff <- coefficients(model)
 
-  # 100519 From Wen of Zementis For singularities the coefficient is
+  # For singularities the coefficient is
   # NA. From DMG the specification says:
   #
   # <xs:attribute name="coefficient" type="REAL-NUMBER" use="required" />
@@ -179,9 +175,6 @@ pmml.lm <- function(model,
   {
     the.model <- xmlNode("RegressionModel",
                          attrs=c(modelName=model.name,
-                           # 100915 Wen-Ching Lin of Zementis noted
-                           # this was regression but should be
-                           # classification.
                            functionName="classification",
                            algorithmName="glm",
                            normalizationMethod="softmax")) 
@@ -223,7 +216,7 @@ pmml.lm <- function(model,
   #----------------------------------------------------
   # PMML -> TreeModel -> LocalTransforms
 
-  # test of Zementis xform functions
+  # test of xform functions
   if(!is.null(transforms))
   {
     the.model <- append.XMLNode(the.model, .pmmlLocalTransformations(field, transforms, NULL))
@@ -262,11 +255,6 @@ pmml.lm <- function(model,
                         attrs=c(intercept=intercept))
   }
   
-  # 080620 gjw The PMML spec (at least the Zementis validator)
-  # requires NumericPredictors first and then
-  # CategoricalPredictors. Simplest approach is to loop twice!!
-  # Hopefully, this is not a significant computational expense.
-
   for (i in 1:length(orig.names))
   {
     name <- orig.names[[i]]

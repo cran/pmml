@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+<title>Introduction</title>
+
+<script type="text/javascript">
+window.onload = function() {
+  var imgs = document.getElementsByTagName('img'), i, img;
+  for (i = 0; i < imgs.length; i++) {
+    img = imgs[i];
+    // center an image if it is the only element of its parent
+    if (img.parentElement.childElementCount === 1)
+      img.parentElement.style.textAlign = 'center';
+  }
+};
+</script>
+
+
+
+
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 13px;
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  padding: 1em;
+  line-height: 20px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 {
+   font-size:2.2em;
+}
+
+h2 {
+   font-size:1.8em;
+}
+
+h3 {
+   font-size:1.4em;
+}
+
+h4 {
+   font-size:1.0em;
+}
+
+h5 {
+   font-size:0.9em;
+}
+
+h6 {
+   font-size:0.8em;
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre, img {
+  max-width: 100%;
+}
+pre {
+  overflow-x: auto;
+}
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code {
+  font-size: 92%;
+  border: 1px solid #ccc;
+}
+
+code[class] {
+  background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * {
+      background: transparent !important;
+      color: black !important;
+      filter:none !important;
+      -ms-filter: none !important;
+   }
+
+   body {
+      font-size:12pt;
+      max-width:100%;
+   }
+
+   a, a:visited {
+      text-decoration: underline;
+   }
+
+   hr {
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote {
+      padding-right: 1em;
+      page-break-inside: avoid;
+   }
+
+   tr, img {
+      page-break-inside: avoid;
+   }
+
+   img {
+      max-width: 100% !important;
+   }
+
+   @page :left {
+      margin: 15mm 20mm 15mm 10mm;
+   }
+
+   @page :right {
+      margin: 15mm 10mm 15mm 20mm;
+   }
+
+   p, h2, h3 {
+      orphans: 3; widows: 3;
+   }
+
+   h2, h3 {
+      page-break-after: avoid;
+   }
+}
+</style>
+
+
+
+</head>
+
+<body>
+<h2>Introduction</h2>
+
+<p>This vignette lists the packages and model types supported by <strong>pmml</strong>, as well as functions that extend the basic exporter functionality.</p>
+
+<h2>Supported packages</h2>
+
+<p>The following packages and model types are supported by <strong>pmml</strong>.</p>
+
+<ul>
+<li>Clustering
+
+<ul>
+<li><a href="https://CRAN.R-project.org/package=amap">amap</a>: <code>hclust</code></li>
+<li><a href="https://CRAN.R-project.org/package=neighbr">neighbr</a>: <code>neighbr</code></li>
+<li>stats: <code>kmeans</code></li>
+</ul></li>
+<li>K Nearest Neighbors
+
+<ul>
+<li><a href="https://CRAN.R-project.org/package=neighbr">neighbr</a>: <code>neighbr</code></li>
+</ul></li>
+<li>Linear Models
+
+<ul>
+<li><a href="https://CRAN.R-project.org/package=glmnet">glmnet</a>: <code>cv.glmnet</code> with &ldquo;gaussian&rdquo; and &ldquo;poisson&rdquo; family types</li>
+<li><a href="https://CRAN.R-project.org/package=nnet">nnet</a>: <code>multinom</code></li>
+<li>stats: <code>glm</code>, <code>lm</code> without interaction terms</li>
+</ul></li>
+<li>Naive Bayes
+
+<ul>
+<li><a href="https://CRAN.R-project.org/package=e1071">e1071</a>: <code>naiveBayes</code></li>
+</ul></li>
+<li>Neural Networks
+
+<ul>
+<li><a href="https://CRAN.R-project.org/package=nnet">nnet</a>: <code>nnet</code></li>
+</ul></li>
+<li>Support Vector Machines
+
+<ul>
+<li><a href="https://CRAN.R-project.org/package=e1071">e1071</a>: <code>svm</code></li>
+<li><a href="https://CRAN.R-project.org/package=kernlab">kernlab</a>: <code>ksvm</code> with &ldquo;rbfdot&rdquo;, &ldquo;polydot&rdquo;, &ldquo;vanilladot&rdquo;, and &ldquo;tanhdot&rdquo; kernels.</li>
+</ul></li>
+<li>Tree-based Models and Ensembles
+
+<ul>
+<li><a href="https://CRAN.R-project.org/package=ada">ada</a>: <code>ada</code></li>
+<li><a href="https://CRAN.R-project.org/package=gbm">gbm</a>: <code>gbm</code> with &ldquo;bernoulli&rdquo;, &ldquo;poisson&rdquo;, and &ldquo;multinomial&rdquo; distribution types</li>
+<li><a href="https://CRAN.R-project.org/package=randomForest">randomForest</a>: <code>randomForest</code></li>
+<li><a href="https://CRAN.R-project.org/package=randomForestSRC">randomForestSRC</a> (version 2.5.0): <code>randomSurvivalForest</code></li>
+<li><a href="https://CRAN.R-project.org/package=rpart">rpart</a>: <code>rpart</code></li>
+<li><a href="https://CRAN.R-project.org/package=xgboost">xgboost</a>: <code>xgb.Booster</code> with &ldquo;multi:softprob&rdquo;, &ldquo;multi:softmax&rdquo;, and &ldquo;binary:logistic&rdquo; objectives</li>
+</ul></li>
+<li>Other Packages
+
+<ul>
+<li><a href="https://CRAN.R-project.org/package=arules">arules</a>: <code>rules</code> and <code>itemsets</code></li>
+<li><a href="https://CRAN.R-project.org/package=survival">survival</a>: <code>coxph</code></li>
+</ul></li>
+</ul>
+
+<h2>Additional functions</h2>
+
+<p>The following functions in <strong>pmml</strong> allow additional operations, such as creating specific nodes and adding attributes. For more information, check the documentation for each function.</p>
+
+<ul>
+<li>AddAttributes: add attribute values to an existing element in a given PMML file.</li>
+<li>AddDDAttributes: add attribute values to an existing DataField element in a given PMML file.</li>
+<li>addDFChildren: add &#39;Interval&#39; and &#39;Value&#39; child elements to a given DataField element in a given PMML file.</li>
+<li>addLT: add a LocalTransformations element to a given PMML file.</li>
+<li>addMSAttributes: add attribute values to an existing MiningField element in a given PMML file.</li>
+<li>addOutputField: add Output nodes to a PMML object.</li>
+<li>fileToXMLNode: read in a file and parse it into an object of type XMLNode.</li>
+<li>functionToPMML: convert an R expression to PMML.</li>
+<li>makeIntervals: create Interval elements to add to a DataDictionary element.</li>
+<li>makeOutputNodes: add Output nodes to a PMML object.</li>
+<li>makeValues: create Values element to add to a DataDictionary element.</li>
+</ul>
+
+<h2>References</h2>
+
+<ul>
+<li><a href="http://dmg.org/pmml/v4-3/GeneralStructure.html">DMG PMML 4.3 specification</a></li>
+</ul>
+
+</body>
+
+</html>

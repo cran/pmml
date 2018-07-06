@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2018, some parts by Togaware Pty Ltd and other by Software AG. 
 #
 # This file is part of the PMML package for R.
 #
@@ -106,7 +106,7 @@ pmml.rpart <- function(model,
 
   # PMML -> DataDictionary
 
-  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, dataset, weights=weights,transformed=transforms))
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, dataset, weights=weights,transformed=transforms,target=target))
 
   # PMML -> TreeModel
 
@@ -128,7 +128,7 @@ pmml.rpart <- function(model,
 
   # PMML -> TreeModel -> LocalTransformations -> DerivedField -> NormContiuous
 
-  # test of Zementis xform functions
+  # test of xform functions
   if(!is.null(transforms))
   {
     the.model <- append.XMLNode(the.model, .pmmlLocalTransformations(field, transforms, NULL))
@@ -164,7 +164,7 @@ pmml.rpart <- function(model,
   operator <- ""
   value <- "" #list("")
 
-  # Added by Zementis: Information to create nodes.
+  # Information to create nodes.
   ff <- model$frame
   cp <- 0
   id <- as.integer(row.names(ff))
@@ -227,8 +227,6 @@ pmml.rpart <- function(model,
   fieldLabel <- fieldLabels[1]
   op <- ops[1]
   value <- values[1]
-
-  # Added by zementis
 
   ff <- model$frame
   id <- ids[1]
@@ -456,15 +454,6 @@ pmml.rpart <- function(model,
    }
     return(predicate)
 }
-
-########################################################################
-# Function: .getSimpleSetPredicate
-#
-# Goal: refactor the original code, which creates the simple set predicate
-# 
-# Original by: Togaware
-# Refactored by: Zementis, Inc.
-# Refactored date: June, 2008
 
 .getSimpleSetPredicate <- function(field, op, value)
 {

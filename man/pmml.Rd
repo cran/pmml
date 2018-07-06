@@ -36,6 +36,10 @@
   
   If data used for an R model contains features of type \code{character}, these must be
   converted to factors before the model is trained and converted with \code{pmml}.
+  
+  A list of all the supported packages is available in the vignette: 
+  
+  \code{vignette("packages_and_functions", package="pmml")}.
 
 }
 
@@ -72,7 +76,7 @@ pmml(model=NULL, model.name="Rattle_Model",
   http://www.dmg.org.  
   
   The generated PMML can be imported into any PMML consuming
-  application, such as the Zementis ADAPA and UPPI scoring engines which allow for
+  application, such as the Software AG Zementis scoring engine, which allows for
   predictive models built in R to be deployed and executed on site, in the cloud 
   (Amazon, IBM, and FICO), in-database (IBM Netezza, Pivotal, Sybase IQ, Teradata and 
   Teradata Aster) or Hadoop (Datameer and Hive). 
@@ -92,7 +96,7 @@ pmml(model=NULL, model.name="Rattle_Model",
 
  \itemize{
     \item
-       Rattle home page: \url{http://rattle.togaware.com}
+       Rattle home page: \url{https://rattle.togaware.com/}
 
      \item
       PMML home page: \url{http://www.dmg.org}

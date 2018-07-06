@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2018, some parts by Togaware Pty Ltd and other by Software AG. 
 #
 # This file is part of the PMML package for R.
 #
@@ -87,11 +87,15 @@ pmml.ada <- function(model,
    xmlOutput <- xmlNode("Output")
    
    #-----------------------
-   xmlOF_raw <- xmlNode("OutputField", attrs=c(name="rawValue",feature="predictedValue",dataType="double",optype="continuous"))
+   xmlOF_raw <- xmlNode("OutputField",
+                        attrs=c(name="rawValue",feature="predictedValue",
+                                dataType="double",optype="continuous"))
    xmlOutput <- append.XMLNode(xmlOutput, xmlOF_raw)
   
    #-----------------------
-   xmlOF_boost <- xmlNode("OutputField", attrs=c(name="boostValue",feature="transformedValue"))
+   xmlOF_boost <- xmlNode("OutputField",
+                          attrs=c(name="boostValue",feature="transformedValue",
+                                  dataType="double",optype="continuous"))
    xmlApply <- xmlNode("Apply", attrs=c('function'="*"))
    xmlFR <-  xmlNode("FieldRef", attrs=c(field="rawValue"))
    xmlConst <- xmlNode("Constant", weightSum) 
@@ -105,7 +109,17 @@ pmml.ada <- function(model,
    #------------------------
    newName <- paste("Predicted_",target,sep="")
    
-   xmlOF_cate <- xmlNode("OutputField", attrs=c(name=newName,feature="transformedValue"))
+   target_class <- unname(attr(model$terms,"dataClasses")[1])
+   
+   if (target_class=="factor") {
+     target_dataType <- "string"
+   } else {
+     target_dataType <- "double"
+   }
+   
+   xmlOF_cate <- xmlNode("OutputField",
+                         attrs=c(name=newName,feature="transformedValue",
+                                 dataType = target_dataType))
    xmlApply_if <- xmlNode("Apply", attrs=c('function'="if"))
    
    xmlApply_compare <- xmlNode("Apply", attrs=c('function'="lessThan"))
@@ -126,7 +140,9 @@ pmml.ada <- function(model,
    
    #---------------------------
    prob1 <- paste("Probability_",levels(model$fit)[1],sep="")
-   xmlOF_prob1 <- xmlNode("OutputField", attrs=c(name=prob1,feature="transformedValue"))
+   xmlOF_prob1 <- xmlNode("OutputField",
+                          attrs=c(name=prob1,feature="transformedValue",
+                                  dataType="double"))
    
    xmlApply_multiply1 <- xmlNode("Apply", attrs=c('function'="*"))
    xmlConst_multiply1 <- xmlNode("Constant", "2.0")
@@ -152,7 +168,9 @@ pmml.ada <- function(model,
    
    #-----------------------------------------------------
    prob2 <- paste("Probability_",levels(model$fit)[2],sep="")
-   xmlOF_prob2 <- xmlNode("OutputField", attrs=c(name=prob2,feature="transformedValue"))
+   xmlOF_prob2 <- xmlNode("OutputField",
+                          attrs=c(name=prob2,feature="transformedValue",
+                                  dataType="double"))
    
    xmlApply_minus <- xmlNode("Apply", attrs=c('function'="-"))
    xmlConst_minus <- xmlNode("Constant", "1.0")

@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2018, some parts by Togaware Pty Ltd and other by Software AG. 
 #
 # This file is part of the PMML package for R.
 #
@@ -33,7 +33,7 @@ pmml.coxph <- function(model,
 
   # Collect the required information.
 
-  # Tridi Zementis: detect if special terms exist which are not supported 
+  # detect if special terms exist which are not supported 
   vars <- names(attributes(model$terms)$dataClasses)
   coefs <- names(coefficients(model))
   for(i in 1:length(vars))
@@ -88,7 +88,7 @@ pmml.coxph <- function(model,
   names(field2$class)[1] <- field2$name[1]
   numFields2 <- numFields2 + 1
 
-  # Tridi Zementis: Include startTime, endTime, status and strata variable if present
+  # Include startTime, endTime, status and strata variable if present
   isStrata <- FALSE
   starttimeVar <- FALSE
   endtimeVar <- "" 
@@ -202,7 +202,7 @@ pmml.coxph <- function(model,
 
   # PMML -> RegressionModel
 
-  # Zementis: Different start node depending on existence of startTimeVariable 
+  # Different start node depending on existence of startTimeVariable 
   # or baselineStrataVariable attributes 
   if(isStrata)
   {
@@ -299,7 +299,7 @@ pmml.coxph <- function(model,
 
   the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field2, target, transforms, unknownValue=unknownValue))
 
-  # Tridi Zementis: Add output fields to output both hazard and survival
+  # Add output fields to output both hazard and survival
 
   output <- xmlNode("Output")
 
@@ -326,7 +326,7 @@ pmml.coxph <- function(model,
 #  if (.supportTransformExport(transforms))
 #    the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
 
-  # test of Zementis xform functions
+  # test of xform functions
   if(!is.null(transforms))
   {
     the.model <- append.XMLNode(the.model, .pmmlLocalTransformations(field, transforms))
@@ -440,12 +440,12 @@ pmml.coxph <- function(model,
   }
   the.model <- append.XMLNode(the.model,pmNode)
 
-  # Zementis: value which represents an event taking place is not given in the R object, so cannot 
+  # alue which represents an event taking place is not given in the R object, so cannot 
   # make the EventValue node 
   #eventNode<-xmlCommentNode("EventValues expected by R are either [0,1] or [1,2] or [TRUE,FALSE]")
   #the.model <- append.XMLNode(the.model,eventNode)
 
-  # Zementis: call the R basehaz function to get the baselineHazard values
+  # call the R basehaz function to get the baselineHazard values
 #  CumHazard <- survival:::basehaz(model)
   sfit<-survival::survfit(model)
   H<- -log(sfit$surv)

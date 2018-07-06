@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2018, some parts by Togaware Pty Ltd and other by Software AG. 
 #
 # This file is part of the PMML package for R.
 #
@@ -83,13 +83,20 @@ pmml.kmeans <- function(model,
   # PMML -> ClusteringModel -> Output
   
   output <- xmlNode("Output")
-  out <- xmlNode("OutputField",attrs=c(name="predictedValue", feature="predictedValue"))
+  # out <- xmlNode("OutputField",attrs=c(name="predictedValue", feature="predictedValue"))
+  out <- xmlNode("OutputField",attrs=c(name="predictedValue",
+                                       feature="predictedValue",
+                                       dataType="string",
+                                       optype="categorical"))
   output <- append.XMLNode(output, out)
   
   for (i in 1:number.of.clusters)
   {
     affinityFieldName <- paste("clusterAffinity_",i,sep="")
-    out <- xmlNode("OutputField",attrs=c(name=affinityFieldName, feature="clusterAffinity", value=i))
+    # out <- xmlNode("OutputField",attrs=c(name=affinityFieldName, feature="clusterAffinity", value=i))
+    out <- xmlNode("OutputField",attrs=c(name=affinityFieldName,
+                                         feature="clusterAffinity",
+                                         value=i, dataType="double"))
     output <- append.XMLNode(output, out)
   }
   
@@ -97,7 +104,7 @@ pmml.kmeans <- function(model,
 
   #-----------------------------------------------------------------
   # PMML -> ClusteringModel -> LocalTransformations
-  # test of Zementis xform functions
+  # test of xform functions
   if(!is.null(transforms))
   {
     the.model <- append.XMLNode(the.model, .pmmlLocalTransformations(field2, transforms))

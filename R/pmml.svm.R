@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2018, some parts by Togaware Pty Ltd and other by Software AG. 
 #
 # This file is part of the PMML package for R.
 #
@@ -58,8 +58,8 @@ pmml.svm <- function(model,
 
   #-----------------------------------------------------------
   # PMML -> DataDictionary
-
-  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, transformed=transforms))
+  
+  pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, transformed=transforms, target=target))
 
   #------------------------------------------------------------
   # PMML -> SupportVectorMachineModel
@@ -91,10 +91,18 @@ pmml.svm <- function(model,
   if(functionName == "regression") {
 
       xmlOutput <- xmlNode("Output")
-      xmlOF_predicted <- xmlNode("OutputField", attrs=c(name="predictedValue",feature="predictedValue"))
+      xmlOF_predicted <- xmlNode("OutputField", 
+                                 attrs=c(name="predictedValue",
+                                         feature="predictedValue",
+                                         dataType="double",
+                                         optype="continuous"))
       xmlOutput <- append.XMLNode(xmlOutput, xmlOF_predicted)
   
-      xmlOF <- xmlNode("OutputField", attrs=c(name="svm_predict_function",feature="transformedValue"))
+      xmlOF <- xmlNode("OutputField",
+                       attrs=c(name="svm_predict_function",
+                               feature="transformedValue",
+                               dataType="double",
+                               optype="continuous"))
      
       ym<-model$y.scale$`scaled:center`[[1]]
       ys<-model$y.scale$`scaled:scale`[[1]]

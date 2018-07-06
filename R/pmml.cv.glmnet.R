@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2018, some parts by Togaware Pty Ltd and other by Software AG. 
 #
 # This file is part of the PMML package for R.
 #
@@ -78,32 +78,46 @@ pmml.cv.glmnet <- function(model,
     }
   }
 
-  # model distribution
-  
-  name <- attributes(model$name)$names
-  if(grepl("deviance",name))
-  {
-    type <- "poisson"
-  } else if(grepl("mse",name))
-  {
-    type <- "gaussian"
-  } else
-  {
-    stop("Only poisson and gaussian family types supported")
-  }
+  # # model distribution - pmml 1.5.4 - "deviance" also matches binomial family
+  # name <- attributes(model$name)$names
+  # if(grepl("deviance",name))
+  # {
+  #   type <- "poisson"
+  # } else if(grepl("mse",name))
+  # {
+  #   type <- "gaussian"
+  # } else
+  # {
+  #   stop("Only poisson and gaussian family types supported")
+  # }
 
+  # pmml 1.5.5 - only Poisson and Gaussian family types supported
+  if (model$name == "Poisson Deviance"){
+    type <- "poisson"
+  } else if (model$name == "Mean-Squared Error"){
+    # type could be gaussian or mgaussian. Only mgaussian has dfmat.
+    if (!is.null(model$glmnet.fit$dfmat)) { 
+      stop("Only poisson and gaussian family types supported.")
+    } else {
+      type <- "gaussian"
+    }
+  } else {
+    stop("Only poisson and gaussian family types supported.")
+  }
+  
+  
   # get regression information
    beta <- fitmodel$beta
    varnames <- attributes(beta)$Dimnames[[1]]
 
-##new 
-   if(!is.null(transforms))
-   {
-    for(i in 1:length(varnames))
-    {
-     varnames[i] <- row.names(transforms$fieldData)[i] 
-    }
-   }
+# ##new 
+#    if(!is.null(transforms))
+#    {
+#     for(i in 1:length(varnames))
+#     {
+#      varnames[i] <- row.names(transforms$fieldData)[i] 
+#     }
+#    }
 
   if(exact)
   {
@@ -353,28 +367,49 @@ pmml.cv.glmnet <- function(model,
   the.model <- append.XMLNode(the.model,extensionNode)
 
   # PMML -> RegressionModel -> MiningSchema
-
+  
   the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transforms, unknownValue=unknownValue))
 
+  # # previous implementation of Output node (pmml 1.5.4)
+  # outn <- xmlNode("Output")
+  # outpn <- xmlNode("OutputField",attrs=c(name="predictedValue",feature="predictedValue"))
+  # outn <- append.XMLNode(outn,outpn)
+  # if(type=="poisson")
+  # {
+  #   outpn <- xmlNode("OutputField",attrs=c(name="predictedMean",feature="transformedValue"))
+  #   applyNode <- xmlNode("Apply",attrs=c("function"="exp"))
+  #   fldNode <- xmlNode("FieldRef",attrs=c(field="predictedValue"))
+  #   applyNode <- append.XMLNode(applyNode,fldNode)
+  #   outpn <- append.XMLNode(outpn,applyNode)
+  #   outn <- append.XMLNode(outn,outpn) 
+  # }
+
+  
+  # new implementation of Output node with dataType and optype attributes (pmml 1.5.5)
+  # This assumes that functionName="regression" always.
   outn <- xmlNode("Output")
-  outpn <- xmlNode("OutputField",attrs=c(name="predictedValue",feature="predictedValue"))
+  outpn <- xmlNode("OutputField",attrs=c(name="predictedValue",feature="predictedValue",
+                                         dataType="double",optype="continuous"))
   outn <- append.XMLNode(outn,outpn)
   if(type=="poisson")
   {
-    outpn <- xmlNode("OutputField",attrs=c(name="predictedMean",feature="transformedValue"))
+    outpn <- xmlNode("OutputField",attrs=c(name="predictedMean",feature="transformedValue",
+                                           dataType="double"))
     applyNode <- xmlNode("Apply",attrs=c("function"="exp"))
     fldNode <- xmlNode("FieldRef",attrs=c(field="predictedValue"))
     applyNode <- append.XMLNode(applyNode,fldNode)
     outpn <- append.XMLNode(outpn,applyNode)
     outn <- append.XMLNode(outn,outpn) 
   }
-
+  
+  
+  
   the.model <- append.XMLNode(the.model, outn)
 
   #--------------------------------------------
   # PMML -> Model -> LocalTransforms
 
-  # test of Zementis xform functions
+  # test of xform functions
   if(!is.null(transforms))
   {
     the.model <- append.XMLNode(the.model, .pmmlLocalTransformations(field, transforms, NULL))

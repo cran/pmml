@@ -35,7 +35,7 @@ fileToXMLNode(file)
   \code{saveXML}.
   
 }
-\author{\email{tridivesh.jena@zementis.com}}
+\author{\email{tridivesh.jena@softwareag.com}}
 
 \examples{
 

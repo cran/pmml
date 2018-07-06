@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2018, some parts by Togaware Pty Ltd and other by Software AG. 
 #
 # This file is part of the PMML package for R.
 #
@@ -112,7 +112,7 @@ pmml.ksvm <- function(model,
   # PMML -> DataDictionary
  
  # pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, dataset, weights=weights, transformed=transforms))
-   pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, NULL, transformed=transforms))
+   pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, NULL, transformed=transforms,target=target))
   #------------------------------------------------
   # PMML -> SupportVectorMachineModel
   
@@ -183,7 +183,7 @@ pmml.ksvm <- function(model,
   
   LocalTransformations <- xmlNode("LocalTransformations")
  
-  # test of Zementis xform functions
+  # test of xform functions
   if(!is.null(transforms))
   {
     LocalTransformations <- .pmmlLocalTransformations(field, transforms, LocalTransformations)

@@ -16,7 +16,7 @@ savePMML(doc, name, version=4.3)
   \item{version}{the PMML version number the model is compliant with.}
 
 }
-\author{\email{rpmmlsupport@zementis.net}}
+\author{\email{tridivesh.jena@softwareag.net}}
 
 \examples{
 

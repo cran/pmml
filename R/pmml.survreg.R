@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2018, some parts by Togaware Pty Ltd and other by Software AG. 
 #
 # This file is part of the PMML package for R.
 #
@@ -130,7 +130,7 @@
  # if (.supportTransformExport(transforms))
  #   the.model <- append.XMLNode(the.model, .gen.transforms(transforms))
 
-  # test of Zementis xform functions
+  # test of xform functions
   if(!is.null(transforms))
   {
     the.model <- append.XMLNode(the.model, .pmmlLocalTransformations(field, transforms, NULL))
@@ -146,11 +146,6 @@
   
   regTable <- xmlNode("RegressionTable",
                       attrs=c(intercept=intercept))
-  
-  # 080620 gjw The PMML spec (at least the Zementis validator)
-  # requires NumericPredictors first and then
-  # CategoricalPredictors. Simplest approach is to loop twice!!
-  # Hopefully, this is not a significant computational expense.
 
   # For the coxph regression, we need to record the means. This is
   # then used to subtract from supplied value before multiplying by

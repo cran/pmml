@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2018, some parts by Togaware Pty Ltd and other by Software AG. 
 #
 # This file is part of the PMML package for R.
 #
@@ -20,14 +20,6 @@
 #
 # Implemented: 070528 rguha@indiana.edu based on Graham's template for
 # handling rpart trees.
-#
-# Modified: 080201 by Zementis, Inc. to add the
-# capability to export binary logistic regression models using glm.
-#
-# Modified: 090103 by Graham Williams to add transforms framework.
-#
-# Modified: 081513 by tridivesh.jena@zementis.com to output as a 
-# PMML GeneralRegressionModel file
 
 pmml.glm <- function(model,
                     model.name="General_Regression_Model",
@@ -285,25 +277,50 @@ pmml.glm <- function(model,
 
   the.model <- append.XMLNode(the.model, .pmmlMiningSchema(field, target, transforms, unknownValue=unknownValue))
 
+  ## Previous implementation of Output node (pmml 1.5.4)
+  # if(categ)
+  # {
+  #   outn <- xmlNode("Output")
+  #   pname <- gsub(" ","",paste("Probability_",levels(model$data[[field$name[1]]])[2]))
+  #   outpn <- xmlNode("OutputField",attrs=c(name=pname,targetField=target,feature="probability",value=levels(model$data[[field$name[1]]])[2]))
+  #   outpn2 <- xmlNode("OutputField",attrs=c(name=gsub(" ","",paste("Predicted_",target)),feature="predictedValue"))
+  #   outn <- append.XMLNode(outn,outpn)
+  #   outn <- append.XMLNode(outn,outpn2)
+  # } else {
+  #   outn <- xmlNode("Output")
+  #   out <- xmlNode("OutputField",attrs=c(name=gsub(" ","",paste("Predicted_",target)),feature="predictedValue"))
+  #   outn <- append.XMLNode(outn, out)
+  # }
+  
+  # implementation of Output node with dataType and optype attributes (pmml 1.5.5)
   if(categ)
   {
     outn <- xmlNode("Output")
     pname <- gsub(" ","",paste("Probability_",levels(model$data[[field$name[1]]])[2]))
-    outpn <- xmlNode("OutputField",attrs=c(name=pname,targetField=target,feature="probability",value=levels(model$data[[field$name[1]]])[2]))
-    outpn2 <- xmlNode("OutputField",attrs=c(name=gsub(" ","",paste("Predicted_",target)),feature="predictedValue"))
+    outpn <- xmlNode("OutputField",attrs=c(name=pname,targetField=target,feature="probability",
+                                           value=levels(model$data[[field$name[1]]])[2],
+                                           optype="continuous",dataType="double"))
+    outpn2 <- xmlNode("OutputField",attrs=c(name=gsub(" ","",paste("Predicted_",target)),feature="predictedValue",
+                                            optype="categorical",dataType="string"))
     outn <- append.XMLNode(outn,outpn)
     outn <- append.XMLNode(outn,outpn2)
   } else {
     outn <- xmlNode("Output")
-    out <- xmlNode("OutputField",attrs=c(name=gsub(" ","",paste("Predicted_",target)),feature="predictedValue"))
-    outn <- append.XMLNode(outn, out) 
+    out <- xmlNode("OutputField",attrs=c(name=gsub(" ","",paste("Predicted_",target)),feature="predictedValue",
+                                         optype="continuous",dataType="double"))
+    outn <- append.XMLNode(outn, out)
   }
+  
+  
+  # implementation using .pmmlOutput - this produces probabilities for both classes in the binomial case.
+  # outn <- .pmmlOutput(field = field, target = target, optype = NULL) 
+  
   the.model <- append.XMLNode(the.model, outn)
 
   #---------------------------------------------------
   # PMML -> TreeModel -> LocalTransforms
 
-  # test of Zementis xform functions
+  # test of xform functions
   if(!is.null(transforms))
   {
     the.model <- append.XMLNode(the.model, .pmmlLocalTransformations(field, transforms))

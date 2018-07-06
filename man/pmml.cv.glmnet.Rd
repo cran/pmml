@@ -58,7 +58,9 @@
   names, they will be given the default values of "X1", "X2", ...  
  
   Use of PMML and \code{pmml.cv.glmnet} requires the \pkg{XML} package.  Be
-  aware that XML is a very verbose data format. 
+  aware that XML is a very verbose data format.
+  
+  Currently, only \code{gaussian} and \code{poisson} family types are supported.
 
 }    
 

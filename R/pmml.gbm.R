@@ -1,6 +1,6 @@
 # PMML.GBM: Predictive Model Markup Language for GBM model
 #
-# Copyright (c) 2009-2017 Zementis, Inc. All rights reserved.
+# Copyright (c) 2009-2018 Software AG. All rights reserved.
 #
 # This file is part of the PMML package for R.
 #
@@ -15,8 +15,6 @@
 ######################################################################################
 #
 # Author: Tridivesh Jena
-#
-# Implemented: by Tridivesh Jena (tridivesh.jena@zementis.com) 
 
 pmml.gbm <- function(model,
                      model.name="gbm_Model",
@@ -100,7 +98,8 @@ pmml.gbm <- function(model,
   output <- .pmmlOutput(field, target)
   if(dist == "bernoulli")
   {
-    responseNode <- xmlNode("OutputField",attrs=c(name="BernoulliResponsePrediction",feature="transformedValue")) 
+    responseNode <- xmlNode("OutputField",attrs=c(name="BernoulliResponsePrediction",
+                                                  feature="transformedValue",dataType="double"))
     divideNode <- xmlNode("Apply",attrs=c("function"="/"))
     multiplyNode <- xmlNode("Apply",attrs=c("function"="*"))
     plusNode <- xmlNode("Apply",attrs=c("function"="+"))
@@ -121,7 +120,8 @@ pmml.gbm <- function(model,
     divideNode <- append.XMLNode(divideNode,plusNode)
     responseNode <- append.XMLNode(responseNode,divideNode)
     
-    linkNode <- xmlNode("OutputField",attrs=c(name="BernoulliLinkPrediction",feature="transformedValue"))
+    linkNode <- xmlNode("OutputField",attrs=c(name="BernoulliLinkPrediction",
+                                              feature="transformedValue",dataType="double"))
     addNode <- xmlNode("Apply",attrs=c("function"="+"))
     addNode <- append.XMLNode(addNode, fieldNode)
     addNode <- append.XMLNode(addNode, initNode)
@@ -150,7 +150,8 @@ pmml.gbm <- function(model,
   }
   if(dist == "gaussian")
   {
-    responseNode <- xmlNode("OutputField",attrs=c(name="GaussianPrediction",feature="transformedValue"))
+    responseNode <- xmlNode("OutputField",attrs=c(name="GaussianPrediction",
+                                                  feature="transformedValue",dataType="double"))
     applyNode <- xmlNode("Apply",attrs=c("function"="+"))
     fieldNode <- xmlNode("FieldRef",attrs=c(field=paste("Predicted_",target,sep="")))
     initNode <- xmlNode("Constant",model$initF)
@@ -220,7 +221,7 @@ pmml.gbm <- function(model,
     pmodel <- append.XMLNode(pmodel, ltNode)
   }
   
-  # test of Zementis xform functions
+  # test of xform functions
   if(interact && !is.null(transforms))
   {
     ltNode <- .pmmlLocalTransformations(field, transforms, ltNode)

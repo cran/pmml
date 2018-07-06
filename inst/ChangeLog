@@ -1,3 +1,11 @@
+pmml (1.5.5)
+  * Add dataType argument to every Output node
+  * Fix the family check in pmml.cv.glmnet to only allow "gaussian" and "poisson"
+  * Add note about supported family types in pmml.cv.glmnet documentation
+  * Add note about sparse matrices in pmml.xgb.Booster documentation
+  * Add vignette with list of supported packages and models
+  * Fix bug in xgboost when using transformations
+
 pmml (1.5.4)
   * Add invalidValueTreatment="returnInvalid" in MiningSchema by default for all models
   * Add arguments for invalidValueTreatment attributes to pmml.xgboost() and pmml.randomForest()

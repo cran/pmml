@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2018, some parts by Togaware Pty Ltd and other by Software AG. 
 #
 # This file is part of the PMML package for R.
 #
@@ -19,7 +19,7 @@
                               unknownValue=NULL, 
                               invalidValueTreatment="returnInvalid")
 {
-    namelist <- .origFieldList(field, transformed)
+    namelist <- .origFieldList(field, transformed, target)
 
     mining.schema <- xmlNode("MiningSchema")
     target <- .removeAsFactor(target)  
@@ -57,7 +57,7 @@
         mining.schema <- append.XMLNode(mining.schema, mf)
       }
     }
-    
+
     return(mining.schema)
 }
 
@@ -281,7 +281,7 @@
 }
 
 
-.origFieldList <- function(field, transformed=NULL)
+.origFieldList <- function(field, transformed=NULL, target=NULL)
 {
   # Create a list of original field names from which any input fields may be derived from 
   number.of.fields <- length(field$name)
@@ -295,49 +295,47 @@
    begin <- 1
   }
 
-  mining.schema <- xmlNode("MiningSchema")
+  DPL1 <- "DiscretePlaceHolder"
+  DPL2 <- "Temp"
+  DPL3 <- "predictedScore"
+
   namelist <- list()
   dnamelist <- list() 
-  for (i in begin:number.of.fields)
-  {
-    if(!is.null(transformed) && i!=1)
-    {
-       if(transformed$fieldData[field$name[i],"type"] == "original")
-       {
-         if(!(.removeAsFactor(field$name[i]) %in% namelist))
-         {
+  if(!is.null(transformed)) {
+    for(i in begin:number.of.fields) {
+      if(.removeAsFactor(field$name[i]) %in% c(target,.removeAsFactor(target),DPL1,DPL2,DPL3)){
+        namelist <- c(namelist,.removeAsFactor(field$name[i]))
+        next
+      }
+      if(transformed$fieldData[field$name[i],"type"] == "original") {
+        if(!(.removeAsFactor(field$name[i]) %in% namelist)) {
           namelist <- c(namelist,.removeAsFactor(field$name[i]))
-         }
-       
-       } else
-       {
-         ofnames <- strsplit(transformed$fieldData[field$name[i],"origFieldName"][[1]],",")[[1]]
-         for(j in 1:length(ofnames))
-         {
+        }
+      }
+      else {
+        ofnames <- strsplit(transformed$fieldData[field$name[i],"origFieldName"][[1]],",")[[1]]
+        for(j in 1:length(ofnames)) {
           ofname <- gsub("^\\s+|\\s+$","",ofnames[j])
           hname <- transformed$fieldData[ofname,"origFieldName"]
           ancestorField <- ofname
-          while(!is.na(hname))
-          {
-           ancestorField <- hname
-           hname <- transformed$fieldData[hname,"origFieldName"]
+          while(!is.na(hname)) {
+            ancestorField <- hname
+            hname <- transformed$fieldData[hname,"origFieldName"]
           }
           fname <- .removeAsFactor(ancestorField)
-          if((!(fname %in% namelist)) && (!(fname %in% dnamelist)))
- 	  {
-	   namelist <- c(namelist,fname)
-           if(!(.removeAsFactor(fname) %in% dnamelist))
-	     dnamelist <- c(dnamelist, .removeAsFactor(field$name[i]))
-	  }
+          if((!(fname %in% namelist)) && (!(fname %in% dnamelist))) {
+            namelist <- c(namelist,fname)
+            if(!(.removeAsFactor(fname) %in% dnamelist))
+              dnamelist <- c(dnamelist, .removeAsFactor(field$name[i]))
+          }
         }
-       } 
-    } else 
-    {
+      } 
+    }
+  } else {
+    for(i in begin:number.of.fields) {
       fName <- .removeAsFactor(field$name[i])  
-      if(!(fName %in% namelist) && fName != "ZementisClusterIDPlaceHolder") 
-      {
+      if(!(fName %in% namelist) && fName != "ZementisClusterIDPlaceHolder")
         namelist <- c(namelist,fName)
-      }
     }
   }
 

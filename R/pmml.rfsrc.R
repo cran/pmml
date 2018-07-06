@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2018, some parts by Togaware Pty Ltd and other by Software AG. 
 #
 # This file is part of the PMML package for R.
 #
@@ -156,7 +156,7 @@ pmml.rfsrc <- function(model,
   if(interact && is.null(transforms))
     mmodel <- append.XMLNode(mmodel, ltNode)
 
-  # test of Zementis xform functions
+  # test of xform functions
   if(interact && !is.null(transforms))
   {
     ltNode <- .pmmlLocalTransformations(field, transforms, ltNode)

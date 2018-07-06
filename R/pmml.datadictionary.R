@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2018, some parts by Togaware Pty Ltd and other by Software AG 
 #
 # This file is part of the PMML package for R.
 #
@@ -15,7 +15,7 @@
 # GNU General Public License for details (http://www.gnu.org/licenses/).
 ######################################################################################
 
-.pmmlDataDictionary <- function(field, dataset=NULL, weights=NULL, transformed=NULL)
+.pmmlDataDictionary <- function(field, dataset=NULL, weights=NULL, transformed=NULL, target=NULL)
 {
   # 090806 Generate and return a DataDictionary element that includes
   # each supplied field.
@@ -133,52 +133,50 @@
    }
   }
 
-  for (i in begin:number.of.fields)
-  {
-    # DataDictionary -> DataField
-    if(!is.null(transformed) && i!=1)
-    {
-       if(transformed$fieldData[field$name[i],"type"] == "original")
-       {
-         if(!(.removeAsFactor(field$name[i]) %in% namelist))
-         {
+# for (i in begin:number.of.fields)
+# {
+  # DataDictionary -> DataField
+  # if(!is.null(transformed) && i!=1)
+  if(!is.null(transformed)) {
+    for(i in begin:number.of.fields) {
+      if(.removeAsFactor(field$name[i]) %in% c(target,.removeAsFactor(target),DPL1,DPL2,DPL3)){
+        namelist <- c(namelist,.removeAsFactor(field$name[i]))
+        next
+      }
+      if(transformed$fieldData[field$name[i],"type"] == "original") {
+        if(!(.removeAsFactor(field$name[i]) %in% namelist)) {
           namelist <- c(namelist,.removeAsFactor(field$name[i]))
-         }
-       
-       } else
-       {
-         ofnames <- strsplit(transformed$fieldData[field$name[i],"origFieldName"][[1]],",")[[1]]
-         for(j in 1:length(ofnames))
-         {
+        }
+      } 
+      else {
+        ofnames <- strsplit(transformed$fieldData[field$name[i],"origFieldName"][[1]],",")[[1]]
+        for(j in 1:length(ofnames)) {
           ofname <- gsub("^\\s+|\\s+$","",ofnames[j])
           hname <- transformed$fieldData[ofname,"origFieldName"]
           ancestorField <- ofname
-          while(!is.na(hname))
-          {
-           ancestorField <- hname
-           hname <- transformed$fieldData[hname,"origFieldName"]
+          while(!is.na(hname)) {
+            ancestorField <- hname
+            hname <- transformed$fieldData[hname,"origFieldName"]
           }
           fname <- .removeAsFactor(ancestorField)
-          if((!(fname %in% namelist)) && (!(fname %in% dnamelist)))
-          {
-           namelist <- c(namelist,fname)
-           if(!(.removeAsFactor(field$name[i]) %in% dnamelist)) 
-             dnamelist <- c(dnamelist, .removeAsFactor(field$name[i]))
+          if((!(fname %in% namelist)) && (!(fname %in% dnamelist))) {
+            namelist <- c(namelist,fname)
+            if(!(.removeAsFactor(field$name[i]) %in% dnamelist)) 
+              dnamelist <- c(dnamelist, .removeAsFactor(field$name[i]))
           }
         }
-       } 
-    } else
-    {
+      }
+    }
+  } 
+  else {
+    for(i in begin:number.of.fields) {
       fName <- field$name[i]
+      if(length(grep("as\\.factor\\(",field$name[i])) == 1)
+        fName <- gsub("as.factor\\((\\w*)\\)","\\1", field$name[i], perl=TRUE)
+    
       if(!is.na(field$class[fName]) && field$class[fName] == "factor")
         optypelist[[fName]] <- "categorical"
       
-      if(length(grep("as\\.factor\\(",field$name[i])) == 1)
-        fName <- gsub("as.factor\\((\\w*)\\)","\\1", field$name[i], perl=TRUE)
-
-      if(!is.na(field$class[fName]) && field$class[fName] == "factor")
-        optypelist[[fName]] <- "categorical"
-
       if(!(fName %in% namelist) && fName != "ZementisClusterIDPlaceHolder")
         namelist <- c(namelist,fName)
     }

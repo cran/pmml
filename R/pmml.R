@@ -1,6 +1,6 @@
 # PMML: Predictive Model Markup Language
 #
-# Copyright (c) 2009-2017, some parts by Togaware Pty Ltd and other by Zementis, Inc. 
+# Copyright (c) 2009-2018, some parts by Togaware Pty Ltd and other by Software AG. 
 #
 # This file is part of the PMML package for R.
 #
@@ -156,7 +156,7 @@ savePMML <- function(doc, name, version=4.3)
 }
 
 
-.pmmlLocalTransformations <- function(field, transforms=NULL, LTelement=NULL,...)
+.pmmlLocalTransformations <- function(field, transforms=NULL, LTelement=NULL, target=NULL, ...)
 {
   # 090806 Generate and return a LocalTransformations element that incldues
   # each supplied field.
@@ -174,7 +174,10 @@ savePMML <- function(doc, name, version=4.3)
   {
    local.transformations <- xmlNode("LocalTransformations")
   }
-  target <- field$name[1]
+  
+  if(is.null(target)){
+    target <- field$name[1]
+  }
 
   if(!is.null(transforms))
   {
@@ -487,7 +490,6 @@ savePMML <- function(doc, name, version=4.3)
 
 #####################################################################
 # PMML Output element
-
 .pmmlOutput <- function(field, target=NULL, optype=NULL)
 {
   number.of.fields <- length(field$name)
@@ -505,19 +507,24 @@ savePMML <- function(doc, name, version=4.3)
         targetout <- gsub("as.factor\\((\\w*)\\)","\\1", targetout, perl=TRUE)
       }
 
-      if (is.null(optype))
+      if (is.null(optype)) {
+        r_class <- unname(field$class[field$name[i]])
+        new_optype <- ifelse(r_class == "factor", "categorical", "continuous")
+        new_dataType <- ifelse(r_class == "factor", "string", "double")
         output.fields[[1]] <- xmlNode("OutputField",
                                       attrs=c(name=gsub(" ","",paste("Predicted_",targetout)),
+                                              optype = new_optype, dataType = new_dataType,
                                         feature="predictedValue"))
-      else
+      } else {
         output.fields[[1]] <- xmlNode("OutputField",
                                       attrs=c(name=gsub(" ","",paste("Predicted_",targetout)),
                                         optype=optype,
                                         dataType=ifelse(optype=="continuous",
                                           "double", "string"),
                                         feature="predictedValue"))
+      }
 
-     {
+     
       for (j in seq_along(field$levels[[field$name[i]]]))
         output.fields[[j+1]] <- xmlNode("OutputField",
                                         attrs=c(name=paste("Probability_",
@@ -527,13 +534,17 @@ savePMML <- function(doc, name, version=4.3)
                                           dataType = "double",
                                           feature="probability",
                                           value= field$levels[[field$name[i]]][j]))
-     }
+     
     }
   }
-  
+
   output$children <- output.fields
   return(output)
 }
+
+
+
+
 
 
 

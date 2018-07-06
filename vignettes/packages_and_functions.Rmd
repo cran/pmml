@@ -1,0 +1,70 @@
+---
+title: "Supported Packages and Additional Functions"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Supported Packages and Additional Functions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+## Introduction
+
+This vignette lists the packages and model types supported by **pmml**, as well as functions that extend the basic exporter functionality.
+
+## Supported packages
+
+The following packages and model types are supported by **pmml**.
+
+- Clustering
+    - [amap](https://CRAN.R-project.org/package=amap): `hclust`
+    - [neighbr](https://CRAN.R-project.org/package=neighbr): `neighbr`
+    - stats: `kmeans`
+- K Nearest Neighbors
+    - [neighbr](https://CRAN.R-project.org/package=neighbr): `neighbr`
+- Linear Models
+    - [glmnet](https://CRAN.R-project.org/package=glmnet): `cv.glmnet` with "gaussian" and "poisson" family types
+    - [nnet](https://CRAN.R-project.org/package=nnet): `multinom`
+    - stats: `glm`, `lm` without interaction terms
+- Naive Bayes
+    - [e1071](https://CRAN.R-project.org/package=e1071): `naiveBayes`
+- Neural Networks
+    - [nnet](https://CRAN.R-project.org/package=nnet): `nnet`
+- Support Vector Machines
+    - [e1071](https://CRAN.R-project.org/package=e1071): `svm`
+    - [kernlab](https://CRAN.R-project.org/package=kernlab): `ksvm` with "rbfdot", "polydot", "vanilladot", and "tanhdot" kernels.
+- Tree-based Models and Ensembles
+    - [ada](https://CRAN.R-project.org/package=ada): `ada`
+    - [gbm](https://CRAN.R-project.org/package=gbm): `gbm` with "bernoulli", "poisson", and "multinomial" distribution types
+    - [randomForest](https://CRAN.R-project.org/package=randomForest): `randomForest`
+    - [randomForestSRC](https://CRAN.R-project.org/package=randomForestSRC) (version 2.5.0): `randomSurvivalForest`
+    - [rpart](https://CRAN.R-project.org/package=rpart): `rpart`
+    - [xgboost](https://CRAN.R-project.org/package=xgboost): `xgb.Booster` with "multi:softprob", "multi:softmax", and "binary:logistic" objectives
+- Other Packages
+    - [arules](https://CRAN.R-project.org/package=arules): `rules` and `itemsets`
+    - [survival](https://CRAN.R-project.org/package=survival): `coxph`
+
+
+
+## Additional functions
+The following functions in **pmml** allow additional operations, such as creating specific nodes and adding attributes. For more information, check the documentation for each function.
+
+- AddAttributes: add attribute values to an existing element in a given PMML file.
+- AddDDAttributes: add attribute values to an existing DataField element in a given PMML file.
+- addDFChildren: add 'Interval' and 'Value' child elements to a given DataField element in a given PMML file.
+- addLT: add a LocalTransformations element to a given PMML file.
+- addMSAttributes: add attribute values to an existing MiningField element in a given PMML file.
+- addOutputField: add Output nodes to a PMML object.
+- fileToXMLNode: read in a file and parse it into an object of type XMLNode.
+- functionToPMML: convert an R expression to PMML.
+- makeIntervals: create Interval elements to add to a DataDictionary element.
+- makeOutputNodes: add Output nodes to a PMML object.
+- makeValues: create Values element to add to a DataDictionary element.
+
+## References
+- [DMG PMML 4.3 specification](http://dmg.org/pmml/v4-3/GeneralStructure.html)

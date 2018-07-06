@@ -46,7 +46,7 @@ addDDAttributes(xmlmodel=NULL,attributes=NULL,field=NULL,
   \code{saveXML}.
   
 }
-\author{\email{tridivesh.jena@zementis.com}}
+\author{\email{tridivesh.jena@softwareag.com}}
 
 \examples{
 
