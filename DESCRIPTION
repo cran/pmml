@@ -1,11 +1,11 @@
 Package: pmml
 Type: Package
 Title: Generate PMML for Various Models
-Version: 1.5.5
+Version: 1.5.6
 Author: Graham Williams, Tridivesh Jena, Wen Ching Lin, Michael Hahsler
     (arules), Software AG, Hemant Ishwaran, Udaya B. Kogalur, Rajarshi Guha,
     Dmitriy Bolotov
-Maintainer: Dmitriy Bolotov <dmitriy.bolotov@softwareag.com>
+Maintainer: Tridivesh Jena <rpmmlsupport@softwareag.com>
 Depends: XML
 Suggests: ada, amap, arules, gbm, glmnet, neighbr, nnet, rpart,
         randomForestSRC (<= 2.5.0), randomForest, kernlab, e1071,
@@ -13,19 +13,11 @@ Suggests: ada, amap, arules, gbm, glmnet, neighbr, nnet, rpart,
         knitr, rmarkdown
 Imports: methods, stats, utils, stringr
 License: GPL (>= 2.1)
-Description: The Predictive Model Markup Language (PMML) is an XML-based
-    language which provides a way for applications to define statistical and
-    data mining models and to share models between PMML compliant applications.
-    More information about PMML and the Data Mining Group can be found at <http://
-    www.dmg.org>. The generated PMML can be imported into any PMML consuming
-    application, such as the Software AG Zementis scoring engine, which allows for
-    predictive models built in R to be deployed and executed on site, in the cloud
-    (Amazon, IBM, and FICO), in-database (IBM Netezza, Pivotal, Sybase IQ, Teradata
-    and Teradata Aster) or Hadoop (Datameer and Hive).
-URL: http://www.zementis.net
+Description: The Predictive Model Markup Language (PMML) is an XML-based language which provides a way for applications to define machine learning, statistical and data mining models and to share models between PMML compliant applications. More information about the PMML industry standard and the Data Mining Group can be found at <http://www.dmg.org>. The generated PMML can be imported into any PMML consuming application, such as Zementis Predictive Analytics products, which integrate with web services, relational database systems and deploy natively on Hadoop in conjunction with Hive, Spark or Storm, as well as allow predictive analytics to be executed for IBM z Systems mainframe applications and real-time, streaming analytics platforms.
+URL: https://www.softwareag.com/zementis
 NeedsCompilation: no
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0
 VignetteBuilder: knitr
-Packaged: 2018-07-02 20:01:36 UTC; dmitriy
+Packaged: 2018-10-08 21:29:27 UTC; dmitriy
 Repository: CRAN
-Date/Publication: 2018-07-06 08:20:03 UTC
+Date/Publication: 2018-10-08 22:30:02 UTC

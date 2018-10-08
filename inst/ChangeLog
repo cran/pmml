@@ -1,3 +1,8 @@
+pmml (1.5.6)
+  * Fix missing nodes issue in xgboost caused by deep trees
+  * Update savePMML to output LF line endings, independent of OS
+  * Update Description and pmml.R documentation
+
 pmml (1.5.5)
   * Add dataType argument to every Output node
   * Fix the family check in pmml.cv.glmnet to only allow "gaussian" and "poisson"

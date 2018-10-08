@@ -69,17 +69,9 @@ pmml(model=NULL, model.name="Rattle_Model",
 }
 \details{
 
-  PMML is an XML based language which
-  provides a way for applications to define statistical and data mining
-  models and to share models between PMML compliant applications. More
-  information about PMML and the Data Mining Group can be found at
-  http://www.dmg.org.  
+The Predictive Model Markup Language (PMML) is an XML-based language which provides a way for applications to define machine learning, statistical and data mining models and to share models between PMML compliant applications. More information about the PMML industry standard and the Data Mining Group can be found at \url{http://www.dmg.org}. 
   
-  The generated PMML can be imported into any PMML consuming
-  application, such as the Software AG Zementis scoring engine, which allows for
-  predictive models built in R to be deployed and executed on site, in the cloud 
-  (Amazon, IBM, and FICO), in-database (IBM Netezza, Pivotal, Sybase IQ, Teradata and 
-  Teradata Aster) or Hadoop (Datameer and Hive). 
+The generated PMML can be imported into any PMML consuming application, such as Zementis Predictive Analytics products, which integrate with web services, relational database systems and deploy natively on Hadoop in conjunction with Hive, Spark or Storm, as well as allow predictive analytics to be executed for IBM z Systems mainframe applications and real-time, streaming analytics platforms.
 
 }
 

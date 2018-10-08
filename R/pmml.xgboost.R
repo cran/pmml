@@ -434,20 +434,20 @@ pmml.xgb.Booster <- function(model,
   nodeListR <- nodeList[(listLength+1):(2*listLength)]
   nodeListM <- nodeList[(2*listLength+1):length(nodeList)]
 
-  while(listLength > 1) {
+  while(listLength > 0) {
     if(splitInfo[listLength,2] == "Leaf") {
       listLength <- listLength - 1
       next()
     }
-    pickL <- which(splitInfo[,4] == (listLength-1))
+    pickL <- which(splitInfo[,4] == splitInfo[listLength,1])
     if(length(pickL) != 0) {
       nodeListL[[pickL]] <- append.xmlNode(nodeListL[[pickL]],list(nodeListL[[listLength]],nodeListR[[listLength]],nodeListM[[listLength]]))
     }
-    pickR <- which(splitInfo[,5] == (listLength-1))
+    pickR <- which(splitInfo[,5] == splitInfo[listLength,1])
     if(length(pickR) != 0) {
       nodeListR[[pickR]] <- append.xmlNode(nodeListR[[pickR]],list(nodeListL[[listLength]],nodeListR[[listLength]],nodeListM[[listLength]]))
     }
-    pickM <- which(splitInfo[,6] == (listLength-1))
+    pickM <- which(splitInfo[,6] == splitInfo[listLength,1])
     if(length(pickM) != 0) {
       nodeListM[[pickM]] <- append.xmlNode(nodeListM[[pickM]],list(nodeListL[[listLength]],nodeListR[[listLength]],nodeListM[[listLength]]))
     }
@@ -459,7 +459,6 @@ pmml.xgb.Booster <- function(model,
   return(nodeT)
 }
 
-
   .make3Nodes <- function(tinf)
   {
     # listLength <- min(which(is.na(tinf[,4])))-1
@@ -470,25 +469,32 @@ pmml.xgb.Booster <- function(model,
     for(i in 1:nrow(tinf)) {
       if(tinf[i,2] == "Leaf")
         next()
+      
+      YesId <- tinf[i,4]
+      NoId <- tinf[i,5]
+      MissingId <- tinf[i,6]
+      YesRow <- which(tinf[,1] == YesId)
+      NoRow <- which(tinf[,1] == NoId)
+      MissingRow <- which(tinf[,1] == MissingId)
 
-      if(!is.na(tinf[tinf[i,4]+1,7])) {
-        node <- xmlNode("Node",attrs=c(score=tinf[tinf[i,4]+1,7]))
+      if(!is.na(tinf[YesRow,7])) {
+        node <- xmlNode("Node",attrs=c(score=tinf[YesRow,7]))
       } else {
         node <- xmlNode("Node")
       }
       predL <- xmlNode("SimplePredicate",attrs=c(field=as.character(tinf[i,2]),operator="lessThan",value=as.character(tinf[i,3])))
       nodeListLeft[[i]] <- append.xmlNode(node,predL)
 
-      if(!is.na(tinf[tinf[i,5]+1,7])) {
-        node <- xmlNode("Node",attrs=c(score=tinf[tinf[i,5]+1,7]))
+      if(!is.na(tinf[NoRow,7])) {
+        node <- xmlNode("Node",attrs=c(score=tinf[NoRow,7]))
       } else {
         node <- xmlNode("Node")
       }
       predR <- xmlNode("SimplePredicate",attrs=c(field=as.character(tinf[i,2]),operator="greaterOrEqual",value=as.character(tinf[i,3])))
       nodeListRight[[i]] <- append.xmlNode(node,predR)
 
-      if(!is.na(tinf[tinf[i,6]+1,7])) {
-        node <- xmlNode("Node",attrs=c(score=tinf[tinf[i,6]+1,7]))
+      if(!is.na(tinf[MissingRow,7])) {
+        node <- xmlNode("Node",attrs=c(score=tinf[MissingRow,7]))
       } else {
         node <- xmlNode("Node")
       }

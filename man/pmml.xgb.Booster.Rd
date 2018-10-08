@@ -7,8 +7,9 @@
 \method{pmml}{xgb.Booster}(model, model.name = "xboost_Model",
   app.name = "R", description = "Extreme Gradient Boosting Model",
   copyright = NULL, transforms = NULL, inputFeatureNames = NULL,
-  outputLabelName = NULL, outputCategories = NULL, xgbDumpFile = NULL,
-  unknownValue = NULL, parentInvalidValueTreatment = "returnInvalid",
+  outputLabelName = NULL, outputCategories = NULL,
+  xgbDumpFile = NULL, unknownValue = NULL,
+  parentInvalidValueTreatment = "returnInvalid",
   childInvalidValueTreatment = "asIs", ...)
 }
 \arguments{
