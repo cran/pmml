@@ -47,6 +47,9 @@
 #'
 #' # If-else expression
 #' functionToPMML("if (x==3) { 3 } else { 0 }")
+#' 
+#' # If-else with boolean output
+#' functionToPMML("if (x==3) { TRUE } else { FALSE }")
 #'
 #' # Function with string argument types
 #' functionToPMML("colors('red','green','blue')")

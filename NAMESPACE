@@ -20,6 +20,7 @@ S3method(pmml, rpart)
 S3method(pmml, rules)
 S3method(pmml, svm)
 S3method(pmml, xgb.Booster)
+S3method(pmml, iForest)
 
 importFrom("methods", "getMethod")
 importFrom("stats", "coef", "coefficients")

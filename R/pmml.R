@@ -98,6 +98,10 @@ pmml <- function(model=NULL,
                             "xmlns:xsi"="http://www.w3.org/2001/XMLSchema-instance", 
                             "xsi:schemaLocation"=paste("http://www.dmg.org/PMML-4_3",
                                                        "http://www.dmg.org/pmml/v4-3/pmml-4-3.xsd")))
+  } else if (version == "4.3Ext"){
+    node <- xmlNode("PMML",
+                    attrs=c(version="4.3Ext",
+                            xmlns="http://www.dmg.org/PMML-4_3"))
   } else if (version == "4.2")
   {
     node <- xmlNode("PMML",
@@ -491,6 +495,327 @@ savePMML <- function(doc, name, version=4.3)
   }
 }
 
+
+
+.pmmlLocalTransformationsAD <- function(field, transforms=NULL, LTelement=NULL, target=NULL, ...)
+{
+  # local transformations for anomaly detection models. For OCSVM, target is NULL and should not be used in comparisons.
+  # field$name is a vector of strings. Target is assumed to be NULL for anomaly detection.
+  # field$class is indexed by fields$name.
+  
+  dots <- list(...)
+  if(!is.null(dots$transformationDictionary)) {
+    transformation.dictionary <- xmlNode("TransformationDictionary")
+  }
+  
+  # LocalTransformations
+  if(is.null(LTelement)) {
+    local.transformations <- xmlNode("LocalTransformations")
+  }
+  
+  # For one-class SVM, the target is assumed to be NULL
+  # if(is.null(target)){
+  #   target <- field$name[1]
+  # }
+  
+  if(!is.null(transforms)) {
+    inputs <- transforms$fieldData
+    
+    # list of all fields derived from the target field
+    targetDL <- NULL
+    targetDL <- c(targetDL,target)
+    
+    # code to output all fields, possibly to allow user to output any derived fields via OutputField element
+    for(i in 1:nrow(inputs)) {
+      if(inputs[i,"origFieldName"] %in% targetDL) {
+        targetDL <- c(targetDL,rownames(inputs)[i])
+        if(rownames(inputs)[i] %in% field$name[-1])
+        {
+          stop("Target variable and derivations are not allowed to be used as input variables.")
+        }
+      } else {
+        fname <- rownames(inputs)[i]
+        
+        # if(inputs[fname,"type"] == "derived" && fname != target) { #for anomaly detection, do not do comparison with target
+        if(inputs[fname,"type"] == "derived") {
+          if(inputs[fname,"transform"] == "zxform") {
+            origName <- inputs[fname,"origFieldName"]
+            missing <- inputs[fname,"missingValue"]
+            dfNode <- xmlNode("DerivedField",attrs=c(name=fname,dataType="double",optype="continuous"))
+            if(!is.na(missing)) {
+              ncNode <- xmlNode("NormContinuous",attrs=c(mapMissingTo=missing,field=origName))
+            } else {
+              ncNode <- xmlNode("NormContinuous",attrs=c(field=origName))     
+            }
+            
+            o1 <- as.numeric(inputs[fname,"centers"])
+            o2 <- as.numeric(inputs[fname,"centers"]) + as.numeric(inputs[fname,"scales"])
+            lnNode1 <- xmlNode("LinearNorm",attrs=c(orig=o1,norm="0"))
+            lnNode2 <- xmlNode("LinearNorm",attrs=c(orig=o2,norm="1"))
+            
+            ncNode <- append.XMLNode(ncNode, lnNode1)
+            ncNode <- append.XMLNode(ncNode, lnNode2)
+            dfNode <- append.XMLNode(dfNode, ncNode)
+            #       local.transformations <- append.XMLNode(local.transformations, dfNode)
+          } else if(inputs[fname,"transform"] == "minmax")
+          {
+            origName <- inputs[fname,"origFieldName"]
+            missing <- inputs[fname,"missingValue"]
+            dfNode <- xmlNode("DerivedField",attrs=c(name=fname,dataType="double",optype="continuous"))
+            if(!is.na(missing)) {
+              ncNode <- xmlNode("NormContinuous",attrs=c(mapMissingTo=missing,field=origName)) 
+            } else {
+              ncNode <- xmlNode("NormContinuous",attrs=c(field=origName)) 
+            }
+            
+            o1 <- inputs[fname,"sampleMin"]
+            n1 <- inputs[fname,"xformedMin"]
+            o2 <- inputs[fname,"sampleMax"]
+            n2 <- inputs[fname,"xformedMax"]
+            lnNode1 <- xmlNode("LinearNorm",attrs=c(orig=o1,norm=n1))
+            lnNode2 <- xmlNode("LinearNorm",attrs=c(orig=o2,norm=n2))
+            ncNode <- append.XMLNode(ncNode, lnNode1)
+            ncNode <- append.XMLNode(ncNode, lnNode2)
+            dfNode <- append.XMLNode(dfNode, ncNode)
+            #       local.transformations <- append.XMLNode(local.transformations, dfNode)
+          } else if(inputs[fname,"transform"] == "MapValues")
+          {
+            map <- inputs[fname,"fieldsMap"][[1]]
+            
+            dtype <- map[2,ncol(map)]
+            if(dtype == "numeric")
+            {
+              dtype <- "double"
+              otype <- "continuous"
+            } else if(dtype == "boolean")
+            {
+              dtype <- "boolean"
+              otype <- "categorical" 
+            } else 
+            {
+              dtype <- "string"
+              otype <- "categorical"
+            }
+            
+            dfNode <- xmlNode("DerivedField",attrs=c(name=fname,dataType=as.character(dtype),optype=otype))
+            default <- inputs[fname,"default"]
+            missing <- inputs[fname,"missingValue"]
+            if(dtype == "boolean")
+            {
+              if((default==1) || (toupper(default)==TRUE))
+              {
+                default="true"
+              } else
+              {
+                default="false"
+              }
+              if((missing==1) || (toupper(missing)==TRUE))
+              {
+                missing="true"
+              } else
+              {
+                missing="false"
+              }
+            }
+            
+            if(!is.na(default) && !is.na(missing))
+            {
+              mapvNode <- xmlNode("MapValues",attrs=c(mapMissingTo=missing,defaultValue=default,outputColumn="output"))
+            } else if(!is.na(default) && is.na(missing))
+            {
+              mapvNode <- xmlNode("MapValues",attrs=c(defaultValue=default,outputColumn="output"))
+            } else if(is.na(default) && !is.na(missing))
+            {
+              mapvNode <- xmlNode("MapValues",attrs=c(mapMissingTo=missing,outputColumn="output"))
+            } else
+            {
+              mapvNode <- xmlNode("MapValues",attrs=c(outputColumn="out"))
+            } 
+            
+            for(j in 1:(ncol(map)  - 1))
+            {
+              colname <- paste("input",j,sep="")
+              val <- as.character(map[1,j])
+              fcpNode <- xmlNode("FieldColumnPair",attrs=c(field=val,column=colname))
+              mapvNode <- append.XMLNode(mapvNode,fcpNode)
+            }
+            
+            inline <- xmlNode("InlineTable")
+            for(j in 3:nrow(map))
+            {
+              row <- xmlNode("row")
+              for(k in 1:(ncol(map) - 1))
+              {
+                initNode <- xmlNode(paste("input",k,sep=""),value=as.character(map[j,k]))
+                row <- append.XMLNode(row, initNode)
+              }
+              out <- xmlNode("output",value=as.character(map[j,ncol(map)]))
+              row <- append.XMLNode(row, out)
+              inline <- append.XMLNode(inline,row)
+            }
+            
+            mapvNode <- append.XMLNode(mapvNode,inline)
+            dfNode <- append.XMLNode(dfNode,mapvNode)
+          } else if(inputs[fname,"transform"] == "NormDiscrete")
+          {
+            map <- inputs[fname,"fieldsMap"][[1]]
+            dfName <- row.names(inputs)[i]
+            missing <- inputs[fname,"missingValue"]
+            
+            dfNode <- xmlNode("DerivedField",attrs=c(name=dfName,dataType="double",optype="continuous"))
+            if(!is.na(missing))
+            {
+              normNode <- xmlNode("NormDiscrete",attrs=c(field=as.character(inputs[fname,"origFieldName"]),value=as.character(map[1]),mapMissingTo=missing))
+            } else
+            {
+              normNode <- xmlNode("NormDiscrete",attrs=c(field=as.character(inputs[fname,"origFieldName"]),value=as.character(map[1])))
+            }
+            dfNode <- append.XMLNode(dfNode,normNode)
+          } else if(inputs[fname,"transform"] == "discretize")
+          {
+            maps <- inputs[fname,"fieldsMap"][[1]]
+            missingVal <- inputs[fname,"missingValue"]
+            defVal <- inputs[fname,"default"]
+            
+            origName <- as.character(inputs[fname,"origFieldName"])
+            map <- maps[c(-1,-2),]
+            dtype <- as.character(inputs[fname,"dataType"])
+            if((dtype == "numeric") || (dtype == "integer") || (dtype == "double"))
+            {
+              dtype <- "double"
+              otype <- "continuous"
+            }
+            
+            # The following doesnt work as there seems to be no way in PMML to have predicates
+            # which indicate if a boolean variable is true or false; and this issue comes up
+            # when derived fields of type boolean are used in Tree models
+            # We cannot use the operator "isIn" as  in 
+            #  <... booleanOperator="isIn> <Array type="string>"TRUE"</Attay
+            # as then we need an array of type boolean
+            # and that is not allowed; and ADAPA complains if boolean vaiable is tested as being 
+            # contained in an Arraya of type string  
+            # else if(dtype == "boolean")
+            
+            # {
+            # dtype <- "boolean"
+            # otype <- "categorical"
+            # }
+            
+            else
+            {
+              dtype <- "string"
+              otype <- "categorical"
+            }
+            
+            if(dtype == "boolean")
+            {
+              if((default==1) || (toupper(default)==TRUE))
+              {
+                default="true"
+              } else
+              {
+                default="false"
+              }
+              if((missing==1) || (toupper(missing)==TRUE))
+              {
+                missing="true"
+              } else
+              {
+                missing="false"
+              }
+            }
+            
+            dfNode <- xmlNode("DerivedField",attrs=c(name=fname,dataType=dtype,optype=otype))
+            if(!is.na(defVal) && !is.na(missingVal))
+            {
+              discNode <- xmlNode("Discretize",attrs=c(field=origName,mapMissingTo=missingVal,defaultValue=defVal)) 
+            } else if(!is.na(defVal) && is.na(missingVal))
+            {
+              discNode <- xmlNode("Discretize",attrs=c(field=origName,defaultValue=defVal))
+            } else if(is.na(defVal) && !is.na(missingVal))
+            {
+              discNode <- xmlNode("Discretize",attrs=c(field=origName,mapMissingTo=missingVal))
+            } else
+            {
+              discNode <- xmlNode("Discretize",attrs=c(field=origName))
+            }
+            
+            for(i in 1:nrow(map))
+            { 
+              # 	 dbinNode <- xmlNode("DiscretizeBin",attrs=c(binValue=map[i,2]))
+              dbinNode <- xmlNode("DiscretizeBin",attrs=c(binValue=as.character(map[i,2])))
+              
+              # 	 clsr <- paste(map[1,3],map[i,5],sep="")
+              clsr <- as.character(paste(map[i,3],map[i,5],sep=""))
+              
+              if(!is.na(map[i,4]))
+              {
+                if(!is.na(map[i,6]))
+                {
+                  # 	   intrNode <- xmlNode("Interval",attrs=c(closure=clsr,leftMargin=map[i,4],rightMargin=map[i,6]))
+                  intrNode <- xmlNode("Interval",attrs=c(closure=clsr,leftMargin=as.character(map[i,4]),rightMargin=as.character(map[i,6])))
+                } else
+                {
+                  # 	   intrNode <- xmlNode("Interval",attrs=c(closure=clsr,leftMargin=map[i,4]))
+                  intrNode <- xmlNode("Interval",attrs=c(closure=clsr,leftMargin=as.character(map[i,4])))
+                }
+              } else
+              {
+                # 	  intrNode <- xmlNode("Interval",attrs=c(closure=clsr,rightMargin=map[i,6]))
+                intrNode <- xmlNode("Interval",attrs=c(closure=clsr,rightMargin=as.character(map[i,6])))
+              }
+              dbinNode <- append.XMLNode(dbinNode,intrNode)
+              discNode <- append.XMLNode(discNode,dbinNode)
+            }
+            dfNode <- append.XMLNode(dfNode,discNode) 
+            
+          } else if(!is.na(inputs[fname,"functionXform"]))
+          {
+            origName <- inputs[fname,"origFieldName"]
+            missing <- inputs[fname,"missingValue"]
+            
+            dfNode <- xmlNode("DerivedField",attrs=c(name=fname,dataType="double",optype="continuous"))
+            
+            funcNode <- .pmmlU(inputs[fname,"functionXform"])
+            
+            #         addChildren(dfNode,funcNode[[1]])
+            dfNode <- append.XMLNode(dfNode,funcNode)
+            
+          }
+          
+          if(!is.null(dots$transformationDictionary))  {
+            transformation.dictionary <- append.XMLNode(transformation.dictionary,dfNode)
+          } else {
+            if(is.null(LTelement))
+            {
+              local.transformations <- append.XMLNode(local.transformations, dfNode)
+            } else
+            {
+              LTelement <- append.XMLNode(LTelement, dfNode)
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  if(!is.null(dots$transformationDictionary))  {
+    return(transformation.dictionary)
+  } else {
+    if(is.null(LTelement))
+    {
+      return(local.transformations)
+    } else
+    {
+      return(LTelement)
+    }
+  }
+}
+
+
+
+
+
 #####################################################################
 # PMML Output element
 .pmmlOutput <- function(field, target=NULL, optype=NULL)
@@ -547,13 +872,11 @@ savePMML <- function(doc, name, version=4.3)
 
 
 
-
-
-
-
 .addXML <- function(x) {
   if (is.numeric(x)) {
     node <- newXMLNode(name="Constant", attrs = c("dataType"=toString(typeof(x))), text=x)
+  } else if (is.logical(x)) {
+    node <- newXMLNode(name="Constant", attrs = c("dataType"="boolean"), text=x)
   } else if (is.character(x)) {
     node <- newXMLNode(name="Constant", attrs = c("dataType"="string"), text=x)
   } else {

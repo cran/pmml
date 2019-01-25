@@ -1,3 +1,8 @@
+pmml (1.5.7)
+  * Add support for one-class svm (anomaly detection) models from e1071
+  * Add support for iForest (anomaly detection) models from isofor
+  * Add support for boolean values in FunctionToPMML
+
 pmml (1.5.6)
   * Fix missing nodes issue in xgboost caused by deep trees
   * Update savePMML to output LF line endings, independent of OS

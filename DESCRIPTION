@@ -1,7 +1,7 @@
 Package: pmml
 Type: Package
 Title: Generate PMML for Various Models
-Version: 1.5.6
+Version: 1.5.7
 Author: Graham Williams, Tridivesh Jena, Wen Ching Lin, Michael Hahsler
     (arules), Software AG, Hemant Ishwaran, Udaya B. Kogalur, Rajarshi Guha,
     Dmitriy Bolotov
@@ -13,11 +13,11 @@ Suggests: ada, amap, arules, gbm, glmnet, neighbr, nnet, rpart,
         knitr, rmarkdown
 Imports: methods, stats, utils, stringr
 License: GPL (>= 2.1)
-Description: The Predictive Model Markup Language (PMML) is an XML-based language which provides a way for applications to define machine learning, statistical and data mining models and to share models between PMML compliant applications. More information about the PMML industry standard and the Data Mining Group can be found at <http://www.dmg.org>. The generated PMML can be imported into any PMML consuming application, such as Zementis Predictive Analytics products, which integrate with web services, relational database systems and deploy natively on Hadoop in conjunction with Hive, Spark or Storm, as well as allow predictive analytics to be executed for IBM z Systems mainframe applications and real-time, streaming analytics platforms.
+Description: The Predictive Model Markup Language (PMML) is an XML-based language which provides a way for applications to define machine learning, statistical and data mining models and to share models between PMML compliant applications. More information about the PMML industry standard and the Data Mining Group can be found at <http://www.dmg.org>. The generated PMML can be imported into any PMML consuming application, such as Zementis Predictive Analytics products, which integrate with web services, relational database systems and deploy natively on Hadoop in conjunction with Hive, Spark or Storm, as well as allow predictive analytics to be executed for IBM z Systems mainframe applications and real-time, streaming analytics platforms. The package isofor (used for anomaly detection) can be installed with devtools::install_github("Zelazny7/isofor").
 URL: https://www.softwareag.com/zementis
 NeedsCompilation: no
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 VignetteBuilder: knitr
-Packaged: 2018-10-08 21:29:27 UTC; dmitriy
+Packaged: 2019-01-24 23:06:57 UTC; dmitriy
 Repository: CRAN
-Date/Publication: 2018-10-08 22:30:02 UTC
+Date/Publication: 2019-01-25 07:30:03 UTC
