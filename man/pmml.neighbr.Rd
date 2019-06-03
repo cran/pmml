@@ -4,29 +4,30 @@
 \alias{pmml.neighbr}
 \title{Generate PMML for a neighbr object from the \bold{neighbr} package.}
 \usage{
-\method{pmml}{neighbr}(model, model.name = "kNN_model",
-  app.name = "Rattle/PMML", description = "K Nearest Neighbors Model",
-  copyright = NULL, transforms = NULL, unknownValue = NULL, ...)
+\method{pmml}{neighbr}(model, model_name = "kNN_model",
+  app_name = "SoftwareAG PMML Generator",
+  description = "K Nearest Neighbors Model", copyright = NULL,
+  transforms = NULL, missing_value_replacement = NULL, ...)
 }
 \arguments{
-\item{model}{a neighbr object.}
+\item{model}{A neighbr object.}
 
-\item{model.name}{a name to be given to the model in the PMML code.}
+\item{model_name}{A name to be given to the PMML model.}
 
-\item{app.name}{the name of the application that generated the PMML code.}
+\item{app_name}{The name of the application that generated the PMML.}
 
-\item{description}{a descriptive text for the Header element of the PMML code.}
+\item{description}{A descriptive text for the Header element of the PMML.}
 
-\item{copyright}{the copyright notice for the model.}
+\item{copyright}{The copyright notice for the model.}
 
-\item{transforms}{data transformations represented in PMML via \bold{pmmlTransformations}.}
+\item{transforms}{Data transformations.}
 
-\item{unknownValue}{value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
+\item{missing_value_replacement}{Value to be used as the 'missingValueReplacement' attribute for all MiningFields.}
 
-\item{...}{further arguments passed to or from other methods.}
+\item{...}{Further arguments passed to or from other methods.}
 }
 \value{
-PMML representation of the \code{neighbr} object.
+PMML representation of the neighbr object.
 }
 \description{
 Generate PMML for a neighbr object from the \bold{neighbr} package.
@@ -39,66 +40,73 @@ must be left as \code{NULL}), sets \code{categoricalScoringMethod} to "majorityV
 \code{continuousScoringMethod} to "average", and \code{isTransoformed} to "false".
 }
 \examples{
-# continuous features with continuous target, categorical target,
-# and neighbor ranking
-
 \dontrun{
+
+# Continuous features with continuous target, categorical target,
+# and neighbor ranking:
+
 library(neighbr)
 data(iris)
 
-# add an ID column to the data for neighbor ranking
+# Add an ID column to the data for neighbor ranking:
 iris$ID <- c(1:150)
 
-# train set contains all predicted variables, features, and ID column
-train_set <- iris[1:140,]
+# Train set contains all predicted variables, features, and ID column:
+train_set <- iris[1:140, ]
 
-# omit predicted variables or ID column from test set
-test_set <- iris[141:150,-c(4,5,6)]
+# Omit predicted variables or ID column from test set:
+test_set <- iris[141:150, -c(4, 5, 6)]
 
-fit <- knn(train_set=train_set,test_set=test_set,
-           k=3,
-           categorical_target="Species",
-           continuous_target= "Petal.Width",
-           comparison_measure="squared_euclidean",
-           return_ranked_neighbors=3,
-           id="ID")
+fit <- knn(
+  train_set = train_set, test_set = test_set,
+  k = 3,
+  categorical_target = "Species",
+  continuous_target = "Petal.Width",
+  comparison_measure = "squared_euclidean",
+  return_ranked_neighbors = 3,
+  id = "ID"
+)
 
 pmml(fit)
 
 
-# logical features with categorical target and neighbor ranking
+# Logical features with categorical target and neighbor ranking:
 
 library(neighbr)
 data("houseVotes84")
 
-# remove any rows with N/A elements
-dat <- houseVotes84[complete.cases(houseVotes84),]
+# Remove any rows with N/A elements:
+dat <- houseVotes84[complete.cases(houseVotes84), ]
 
-# change all {yes,no} factors to {0,1}
-feature_names <- names(dat)[!names(dat) \%in\% c("Class","ID")]
+# Change all {yes,no} factors to {0,1}:
+feature_names <- names(dat)[!names(dat) \%in\% c("Class", "ID")]
 for (n in feature_names) {
-  levels(dat[,n])[levels(dat[,n])=="n"] <- 0
-  levels(dat[,n])[levels(dat[,n])=="y"] <- 1
+  levels(dat[, n])[levels(dat[, n]) == "n"] <- 0
+  levels(dat[, n])[levels(dat[, n]) == "y"] <- 1
 }
 
-# change factors to numeric
-for (n in feature_names) {dat[,n] <- as.numeric(levels(dat[,n]))[dat[,n]]}
+# Change factors to numeric:
+for (n in feature_names) {
+  dat[, n] <- as.numeric(levels(dat[, n]))[dat[, n]]
+}
 
-# add an ID column for neighbor ranking
+# Add an ID column for neighbor ranking:
 dat$ID <- c(1:nrow(dat))
 
-# train set contains features, predicted variable, and ID
-train_set <- dat[1:225,]
+# Train set contains features, predicted variable, and ID:
+train_set <- dat[1:225, ]
 
-# test set contains features only
-test_set <- dat[226:232,!names(dat) \%in\% c("Class","ID")]
+# Test set contains features only:
+test_set <- dat[226:232, !names(dat) \%in\% c("Class", "ID")]
 
-fit <- knn(train_set=train_set,test_set=test_set,
-           k=5,
-           categorical_target = "Class",
-           comparison_measure="jaccard",
-           return_ranked_neighbors=3,
-           id="ID")
+fit <- knn(
+  train_set = train_set, test_set = test_set,
+  k = 5,
+  categorical_target = "Class",
+  comparison_measure = "jaccard",
+  return_ranked_neighbors = 3,
+  id = "ID"
+)
 
 pmml(fit)
 }

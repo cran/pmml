@@ -4,34 +4,37 @@
 \alias{pmml.iForest}
 \title{Generate PMML for an iForest object from the \bold{isofor} package.}
 \usage{
-\method{pmml}{iForest}(model, model.name = "isolationForest_Model",
-  app.name = "R", description = "Isolation Forest", copyright = NULL,
-  transforms = NULL, unknownValue = NULL, anomalyThreshold = 0.6,
-  parentInvalidValueTreatment = "returnInvalid",
-  childInvalidValueTreatment = "asIs", ...)
+\method{pmml}{iForest}(model, model_name = "isolationForest_Model",
+  app_name = "SoftwareAG PMML Generator",
+  description = "Isolation Forest Model", copyright = NULL,
+  transforms = NULL, missing_value_replacement = NULL,
+  anomalyThreshold = 0.6,
+  parent_invalid_value_treatment = "returnInvalid",
+  child_invalid_value_treatment = "asIs", ...)
 }
 \arguments{
-\item{model}{an iForest object from package \bold{isofor}}
+\item{model}{An iForest object from package \bold{isofor}.}
 
-\item{model.name}{optional; the model name.}
+\item{model_name}{A name to be given to the PMML model.}
 
-\item{app.name}{optional; name where the model was created.}
+\item{app_name}{The name of the application that generated the PMML.}
 
-\item{description}{optional; description of the model.}
+\item{description}{A descriptive text for the Header element of the PMML.}
 
-\item{copyright}{optional; a copyright statement.}
+\item{copyright}{The copyright notice for the model.}
 
-\item{transforms}{optional; any pre-processing information from the pmmlTransformations package.}
+\item{transforms}{Data transformations.}
 
-\item{unknownValue}{optional; a missing value replacement.}
+\item{missing_value_replacement}{Value to be used as the 'missingValueReplacement'
+attribute for all MiningFields.}
 
-\item{anomalyThreshold}{double between 0 and 1. Predicted values greater than this are classified as anomalies.}
+\item{anomalyThreshold}{Double between 0 and 1. Predicted values greater than this are classified as anomalies.}
 
-\item{parentInvalidValueTreatment}{invalid value treatment at the top MiningField level.}
+\item{parent_invalid_value_treatment}{Invalid value treatment at the top MiningField level.}
 
-\item{childInvalidValueTreatment}{invalid value treatment at the model segment MiningField level.}
+\item{child_invalid_value_treatment}{Invalid value treatment at the model segment MiningField level.}
 
-\item{...}{further arguments passed to other methods.}
+\item{...}{Further arguments passed to or from other methods.}
 }
 \value{
 PMML representation of the \code{iForest} object.
@@ -40,28 +43,40 @@ PMML representation of the \code{iForest} object.
 Generate PMML for an iForest object from the \bold{isofor} package.
 }
 \details{
-This function converts the iForest model object to the PMML format. The 
-PMML outputs the anomaly score as well as a boolean value indicating whether the 
+This function converts the iForest model object to the PMML format. The
+PMML outputs the anomaly score as well as a boolean value indicating whether the
 input is an anomaly or not. This is done by simply comparing the anomaly score with
 \code{anomalyThreshold}, a parameter in the \code{pmml} function.
-The iForest function automatically adds an extra level to all categorical variables, 
+The iForest function automatically adds an extra level to all categorical variables,
 labelled "."; this is kept in the PMML representation even though the use of this extra
 factor in the predict function is unclear.
+
+Isolation forest anomaly detection models are not yet supported by DMG PMML schema version 4.3. The PMML
+produced by this exporter uses an extended schema, and can be consumed by Zementis products.
+The extended schema is a superset of 4.3, and contains enhancements that will be part of
+the upcoming PMML 4.4 release.
 }
 \examples{
-\dontrun{ 
-# Any anomalous data points in the Iris dataset? Hopefully none of the 
-# anomaly scores are high!
+\dontrun{
+
+# Build iForest model using iris dataset. Create an isolation
+# forest with 10 trees. Sample 30 data points at a time from
+# the iris dataset to fit the trees.
 library(isofor)
-# create an isolation forest with 10 trees. Sample 30 data points at a time
-# from the iris dataset to fit the trees
-mod <- iForest(iris,nt=10,phi=30)
-#convert to PMML
+data(iris)
+mod <- iForest(iris, nt = 10, phi = 30)
+
+# Convert to PMML:
 pm <- pmml(mod)
 }
 
 }
+\references{
+\href{https://github.com/Zelazny7/isofor}{isofor package on GitHub}
+}
 \seealso{
-\code{\link[pmml]{pmml}},
-\href{https://github.com/Zelazny7/isofor}{isofor package}
+\code{\link[pmml]{pmml}}
+}
+\author{
+Tridivesh Jena
 }
