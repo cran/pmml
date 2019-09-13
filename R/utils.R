@@ -71,8 +71,20 @@
 }
 
 
-.pmmlRootNode <- function(version = "4.3") {
-  if (version == "4.3") {
+.pmmlRootNode <- function(version = "4.4") {
+  if (version == "4.4") {
+    node <- xmlNode("PMML",
+      attrs = c(
+        version = "4.4",
+        xmlns = "http://www.dmg.org/PMML-4_4",
+        "xmlns:xsi" = "http://www.w3.org/2001/XMLSchema-instance",
+        "xsi:schemaLocation" = paste(
+          "http://www.dmg.org/PMML-4_4",
+          "http://www.dmg.org/pmml/v4-4/pmml-4-4.xsd"
+        )
+      )
+    )
+  } else if (version == "4.3") {
     node <- xmlNode("PMML",
       attrs = c(
         version = "4.3",
@@ -133,6 +145,7 @@
 }
 
 
+
 .pmmlHeader <- function(description, copyright, app_name) {
   if (is.null(copyright)) copyright <- .generateCopyright()
 
@@ -140,11 +153,24 @@
   header <- xmlNode("Header", attrs = c(copyright = copyright, description = description))
 
   # Header -> Extension for user info
-  header <- append.XMLNode(header, xmlNode("Extension", attrs = c(name = "user", value = sprintf("%s", Sys.info()["user"]), extender = app_name)))
+  header <- append.XMLNode(
+    header,
+    xmlNode("Extension",
+      attrs = c(
+        name = "user",
+        value = sprintf("%s", Sys.info()["user"]),
+        extender = app_name
+      )
+    )
+  )
 
   # Header -> Application
-  VERSION <- "1.4"
-  header <- append.XMLNode(header, xmlNode("Application", attrs = c(name = app_name, version = VERSION)))
+  header <- append.XMLNode(header, xmlNode("Application",
+    attrs = c(
+      name = app_name,
+      version = toString(packageVersion("pmml"))
+    )
+  ))
 
   # Header -> Timestamp
   header <- append.XMLNode(header, xmlNode("Timestamp", sprintf("%s", Sys.time())))
@@ -873,3 +899,15 @@
 
   return(inbox)
 }
+
+
+
+# deprecate_arg <- function(old_arg, new_arg) {
+#   # deprecate an argument in a function
+#
+#   if (!missing(old_arg)) {
+#     warning_string <- paste0("argument ", old_arg, " is deprecated; please use ", new_arg, " instead.")
+#     warning(warning_string, call. = FALSE)
+#   }
+#   new_arg <- old_arg
+# }

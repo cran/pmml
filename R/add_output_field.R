@@ -46,7 +46,7 @@
 #' an OutputField element with name 'nodeName' element using the 'xml_model', 'outputNodes' and 'at' parameters.
 #'   Finally, one can use this to add the transformation expression given by the 'xformText' parameter
 #' to the node with name 'nodeName'. The string given via 'xformText' is converted to an XML expression similarly
-#' to the function_to_pmml function. In other words, find the OutputField node with tha name 'nodeName' and add
+#' to the function_to_pmml function. In other words, find the OutputField node with the name 'nodeName' and add
 #' the list of attributes given with 'attributes' and also, add the child transformations given in the 'xformText'
 #' parameter.
 #'
@@ -83,7 +83,7 @@
 #' )
 #'
 #' # Create new pmml objects with the output nodes appended
-#' add_output_field(
+#' pmod2 <- add_output_field(
 #'   xml_model = pmod, outputNodes = onodes2, at = "End",
 #'   xformText = NULL, nodeName = NULL, attributes = NULL,
 #'   whichOutput = 1
@@ -95,14 +95,14 @@
 #' )
 #'
 #' # Create nodes with attributes and transformations
-#' add_output_field(xml_model = pmod2, outputNodes = onodes2, at = 2)
-#' add_output_field(
+#' pmod3 <- add_output_field(xml_model = pmod2, outputNodes = onodes2, at = 2)
+#' pmod4 <- add_output_field(
 #'   xml_model = pmod2, xformText = list("exp(x) && !x"),
 #'   nodeName = "Predicted_Sepal.Length"
 #' )
 #'
 #' att <- list(datype = "dbl", optpe = "dsc")
-#' add_output_field(
+#' pmod5 <- add_output_field(
 #'   xml_model = pmod2, nodeName = "Predicted_Sepal.Length",
 #'   attributes = att
 #' )
@@ -110,7 +110,7 @@
 #'
 #' @export
 add_output_field <- function(xml_model = NULL, outputNodes = NULL, at = "End", xformText = NULL, nodeName = NULL,
-                             attributes = NULL, whichOutput = 1, namespace = "4_3") {
+                             attributes = NULL, whichOutput = 1, namespace = "4_4") {
 
   # Flush to avoid malloc error.
   flush.console()

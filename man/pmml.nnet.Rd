@@ -40,10 +40,9 @@ network models. The model is represented in the PMML NeuralNetwork format.
 \examples{
 library(nnet)
 fit <- nnet(Species ~ ., data = iris, size = 4)
-pmml(fit)
+fit_pmml <- pmml(fit)
 
 rm(fit)
-
 }
 \references{
 \href{https://CRAN.R-project.org/package=nnet}{nnet: Feed-forward

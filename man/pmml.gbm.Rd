@@ -50,7 +50,7 @@ mod <- gbm(Adjusted ~ .,
   n.trees = 3, interaction.depth = 4
 )
 
-pmml(mod)
+mod_pmml <- pmml(mod)
 
 # Classification example:
 mod2 <- gbm(Species ~ .,
@@ -60,8 +60,7 @@ mod2 <- gbm(Species ~ .,
 
 # The PMML will include a regression model to read the gbm object outputs
 # and convert to a "response" prediction type.
-pmml(mod2)
-
+mod2_pmml <- pmml(mod2)
 }
 \references{
 \href{https://CRAN.R-project.org/package=gbm}{gbm: Generalized Boosted

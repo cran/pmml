@@ -96,12 +96,10 @@ fit_pmml[[3]][[1]] #Mining Schema node
 fit_pmml[[3]][[3]]
 
 ## ----echo=FALSE----------------------------------------------------------
-
 funcs <- rbind(c("+","-","/","*","^","<","<=",">",">=","&&","&","|","||","==","!=","!","ceiling","prod","log"),
 c("+","-","/","*","pow","lessThan","lessOrEqual","greaterThan","greaterOrEqual","and","and","or","or","equal","notEqual","not","ceil","product","ln"))
-colnames(funcs) <- funcs[1,]
 
-kable(funcs,col.names=colnames(funcs))
+kable(funcs)
 
 ## ------------------------------------------------------------------------
 isIn <- function(x, ...) {

@@ -7,6 +7,10 @@
 
 [![CRAN
 status](https://www.r-pkg.org/badges/version/pmml)](https://cran.r-project.org/package=pmml)
+[![Travis build
+status](https://travis-ci.org/SoftwareAG/r-pmml.svg?branch=master)](https://travis-ci.org/SoftwareAG/r-pmml)
+[![Codecov test
+coverage](https://codecov.io/gh/SoftwareAG/r-pmml/branch/master/graph/badge.svg)](https://codecov.io/gh/SoftwareAG/r-pmml?branch=master)
 <!-- badges: end -->
 
 ## Overview
@@ -46,8 +50,7 @@ iris_lm_pmml <- pmml(iris_lm)
 
 -----
 
-Please note that the ‘pmml’ project is released with a [Contributor Code
-of
+Please note that this project is released with a [Contributor Code of
 Conduct](https://github.com/SoftwareAG/r-pmml/blob/master/.github/CODE_OF_CONDUCT.md).
 By contributing to this project, you agree to abide by its terms.
 

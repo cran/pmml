@@ -23,7 +23,8 @@
 #' @param model An iForest object from package \bold{isofor}.
 #' @param missing_value_replacement Value to be used as the 'missingValueReplacement'
 #' attribute for all MiningFields.
-#' @param anomalyThreshold Double between 0 and 1. Predicted values greater than this are classified as anomalies.
+#' @param anomaly_threshold Double between 0 and 1. Predicted values greater than this are classified as anomalies.
+#' @param anomalyThreshold Deprecated.
 #' @param parent_invalid_value_treatment Invalid value treatment at the top MiningField level.
 #' @param child_invalid_value_treatment Invalid value treatment at the model segment MiningField level.
 #' @param ... Further arguments passed to or from other methods.
@@ -37,15 +38,10 @@
 #' @details This function converts the iForest model object to the PMML format. The
 #' PMML outputs the anomaly score as well as a boolean value indicating whether the
 #' input is an anomaly or not. This is done by simply comparing the anomaly score with
-#' \code{anomalyThreshold}, a parameter in the \code{pmml} function.
+#' \code{anomaly_threshold}, a parameter in the \code{pmml} function.
 #' The iForest function automatically adds an extra level to all categorical variables,
 #' labelled "."; this is kept in the PMML representation even though the use of this extra
 #' factor in the predict function is unclear.
-#'
-#' Isolation forest anomaly detection models are not yet supported by DMG PMML schema version 4.3. The PMML
-#' produced by this exporter uses an extended schema, and can be consumed by Zementis products.
-#' The extended schema is a superset of 4.3, and contains enhancements that will be part of
-#' the upcoming PMML 4.4 release.
 #'
 #' @examples
 #' \dontrun{
@@ -58,7 +54,7 @@
 #' mod <- iForest(iris, nt = 10, phi = 30)
 #'
 #' # Convert to PMML:
-#' pm <- pmml(mod)
+#' mod_pmml <- pmml(mod)
 #' }
 #'
 #' @seealso \code{\link[pmml]{pmml}}
@@ -75,12 +71,21 @@ pmml.iForest <- function(model,
                          copyright = NULL,
                          transforms = NULL,
                          missing_value_replacement = NULL,
-                         anomalyThreshold = 0.6,
+                         anomaly_threshold = 0.6,
+                         anomalyThreshold,
                          parent_invalid_value_treatment = "returnInvalid",
                          child_invalid_value_treatment = "asIs",
                          ...) {
   if (!inherits(model, "iForest")) {
     stop("Not a legitimate iForest object")
+  }
+
+  # Deprecated argument.
+  if (!missing(anomalyThreshold)) {
+    warning("argument anomalyThreshold is deprecated; please use anomaly_threshold instead.",
+      call. = FALSE
+    )
+    anomaly_threshold <- anomalyThreshold
   }
 
   field <- list()
@@ -111,23 +116,28 @@ pmml.iForest <- function(model,
 
   pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, transformed = transforms))
 
+  # 4.4 node with sampleDataSize attribute
   anomalyModel <- xmlNode("AnomalyDetectionModel", attrs = c(
     functionName = "regression",
+    sampleDataSize = model$phi,
     algorithmType = "iforest", modelName = model_name
   ))
+
   anomalyModel <- append.XMLNode(anomalyModel, .pmmlMiningSchema(field, target, transforms, missing_value_replacement,
     invalidValueTreatment = parent_invalid_value_treatment
   ))
-  anomalyModel <- append.XMLNode(anomalyModel, .pmmlAnomalyOutput(field, target, anomalyThreshold))
-  anomalyModel <- append.XMLNode(anomalyModel, .pmmlParameterList(model$phi))
+
+  anomalyModel <- append.XMLNode(anomalyModel, .pmmlAnomalyOutput(field, target, anomaly_threshold))
 
   mmodel <- xmlNode("MiningModel", attrs = c(
     modelName = model_name, algorithmName = "randomForest",
     functionName = "regression"
   ))
+
   mmodel <- append.XMLNode(mmodel, .pmmlMiningSchema(field, target, transforms, missing_value_replacement,
     invalidValueTreatment = parent_invalid_value_treatment
   ))
+
   mmodel <- append.XMLNode(mmodel, .pmmlAnomalyMiningOutput("avg_path_length"))
 
   # If interaction terms do exist, define a product in LocalTransformations and use
@@ -202,13 +212,6 @@ pmml.iForest <- function(model,
     currRow <- .getParentRow(currRow, t)
   }
   return(depth)
-}
-
-.pmmlParameterList <- function(sampleSize) {
-  pl <- xmlNode("ParameterList")
-  par <- xmlNode("Parameter", attrs = c(name = "training_data_count", value = sampleSize))
-
-  return(append.XMLNode(pl, par))
 }
 
 .makeASegment <- function(b, model, model_name, field, target, missing_value_replacement = NULL, child_invalid_value_treatment) {
@@ -389,28 +392,26 @@ pmml.iForest <- function(model,
   return(rfNode)
 }
 
-.pmmlAnomalyOutput <- function(field, target, anomalyThreshold) {
+
+# 4.4 function with decision field
+.pmmlAnomalyOutput <- function(field, target, anomaly_threshold) {
   output <- xmlNode("Output")
   output1 <- xmlNode("OutputField", attrs = c(
     name = "anomalyScore", optype = "continuous",
     dataType = "double", feature = "predictedValue"
   ))
-  output2 <- xmlNode("OutputField", attrs = c(
+  output_anomaly <- xmlNode("OutputField", attrs = c(
     name = "anomaly", optype = "categorical", dataType = "boolean",
-    feature = "transformedValue"
+    feature = "decision"
   ))
 
-  output2a <- xmlNode("Apply", attrs = c("function" = "if"))
-  output2b <- xmlNode("Apply", attrs = c("function" = "lessThan"))
-  output2c <- xmlNode("FieldRef", attrs = c(field = "anomalyScore"))
-  output2d <- xmlNode("Constant", attrs = c(dataType = "double"), anomalyThreshold)
-  output2e <- xmlNode("Constant", attrs = c(dataType = "boolean"), "FALSE")
-  output2f <- xmlNode("Constant", attrs = c(dataType = "boolean"), "TRUE")
-  output2b <- append.XMLNode(output2b, output2c, output2d)
-  output2a <- append.XMLNode(output2a, output2b, output2e, output2f)
-  output2 <- append.XMLNode(output2, output2a)
+  output_anomaly_comp <- xmlNode("Apply", attrs = c("function" = "greaterOrEqual"))
+  output_anomaly_c <- xmlNode("FieldRef", attrs = c(field = "anomalyScore"))
+  output_anomaly_d <- xmlNode("Constant", attrs = c(dataType = "double"), anomaly_threshold)
+  output_anomaly_comp <- append.XMLNode(output_anomaly_comp, output_anomaly_c, output_anomaly_d)
+  output_anomaly <- append.XMLNode(output_anomaly, output_anomaly_comp)
 
-  output <- append.XMLNode(output, output1, output2)
+  output <- append.XMLNode(output, output1, output_anomaly)
   return(output)
 }
 

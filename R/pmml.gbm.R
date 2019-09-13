@@ -52,7 +52,7 @@
 #'   n.trees = 3, interaction.depth = 4
 #' )
 #'
-#' pmml(mod)
+#' mod_pmml <- pmml(mod)
 #'
 #' # Classification example:
 #' mod2 <- gbm(Species ~ .,
@@ -62,8 +62,7 @@
 #'
 #' # The PMML will include a regression model to read the gbm object outputs
 #' # and convert to a "response" prediction type.
-#' pmml(mod2)
-#' 
+#' mod2_pmml <- pmml(mod2)
 #' @export pmml.gbm
 #' @export
 pmml.gbm <- function(model,
@@ -229,7 +228,7 @@ pmml.gbm <- function(model,
     segmentation <- append.XMLNode(segmentation, segments)
   }
   if (dist == "multinomial") {
-    regModel <- .makeRegressionModel(field, target, numcategories, numtrees)
+    regModel <- .makeRegressionModel(field, target, numcategories, numtrees, model_name)
     segmentation <- append.XMLNode(segmentation, regModel)
   }
   mmodel <- append.XMLNode(mmodel, segmentation)
@@ -282,13 +281,13 @@ pmml.gbm <- function(model,
   return(pmodel)
 }
 
-.makeRegressionModel <- function(field, target, numcat, nt) {
+.makeRegressionModel <- function(field, target, numcat, nt, model_name) {
   segment <- xmlNode("Segment", attrs = c(id = numcat * nt + 1))
   tru <- xmlNode("True")
   segment <- append.XMLNode(segment, tru)
 
   regModel <- xmlNode("RegressionModel",
-    attrs = c(functionName = "classification", normalizationMethod = "softmax")
+    attrs = c(modelName = model_name, functionName = "classification", normalizationMethod = "softmax")
   )
   miningNode <- xmlNode("MiningSchema")
   for (i in 1:numcat)

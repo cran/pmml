@@ -65,7 +65,7 @@
 #' fields derived from a chain of transformations starting from an original
 #' field and multiple fields derived from the same original field.
 #'
-#' This package converts models to PMML version 4.3.
+#' This package exports models to PMML version 4.4.
 #'
 #' Please note that package \pkg{XML_3.95-0.1} or later is required to perform
 #' the full and correct functionality of \pkg{pmml}.
@@ -105,7 +105,7 @@
 #' iris_lm <- lm(Sepal.Length ~ ., data = iris)
 #'
 #' # Convert to pmml
-#' pmml(iris_lm)
+#' iris_lm_pmml <- pmml(iris_lm)
 #'
 #' # Create a data transformation object
 #' iris_trans <- xform_wrap(iris)
@@ -114,7 +114,7 @@
 #' iris_trans <- xform_min_max(iris_trans, xform_info = "column1->d_sl")
 #'
 #' # Output the tranformation in PMML format
-#' pmml(NULL, transforms = iris_trans)
+#' iris_trans_pmml <- pmml(NULL, transforms = iris_trans)
 #' @import XML
 #' @importFrom stringr str_detect str_split str_subset str_replace str_interp str_extract
 #' @importFrom stats coef coefficients na.omit

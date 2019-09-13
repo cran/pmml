@@ -61,7 +61,7 @@
 #'   id = "ID"
 #' )
 #'
-#' pmml(fit)
+#' fit_pmml <- pmml(fit)
 #'
 #'
 #' # Logical features with categorical target and neighbor ranking:
@@ -102,7 +102,7 @@
 #'   id = "ID"
 #' )
 #'
-#' pmml(fit)
+#' fit_pmml <- pmml(fit)
 #' }
 #'
 #' @seealso \code{\link[pmml]{pmml}},
@@ -161,7 +161,7 @@ pmml.neighbr <- function(model,
   field$class <- classes
 
   # PMML
-  pmml <- .pmmlRootNode("4.3")
+  pmml <- .pmmlRootNode()
 
   # PMML -> Header
   pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app_name))

@@ -14,10 +14,11 @@ library(e1071)
 library(neighbr)
 library(nnet)
 library(kernlab)
-
+library(forecast)
 
 data(iris)
 data(audit)
+data("WWWusage")
 iris_p <- read.csv("iris.csv")
 audit <- na.omit(audit)
 audit_factor <- audit
@@ -135,14 +136,34 @@ zmz_transform_audit <- function(box_obj) {
   return(box_obj)
 }
 
-schema <- XML::xmlSchemaParse("pmml-4-4_xslt_20180731_43.xsd")
+
+schema <- XML::xmlSchemaParse("pmml-4-4_xslt_20190830_10.5.0.0.xsd")
+
+
+test_that("TimeSeries/Arima PMML validates against schema", {
+  fit <- Arima(WWWusage, order = c(1, 0, 1))
+  expect_equal(validate_pmml(pmml(fit), schema), 0)
+
+  fit <- Arima(WWWusage, order = c(0, 0, 0))
+  expect_equal(validate_pmml(pmml(fit), schema), 0)
+
+  fit <- Arima(WWWusage, order = c(3, 1, 1))
+  expect_equal(validate_pmml(pmml(fit), schema), 0)
+
+  fit <- Arima(JohnsonJohnson, order = c(0, 1, 0), seasonal = c(0, 1, 2))
+  expect_equal(validate_pmml(pmml(fit), schema), 0)
+
+  fit <- Arima(AirPassengers, order = c(0, 1, 1), seasonal = c(0, 1, 1))
+  expect_equal(validate_pmml(pmml(fit), schema), 0)
+})
+
 
 test_that("AnomalyDetectioneModel/iForest PMML validates against schema", {
-  
   skip_on_cran()
-  
+  skip_on_ci()
+
   library(isofor)
-  
+
   fit <- iForest(iris, nt = 10, phi = 30)
   expect_equal(validate_pmml(pmml(fit), schema), 0)
 
@@ -155,6 +176,7 @@ test_that("AnomalyDetectioneModel/iForest PMML validates against schema", {
   fit <- iForest(box_obj$data[, -c(1, 7, 9, 10)], nt = 5, phi = 420)
   expect_equal(validate_pmml(pmml(fit, transforms = box_obj), schema), 0)
 })
+
 
 test_that("ClusteringModel/stats kmeans PMML validates against schema", {
   fit <- kmeans(audit[, c(2, 7, 9, 10, 12)], 2)
@@ -175,7 +197,7 @@ test_that("ClusteringModel/stats kmeans PMML validates against schema", {
   box_obj <- xform_wrap(iris)
   box_obj <- zmz_transform_iris(box_obj)
   box_obj <- xform_map(box_obj, xform_info = "[Species->d_Species][string->double]", table = "iris_class_table.csv", default_value = "-1", map_missing_to = "1")
-  box_obj <- xform_norm_discrete(box_obj, inputVar = "Species")
+  box_obj <- xform_norm_discrete(box_obj, input_var = "Species")
   fit <- kmeans(box_obj$data[, 14:21], 3)
   p_fit <- pmml(fit, transform = box_obj)
   expect_equal(validate_pmml(p_fit, schema), 0)
@@ -187,11 +209,12 @@ test_that("ClusteringModel/stats kmeans PMML validates against schema", {
     xform_info = "[Species->d_Species][string->double]",
     table = "iris_class_full_name_table.csv", default_value = "-1", map_missing_to = "1"
   )
-  box_obj <- xform_norm_discrete(box_obj, inputVar = "Species")
+  box_obj <- xform_norm_discrete(box_obj, input_var = "Species")
   fit <- kmeans(box_obj$data[, 14:21], 3)
   p_fit <- pmml(fit, transform = box_obj)
   expect_equal(validate_pmml(p_fit, schema), 0)
 })
+
 
 test_that("GeneralRegressionModel/glmnet PMML validates against schema", {
   x <- data.matrix(audit[, c(2, 7, 9:10)])
@@ -238,7 +261,7 @@ test_that("GeneralRegressionModel/glmnet PMML validates against schema", {
 
 
   box_obj <- xform_wrap(elnino)
-  box_obj <- rename_wrap_var(box_obj, "temp->predictedScore")
+  box_obj <- rename_wrap_var(wrap_object = box_obj, xform_info = "temp->predictedScore")
   box_obj <- zmz_transform_elnino(box_obj)
   x <- data.matrix(box_obj$data[1:6])
   y <- data.matrix(box_obj$data[7])
@@ -254,7 +277,7 @@ test_that("GeneralRegressionModel/glmnet PMML validates against schema", {
     xform_info = "[class->d_class][string->double]",
     table = "iris_class_index_table.csv", default_value = "-1", map_missing_to = "1"
   )
-  box_obj <- xform_norm_discrete(box_obj, inputVar = "class")
+  box_obj <- xform_norm_discrete(box_obj, input_var = "class")
   box_obj <- xform_discretize(box_obj,
     xform_info = "[petal_length->dis_pl][double->integer]",
     table = "iris_discretize_pl.csv", map_missing_to = "0", default_value = "1"
@@ -344,7 +367,7 @@ test_that("GeneralRegressionModel/stats PMML validates against schema", {
   audit$Adjusted <- as.factor(audit$Adjusted)
   box_obj <- xform_wrap(audit)
   box_obj <- zmz_transform_audit(box_obj)
-  box_obj <- xform_norm_discrete(box_obj, inputVar = "Employment")
+  box_obj <- xform_norm_discrete(box_obj, input_var = "Employment")
   box_obj <- xform_map(box_obj,
     xform_info = "[Marital-> d_Marital][string->double]",
     table = "audit_marital_table.csv", default_value = "-1", map_missing_to = "1"
@@ -422,6 +445,7 @@ test_that("MiningModel/gbm PMML validates against schema", {
   p_fit <- pmml(fit, transforms = box_obj)
   expect_equal(validate_pmml(p_fit, schema), 0)
 })
+
 
 test_that("MiningModel/randomForest PMML validates against schema", {
   audit_nor_logical[, "Sex"] <- as.factor(audit_nor_logical[, "Sex"])
@@ -518,7 +542,6 @@ test_that("MiningModel/randomForest PMML validates against schema", {
   p_fit <- pmml(fit, transforms = box_obj)
   expect_equal(validate_pmml(p_fit, schema), 0)
 })
-
 
 
 test_that("MiningModel/xgboost PMML validates against schema", {
@@ -939,7 +962,6 @@ test_that("NeuralNetwork/nnet PMML validates against schema", {
 })
 
 
-
 test_that("RegressionModel/nnet PMML validates against schema", {
   fit <- multinom(as.factor(Adjusted) ~ ., data = audit_nor, trace = F)
   expect_equal(validate_pmml(pmml(fit), schema), 0)
@@ -966,7 +988,6 @@ test_that("RegressionModel/nnet PMML validates against schema", {
 })
 
 
-
 test_that("RegressionModel/stats PMML validates against schema", {
   fit <- lm(Sepal.Length ~ ., data = iris)
   expect_equal(validate_pmml(pmml(fit), schema), 0)
@@ -987,7 +1008,7 @@ test_that("RegressionModel/stats PMML validates against schema", {
 
   box_obj <- xform_wrap(iris_p)
   box_obj <- zmz_transform_iris(box_obj)
-  box_obj <- xform_norm_discrete(box_obj, inputVar = "class")
+  box_obj <- xform_norm_discrete(box_obj, input_var = "class")
   box_obj <- xform_map(box_obj,
     xform_info = "[class->d_class][string->double]",
     table = "iris_p_class_table.csv", default_value = "-1", map_missing_to = "1"
@@ -1022,7 +1043,7 @@ test_that("RegressionModel/stats PMML validates against schema", {
     xform_info = "[petal_width->dis_pw][double->integer]",
     table = "iris_discretize_pw.csv", map_missing_to = "0", default_value = "1"
   )
-  box_obj <- xform_norm_discrete(box_obj, inputVar = "class")
+  box_obj <- xform_norm_discrete(box_obj, input_var = "class")
   box_obj <- xform_map(box_obj,
     xform_info = "[class->d_class][string->double]",
     table = "iris_p_class_table.csv", default_value = "-1", map_missing_to = "1"
@@ -1033,7 +1054,8 @@ test_that("RegressionModel/stats PMML validates against schema", {
 })
 
 
-test_that("SupportVectorMachineModel/e1071 PMML validates against schema", {
+
+test_that("AnomalyDetectionModel/e1071 one-classification PMML validates against schema", {
   fit <- svm(iris[, 1:3], y = NULL, type = "one-classification", scale = TRUE)
   expect_equal(validate_pmml(pmml(fit, dataset = iris[, 1:3], model_name = "radial_iris_ocsvm"), schema), 0)
 
@@ -1071,7 +1093,10 @@ test_that("SupportVectorMachineModel/e1071 PMML validates against schema", {
   audit_numeric$Adjusted <- as.numeric(audit_numeric$Adjusted)
   fit <- svm(audit_numeric, y = NULL, type = "one-classification", nu = 0.10, scale = FALSE, kernel = "radial")
   expect_equal(validate_pmml(pmml(fit, dataset = audit_numeric), schema), 0)
+})
 
+
+test_that("SupportVectorMachineModel/e1071 PMML validates against schema", {
   fit <- svm(Petal.Width ~ ., data = iris[, 1:4], kernel = "linear")
   expect_equal(validate_pmml(pmml(fit), schema), 0)
 
@@ -1157,7 +1182,7 @@ test_that("SupportVectorMachineModel/e1071 PMML validates against schema", {
 
   box_obj <- xform_wrap(audit)
   box_obj <- zmz_transform_audit(box_obj)
-  box_obj <- xform_norm_discrete(box_obj, inputVar = "Employment")
+  box_obj <- xform_norm_discrete(box_obj, input_var = "Employment")
   box_obj <- xform_map(box_obj,
     xform_info = "[Marital-> d_Marital][string->double]",
     table = "audit_marital_table.csv",
@@ -1201,7 +1226,7 @@ test_that("SupportVectorMachineModel/e1071 PMML validates against schema", {
 
   box_obj <- xform_wrap(audit)
   box_obj <- zmz_transform_audit(box_obj)
-  box_obj <- xform_norm_discrete(box_obj, inputVar = "Employment")
+  box_obj <- xform_norm_discrete(box_obj, input_var = "Employment")
   box_obj <- xform_map(box_obj,
     xform_info = "[Marital-> d_Marital][string->double]",
     table = "audit_marital_table.csv", default_value = "-1", map_missing_to = "1"
@@ -1213,7 +1238,7 @@ test_that("SupportVectorMachineModel/e1071 PMML validates against schema", {
 
   box_obj <- xform_wrap(audit_factor)
   box_obj <- zmz_transform_audit(box_obj)
-  box_obj <- xform_norm_discrete(box_obj, inputVar = "Employment")
+  box_obj <- xform_norm_discrete(box_obj, input_var = "Employment")
   box_obj <- xform_map(box_obj,
     xform_info = "[Marital-> d_Marital][string->double]",
     table = "audit_marital_table.csv", default_value = "-1", map_missing_to = "1"
@@ -1272,7 +1297,7 @@ test_that("SupportVectorMachineModel/e1071 PMML validates against schema", {
     xform_info = "[class->d_class][string->double]",
     table = "iris_p_class_table.csv", default_value = "-1", map_missing_to = "1"
   )
-  box_obj <- xform_norm_discrete(box_obj, inputVar = "class")
+  box_obj <- xform_norm_discrete(box_obj, input_var = "class")
   fit <- svm(class ~ ddd1 + ddd2 + ddd3 + ddd4, data = box_obj$data)
   p_fit <- pmml(fit, transforms = box_obj)
   expect_equal(validate_pmml(p_fit, schema), 0)
@@ -1352,7 +1377,7 @@ test_that("SupportVectorMachineModel/kernlab PMML validates against schema", {
     xform_info = "[class->d_class][string->double]",
     table = "iris_p_class_table.csv", default_value = "-1", map_missing_to = "1"
   )
-  box_obj <- xform_norm_discrete(box_obj, inputVar = "class")
+  box_obj <- xform_norm_discrete(box_obj, input_var = "class")
   fit <- ksvm(class ~ ddd1 + ddd2 + ddd3 + ddd4, data = box_obj$data)
   p_fit <- pmml(fit, dataset = box_obj$data, transform = box_obj)
   expect_equal(validate_pmml(p_fit, schema), 0)
@@ -1360,7 +1385,7 @@ test_that("SupportVectorMachineModel/kernlab PMML validates against schema", {
 
   box_obj <- xform_wrap(audit_factor)
   box_obj <- zmz_transform_audit(box_obj)
-  box_obj <- xform_norm_discrete(box_obj, inputVar = "Employment")
+  box_obj <- xform_norm_discrete(box_obj, input_var = "Employment")
   box_obj <- xform_map(box_obj,
     xform_info = "[Marital-> d_Marital][string->double]",
     table = "audit_marital_table.csv", default_value = "-1", map_missing_to = "1"
@@ -1423,7 +1448,7 @@ test_that("Transformations PMML validates against schema", {
   box_obj <- xform_wrap(iris_p)
   box_obj <- xform_min_max(box_obj, "1")
   box_obj <- xform_z_score(box_obj, "1", map_missing_to = 999)
-  box_obj <- xform_norm_discrete(box_obj, inputVar = "class")
+  box_obj <- xform_norm_discrete(box_obj, input_var = "class")
   box_obj <- xform_function(box_obj,
     orig_field_name = "sepal_width",
     new_field_name = "a_derived_field",
@@ -1458,7 +1483,7 @@ test_that("Transformations PMML validates against schema", {
 
   box_obj <- xform_wrap(audit_factor)
   box_obj <- zmz_transform_audit(box_obj)
-  box_obj <- xform_norm_discrete(box_obj, inputVar = "Employment")
+  box_obj <- xform_norm_discrete(box_obj, input_var = "Employment")
   box_obj <- xform_map(box_obj,
     xform_info = "[Marital-> d_Marital][string->double]",
     table = "audit_marital_table.csv", default_value = "-1", map_missing_to = "1"
@@ -1505,8 +1530,8 @@ test_that("Transformations PMML validates against schema", {
 
 
   factor_10k_box <- xform_wrap(factor_10k)
-  factor_10k_box <- xform_norm_discrete(factor_10k_box, inputVar = "CateA")
-  factor_10k_box <- xform_norm_discrete(factor_10k_box, inputVar = "CateB")
+  factor_10k_box <- xform_norm_discrete(factor_10k_box, input_var = "CateA")
+  factor_10k_box <- xform_norm_discrete(factor_10k_box, input_var = "CateB")
   fit <- rpart(letter ~ ., data = factor_10k_box$data[, -c(2, 3)])
   p_fit <- pmml(fit, transforms = factor_10k_box)
   expect_equal(validate_pmml(p_fit, schema), 0)

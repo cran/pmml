@@ -28,7 +28,7 @@ attribute for all MiningFields.}
 
 \item{weights}{The weights used for building the model.}
 
-\item{\dots}{Further arguments passed to or from other methods.}
+\item{...}{Further arguments passed to or from other methods.}
 }
 \value{
 PMML representation of the \code{lm} object.
@@ -43,10 +43,7 @@ terms. Currently, only numeric regression is supported.
 \examples{
 
 fit <- lm(Sepal.Length ~ ., data = iris)
-pmml(fit)
-
-rm(fit)
-
+fit_pmml <- pmml(fit)
 }
 \references{
 \href{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/lm.html}{R project: Fitting Linear Models}

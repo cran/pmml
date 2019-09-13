@@ -6,7 +6,7 @@
 file.}
 \usage{
 add_mining_field_attributes(xml_model = NULL, attributes = NULL,
-  namespace = "4_3", ...)
+  namespace = "4_4", ...)
 }
 \arguments{
 \item{xml_model}{The PMML model in a XML node format. If the model is a text
@@ -50,8 +50,8 @@ impute missing values in a model at different times.
 }
 \examples{
 # Make a sample model
-model0 <- lm(Sepal.Length ~ ., data = iris[, -5])
-model <- pmml(model0)
+fit <- lm(Sepal.Length ~ ., data = iris[, -5])
+fit_pmml <- pmml(fit)
 
 # The resulting model has mining fields with no information
 # besides fieldName, dataType and optype. This object is
@@ -79,7 +79,7 @@ for (k in 1:ncol(attributes)) {
   attributes[[k]] <- as.character(attributes[[k]])
 }
 
-add_mining_field_attributes(model, attributes, namespace = "4_3")
+fit_pmml <- add_mining_field_attributes(fit_pmml, attributes, namespace = "4_4")
 }
 \author{
 Tridivesh Jena

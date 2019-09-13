@@ -60,8 +60,8 @@
 #'
 #' @examples
 #' # Make a sample model
-#' model0 <- lm(Sepal.Length ~ ., data = iris[, -5])
-#' model <- pmml(model0)
+#' fit <- lm(Sepal.Length ~ ., data = iris[, -5])
+#' fit_pmml <- pmml(fit)
 #'
 #' # The resulting model has mining fields with no information
 #' # besides fieldName, dataType and optype. This object is
@@ -89,11 +89,11 @@
 #'   attributes[[k]] <- as.character(attributes[[k]])
 #' }
 #'
-#' add_mining_field_attributes(model, attributes, namespace = "4_3")
+#' fit_pmml <- add_mining_field_attributes(fit_pmml, attributes, namespace = "4_4")
 #' @importFrom XML getNodeSet addChildren addAttributes xmlTreeParse toString.XMLNode
 #'
 #' @export
-add_mining_field_attributes <- function(xml_model = NULL, attributes = NULL, namespace = "4_3", ...) {
+add_mining_field_attributes <- function(xml_model = NULL, attributes = NULL, namespace = "4_4", ...) {
   # Flush to avoid malloc error.
   flush.console()
 

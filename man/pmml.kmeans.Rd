@@ -9,7 +9,7 @@ the package \pkg{stats}.}
   app_name = "SoftwareAG PMML Generator",
   description = "KMeans cluster model", copyright = NULL,
   transforms = NULL, missing_value_replacement = NULL,
-  algorithm.name = "KMeans: Hartigan and Wong", ...)
+  algorithm_name = "KMeans: Hartigan and Wong", algorithm.name, ...)
 }
 \arguments{
 \item{model}{A kmeans object.}
@@ -27,7 +27,9 @@ the package \pkg{stats}.}
 \item{missing_value_replacement}{Value to be used as the 'missingValueReplacement'
 attribute for all MiningFields.}
 
-\item{algorithm.name}{The variety of kmeans used.}
+\item{algorithm_name}{The variety of kmeans used.}
+
+\item{algorithm.name}{Deprecated.}
 
 \item{...}{Further arguments passed to or from other methods.}
 }
@@ -49,8 +51,7 @@ ds <- rbind(
 )
 colnames(ds) <- c("Dimension1", "Dimension2")
 cl <- kmeans(ds, 2)
-pmml(cl)
-
+cl_pmml <- pmml(cl)
 }
 \references{
 \href{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/kmeans.html}{R

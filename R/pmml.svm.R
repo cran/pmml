@@ -23,12 +23,19 @@
 #' @param model An svm object from package \pkg{e1071}.
 #' @param missing_value_replacement Value to be used as the 'missingValueReplacement' attribute for all MiningFields.
 #' @param dataset Required for one-classification only; data used to train the one-class SVM model.
+#' @param detect_anomaly Required for one-classification only; boolean indicating whether to
+#' detect anomalies (TRUE) or inliers (FALSE).
 #'
 #' @inheritParams pmml
 #'
 #' @return PMML representation of the svm object.
 #'
-#' @details The model is represented in the PMML SupportVectorMachineModel format.
+#' @details Classification and regression models are represented in the PMML
+#' SupportVectorMachineModel format. One-Classification models are represented
+#' in the PMML AnomalyDetectionModel format. Please see below for details on
+#' the differences.
+#'
+#' @section Classification and Regression Models:
 #'
 #' Note that the sign of the coefficient of each support vector flips between the R object
 #' and the exported PMML file for classification and regression models. This is due to the minor
@@ -46,20 +53,37 @@
 #' \code{svm_predict_function} gives the value corresponding to the R predict function for the svm
 #' model. This output should be used when making model predictions.
 #'
-#' For a one-classification svm (OCSVM) model, the PMML has three OutputField elements. The
-#' OutputField \code{anomaly} is a boolean value that conforms to the DMG definition of an
-#' anomaly detection model; this value is \code{TRUE} when an anomaly is detected. This value is
-#' the opposite of the prediction by the e1071 object, which predicts FALSE when an anomaly
-#' is detected; that is, the R svm model predicts whether an input is an inlier. The OutputField
-#' \code{anomalyScore} is the signed distance to the separating boundary; \code{anomalyScore}
-#' corresponds to the \code{decision.values} attribute of the output of the svm predict
-#' function in R.
 #'
-#' For example, say that for an input of observations, the R OCSVM model predicts a positive
-#' decision value of \code{0.4} and label of \code{TRUE}. According to the R object, this means
-#' that the observation is an inlier. The PMML export of this model will give the following for the
-#' same input: \code{anomalyScore = 0.4}, \code{anomaly = "false"}. According to the PMML, the
-#' observation is not an anomaly. Note that there is no sign flip between R and PMML for OCSVM models.
+#' @section One-Classification SVM Models:
+#'
+#' For a one-classification svm (OCSVM) model, the PMML has two OutputField elements:
+#' \code{anomalyScore} and one of \code{anomaly} or \code{outlier}.
+#'
+#' The OutputField \code{anomalyScore} is the signed distance to the separating boundary;
+#' \code{anomalyScore} corresponds to the \code{decision.values} attribute of the output of the
+#' svm predict function in R.
+#'
+#' The second OutputField depends the value of \code{detect_anomaly}. By default, \code{detect_anomaly} is TRUE,
+#' which results in the second OutputField being \code{anomaly}.
+#' The \code{anomaly} OutputField is TRUE when an anomaly is detected.
+#' This field conforms to the DMG definition of an anomaly detection model. This value is the
+#' opposite of the prediction by the e1071::svm object in R.
+#'
+#' Setting \code{detect_anomaly} to FALSE results in the second field instead being \code{inlier}.
+#' This OutputField is TRUE when an inlier is
+#' detected, and conforms to the e1071 definition of one-class SVMs. This field is FALSE when
+#' an anomaly is detected; that is, the R svm model predicts whether an observation belongs to the
+#' class. When comparing the predictions from R and PMML, this field should be used, since it
+#' will match R's output.
+#'
+#' For example, say that for an an observation, the R OCSVM model predicts a positive
+#' decision value of 0.4 and label of TRUE. According to the R object, this means that the
+#' observation is an inlier. By default, the PMML export of this model will give the following for the
+#' same input: \code{anomalyScore = 0.4, anomaly = "false"}. According to the PMML, the observation is not an anomaly.
+#' If the same R object is instead exported with \code{detect_anomaly = FALSE},
+#' the PMML will then give: \code{anomalyScore = 0.4, inlier = "true"}, and this result agrees with R.
+#'
+#' Note that there is no sign flip for \code{anomalyScore} between R and PMML for OCSVM models.
 #'
 #' To export a OCSVM model, an additional argument, \code{dataset}, is required by the function.
 #' This argument expects a dataframe with data that was used to train the model. This is
@@ -68,11 +92,6 @@
 #' the formula interface for one-classification models, so the default S3 method must be used
 #' to train the SVM. The data used to train the one-class SVM must be numeric and not of
 #' integer class.
-#'
-#' SVM anomaly detection models are not yet supported by DMG PMML schema version 4.3. The PMML
-#' produced by this exporter uses an extended schema, and can be consumed by Zementis products.
-#' The extended schema is a superset of 4.3, and contains enhancements that will be part of
-#' the upcoming PMML 4.4 release.
 #'
 #' @references
 #' * R project CRAN package: \emph{\bold{e1071}: Misc Functions of the Department of Statistics,
@@ -89,15 +108,26 @@
 #'
 #' # Classification with a polynomial kernel
 #' fit <- svm(Species ~ ., data = iris, kernel = "polynomial")
-#' pmml(fit)
+#' fit_pmml <- pmml(fit)
 #'
 #' # Regression
 #' fit <- svm(Sepal.Length ~ Sepal.Width + Petal.Length + Petal.Width, data = iris)
-#' pmml(fit)
+#' fit_pmml <- pmml(fit)
 #'
 #' # Anomaly detection with one-classification
-#' fit <- svm(iris[, 1:4], y = NULL, type = "one-classification")
-#' pmml(fit, dataset = iris[, 1:4])
+#' fit <- svm(iris[, 1:4],
+#'   y = NULL,
+#'   type = "one-classification"
+#' )
+#' fit_pmml <- pmml(fit, dataset = iris[, 1:4])
+#'
+#' # Inlier detection with one-classification
+#' fit <- svm(iris[, 1:4],
+#'   y = NULL,
+#'   type = "one-classification",
+#'   detect_anomaly = FALSE
+#' )
+#' fit_pmml <- pmml(fit, dataset = iris[, 1:4])
 #' }
 #'
 #' @seealso \code{\link[pmml]{pmml}},
@@ -113,6 +143,7 @@ pmml.svm <- function(model,
                      transforms = NULL,
                      missing_value_replacement = NULL,
                      dataset = NULL,
+                     detect_anomaly = TRUE,
                      ...) {
   if (!inherits(model, "svm")) stop("Not a legitimate svm object")
 
@@ -144,7 +175,7 @@ pmml.svm <- function(model,
     #----------------------------------------------------------
     # PMML
 
-    pmml <- .pmmlRootNode("4.3Ext") # one-class svm uses 4.3Ext schema
+    pmml <- .pmmlRootNode("4.4")
 
     #----------------------------------------------------------
     # PMML -> Header
@@ -190,36 +221,9 @@ pmml.svm <- function(model,
       )
     )
 
-    xmlOF_anomaly <- xmlNode("OutputField",
-      attrs = c(
-        name = "anomaly", feature = "anomaly",
-        dataType = "boolean", optype = "categorical",
-        threshold = "0"
-      )
-    )
-
-
-
-    # Additional output field with a transformed decision.values value.
-    # This value corresponds to R's prediction for the one-class svm model.
-    xmlOF_svm_predict_anomaly <- xmlNode("OutputField",
-      attrs = c(
-        name = "svm_predict_anomaly",
-        feature = "transformedValue",
-        dataType = "boolean",
-        optype = "categorical"
-      )
-    )
-
-    xmlApply <- xmlNode("Apply", attrs = c("function" = "not"))
-    xmlFR <- xmlNode("FieldRef", attrs = c(field = "anomaly"))
-    xmlApply <- append.XMLNode(xmlApply, xmlFR)
-
-    xmlOF_svm_predict_anomaly <- append.XMLNode(xmlOF_svm_predict_anomaly, xmlApply)
 
     xmlADOutput <- append.XMLNode(xmlADOutput, xmlOF_anomalyScore)
-    xmlADOutput <- append.XMLNode(xmlADOutput, xmlOF_anomaly)
-    xmlADOutput <- append.XMLNode(xmlADOutput, xmlOF_svm_predict_anomaly)
+    xmlADOutput <- append.XMLNode(xmlADOutput, .anomaly_or_inlier(detect_anomaly))
 
     xmlADModel <- append.XMLNode(xmlADModel, xmlADOutput)
 
@@ -374,7 +378,7 @@ pmml.svm <- function(model,
 }
 
 .makeOtherNodes <- function(model, field, transforms, functionName, xmlModel) {
-  # Function to create LocalTransformations, Kernel, Vector Instances, and Suppor Vector Machines.
+  # Create LocalTransformations, Kernel, Vector Instances, and Suppor Vector Machines.
   # This function is very similar for one-class SVM and and other SVMs; vfStart is the only variable that changes.
   #
   # vfStart: starting value for a for loop. For Anomaly Detection (type 2), set vfStart to 1.
@@ -660,4 +664,36 @@ pmml.svm <- function(model,
 
 
   return(xmlModel)
+}
+
+.anomaly_or_inlier <- function(detect_anomaly) {
+  # Create OutputField "anomaly" or "inlier" depending on value of detect_anomaly.
+  if (detect_anomaly) {
+    output <- xmlNode("OutputField", attrs = c(
+      name = "anomaly",
+      feature = "decision",
+      dataType = "boolean",
+      optype = "categorical"
+    ))
+
+    output_apply <- xmlNode("Apply", attrs = c("function" = "lessThan"))
+    output_fieldref <- xmlNode("FieldRef", attrs = c(field = "anomalyScore"))
+    output_constant <- xmlNode("Constant", 0, attrs = c(dataType = "double"))
+    output_apply <- append.XMLNode(output_apply, output_fieldref, output_constant)
+    output <- append.XMLNode(output, output_apply)
+  } else {
+    output <- xmlNode("OutputField", attrs = c(
+      name = "inlier",
+      feature = "decision",
+      dataType = "boolean",
+      optype = "categorical"
+    ))
+
+    output_apply <- xmlNode("Apply", attrs = c("function" = "greaterOrEqual"))
+    output_fieldref <- xmlNode("FieldRef", attrs = c(field = "anomalyScore"))
+    output_constant <- xmlNode("Constant", 0, attrs = c(dataType = "double"))
+    output_apply <- append.XMLNode(output_apply, output_fieldref, output_constant)
+    output <- append.XMLNode(output, output_apply)
+  }
+  return(output)
 }

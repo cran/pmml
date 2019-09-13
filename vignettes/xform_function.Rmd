@@ -173,13 +173,14 @@ fit_pmml[[3]][[3]]
 
 The following R functions and operators are directly supported by `xform_function`. Their PMML equivalents are listed on the second line:
 ```{r,echo=FALSE}
-
 funcs <- rbind(c("+","-","/","*","^","<","<=",">",">=","&&","&","|","||","==","!=","!","ceiling","prod","log"),
 c("+","-","/","*","pow","lessThan","lessOrEqual","greaterThan","greaterOrEqual","and","and","or","or","equal","notEqual","not","ceil","product","ln"))
-colnames(funcs) <- funcs[1,]
 
-kable(funcs,col.names=colnames(funcs))
+kable(funcs)
 ```
+
+
+
 
 For these functions, no extra code is required for translation.
 
@@ -314,4 +315,4 @@ function_to_pmml("if(a<2) {x+3} else if (a>4) {4} else {5}")
 
 
 ## References
-- [PMML 4.3 official specification](http://dmg.org/pmml/v4-3/GeneralStructure.html)
+- [DMG PMML 4.4 specification](http://dmg.org/pmml/v4-4/GeneralStructure.html)

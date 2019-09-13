@@ -40,7 +40,7 @@
 #' to specify field names in its model representation. The R model object does not store
 #' information about the fitted tree structure either. However, this information can
 #' be extracted from the \code{xgb.model.dt.tree} function and the file saved using the
-#' \code{xgb.dump} function. The xgboost library is therefore needed in the environmant and this
+#' \code{xgb.dump} function. The xgboost library is therefore needed in the environment and this
 #' saved file is needed as an input as well.
 #'
 #' The following objectives are currently supported: \code{multi:softprob},
@@ -80,7 +80,7 @@
 #' xgb.dump(model1, "model1.dumped.trees")
 #'
 #' # Convert to PMML:
-#' pmml(model1,
+#' model1_pmml <- pmml(model1,
 #'   input_feature_names = colnames(train$data),
 #'   output_label_name = "prediction1",
 #'   output_categories = c("0", "1"),
@@ -99,7 +99,7 @@
 #' xgb.dump(model2, "model2.dumped.trees")
 #'
 #' # Convert to PMML:
-#' pmml(model2,
+#' model2_pmml <- pmml(model2,
 #'   input_feature_names = colnames(as.matrix(iris[, 1:4])),
 #'   output_label_name = "Species",
 #'   output_categories = c(1, 2, 3), xgb_dump_file = "model2.dumped.trees"

@@ -1,7 +1,7 @@
 Package: pmml
 Type: Package
 Title: Generate PMML for Various Models
-Version: 2.0.0
+Version: 2.1.0
 Authors@R: c(
     person("Dmitriy", "Bolotov", email = "rpmmlsupport@softwareag.com", role = c("aut", "cre")),
     person("Tridivesh", "Jena", email = "tridivesh.jena@softwareag.com", role = "aut"),
@@ -13,19 +13,22 @@ Authors@R: c(
     person("Rajarshi", "Guha", email = "rguha@indiana.edu", role = "aut"),
     person("Software AG", role = c("cph")))
 Depends: XML
-Suggests: ada, amap, arules, caret, clue, data.table, gbm, glmnet,
-        Matrix, neighbr, nnet, rpart, randomForestSRC (<= 2.5.0),
-        randomForest, kernlab, e1071, testthat, survival, xgboost,
-        knitr, rmarkdown
+Suggests: ada, amap, arules, caret, clue, data.table, forecast, gbm,
+        glmnet, Matrix, neighbr, nnet, rpart, randomForestSRC (<=
+        2.5.0), randomForest, kernlab, e1071, testthat, survival,
+        xgboost, knitr, rmarkdown, covr
 Imports: methods, stats, utils, stringr
 License: GPL-3 | file LICENSE
 Description: The Predictive Model Markup Language (PMML) is an XML-based language which provides a way for applications to define machine learning, statistical and data mining models and to share models between PMML compliant applications. More information about the PMML industry standard and the Data Mining Group can be found at <http://www.dmg.org>. The generated PMML can be imported into any PMML consuming application, such as Zementis Predictive Analytics products, which integrate with web services, relational database systems and deploy natively on Hadoop in conjunction with Hive, Spark or Storm, as well as allow predictive analytics to be executed for IBM z Systems mainframe applications and real-time, streaming analytics platforms. The package isofor (used for anomaly detection) can be installed with devtools::install_github("Zelazny7/isofor").
-URL: https://www.softwareag.com/zementis
+URL: https://softwareag.github.io/r-pmml/,
+        https://github.com/SoftwareAG/r-pmml,
+        https://www.softwareag.com/zementis
+BugReports: https://github.com/SoftwareAG/r-pmml/issues
 NeedsCompilation: no
 RoxygenNote: 6.1.1
 VignetteBuilder: knitr
 Encoding: UTF-8
-Packaged: 2019-06-02 22:59:35 UTC; dmitriy
+Packaged: 2019-09-13 05:01:16 UTC; dmitriy
 Author: Dmitriy Bolotov [aut, cre],
   Tridivesh Jena [aut],
   Graham Williams [aut],
@@ -37,4 +40,4 @@ Author: Dmitriy Bolotov [aut, cre],
   Software AG [cph]
 Maintainer: Dmitriy Bolotov <rpmmlsupport@softwareag.com>
 Repository: CRAN
-Date/Publication: 2019-06-03 13:30:03 UTC
+Date/Publication: 2019-09-13 05:50:06 UTC

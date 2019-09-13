@@ -41,10 +41,9 @@
 #' @examples
 #' library(nnet)
 #' fit <- nnet(Species ~ ., data = iris, size = 4)
-#' pmml(fit)
+#' fit_pmml <- pmml(fit)
 #'
 #' rm(fit)
-#' 
 #' @export pmml.nnet
 #' @export
 pmml.nnet <- function(model,

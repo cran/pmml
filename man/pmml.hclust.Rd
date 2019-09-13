@@ -47,7 +47,7 @@ the same way.
 To use this pmml function, therefore, one must pick the number of clusters
 desired and the coordinate values at those cluster centers. This can be done
 using the \code{hclusterpar} and \code{centers.hclust} functions from the
-\pkg{amap} and \code{rattle} packages repectively.
+\pkg{amap} and \code{rattle} packages respectively.
 
 The hclust object will be approximated by \code{k} centroids and is
 converted into a PMML representation for kmeans clusters.
@@ -67,7 +67,7 @@ model <- hclusterpar(iris[, -5])
 centerInfo <- centers.hclust(iris[, -5], model, 3)
 
 # Convert to pmml
-pmml(model, centers = centerInfo)
+model_pmml <- pmml(model, centers = centerInfo)
 }
 
 }

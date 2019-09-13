@@ -6,7 +6,7 @@
 given PMML file.}
 \usage{
 add_data_field_children(xml_model = NULL, field = NULL,
-  intervals = NULL, values = NULL, namespace = "4_3", ...)
+  intervals = NULL, values = NULL, namespace = "4_4", ...)
 }
 \arguments{
 \item{xml_model}{The PMML model in a XML node format. If the model is a text
@@ -42,21 +42,21 @@ model. This function allows one to take an existing PMML file and add these
 elements to the DataFields.
 
 The 'Interval' elements or the 'Value' elements can be typed in, but more
-conviniently created by using the helper functions 'make_intervals' and
+conveniently created by using the helper functions 'make_intervals' and
 'MakeValues'. This function can then add these extra information to the
 PMML.
 }
 \examples{
 # Make a sample model:
-model0 <- lm(Sepal.Length ~ ., data = iris[, -5])
-model <- pmml(model0)
+fit <- lm(Sepal.Length ~ ., data = iris[, -5])
+fit_pmml <- pmml(fit)
 
 # The resulting model has data fields but with no 'Interval' or Value'
 # elements. This object is already an xml node (not an external text
 # file), so there is no need to convert it to an xml node object.
 
 # Add an 'Interval' element node by typing it in
-add_data_field_children(model,
+fit_pmml_2 <- add_data_field_children(fit_pmml,
   field = "Sepal.Length",
   intervals = list(newXMLNode("Interval",
     attrs = c(closure = "openClosed", rightMargin = 3)
@@ -78,10 +78,10 @@ mv <- make_values(
 )
 
 # As an example, apply these to the Sepal.Length field:
-add_data_field_children(model, field = "Sepal.Length", intervals = mi, values = mv)
+fit_pmml_3 <- add_data_field_children(fit_pmml, field = "Sepal.Length", intervals = mi, values = mv)
 
 # Only defined 'Interval's:
-add_data_field_children(model, field = "Sepal.Length", intervals = mi)
+fit_pmml_3 <- add_data_field_children(fit_pmml, field = "Sepal.Length", intervals = mi)
 }
 \author{
 Tridivesh Jena
