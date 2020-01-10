@@ -5,11 +5,17 @@
 \title{Generate the PMML representation for a kmeans object from
 the package \pkg{stats}.}
 \usage{
-\method{pmml}{kmeans}(model, model_name = "KMeans_Model",
+\method{pmml}{kmeans}(
+  model,
+  model_name = "KMeans_Model",
   app_name = "SoftwareAG PMML Generator",
-  description = "KMeans cluster model", copyright = NULL,
-  transforms = NULL, missing_value_replacement = NULL,
-  algorithm_name = "KMeans: Hartigan and Wong", algorithm.name, ...)
+  description = "KMeans cluster model",
+  copyright = NULL,
+  transforms = NULL,
+  missing_value_replacement = NULL,
+  algorithm_name = "KMeans: Hartigan and Wong",
+  ...
+)
 }
 \arguments{
 \item{model}{A kmeans object.}
@@ -28,8 +34,6 @@ the package \pkg{stats}.}
 attribute for all MiningFields.}
 
 \item{algorithm_name}{The variety of kmeans used.}
-
-\item{algorithm.name}{Deprecated.}
 
 \item{...}{Further arguments passed to or from other methods.}
 }

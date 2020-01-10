@@ -1,7 +1,7 @@
 # PMML: Predictive Model Markup Language
 #
 # Copyright (c) 2009-2016, Zementis, Inc.
-# Copyright (c) 2016-2019, Software AG, Darmstadt, Germany and/or Software AG
+# Copyright (c) 2016-2020, Software AG, Darmstadt, Germany and/or Software AG
 # USA Inc., Reston, VA, USA, and/or its subsidiaries and/or its affiliates
 # and/or their licensors.
 #
@@ -23,7 +23,6 @@
 #'
 #' @param wrap_object Wrapper object obtained by using the xform_wrap function on the
 #' raw data.
-#' @param wrap_data Deprecated.
 #' @param xform_info Specification of details of the renaming.
 #' @param \dots Further arguments passed to or from other methods.
 #'
@@ -68,17 +67,7 @@
 #' iris_box <- rename_wrap_var(wrap_object = iris_box, xform_info = "Sepal.Width->SW")
 #' @export
 rename_wrap_var <- function(wrap_object,
-                            wrap_data,
                             xform_info = NA, ...) {
-
-  # Deprecated argument.
-  if (!missing(wrap_data)) {
-    warning("argument wrap_data is deprecated; please use wrap_object instead.",
-      call. = FALSE
-    )
-    wrap_object <- wrap_data
-  }
-
   i <- NULL
   j <- NULL
   colnm <- NULL

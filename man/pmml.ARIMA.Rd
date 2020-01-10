@@ -4,13 +4,20 @@
 \alias{pmml.ARIMA}
 \title{Generate PMML for an ARIMA object the \bold{forecast} package.}
 \usage{
-\method{pmml}{ARIMA}(model, model_name = "ARIMA_model",
+\method{pmml}{ARIMA}(
+  model,
+  model_name = "ARIMA_model",
   app_name = "SoftwareAG PMML Generator",
-  description = "ARIMA Time Series Model", copyright = NULL,
-  transforms = NULL, missing_value_replacement = NULL, ...)
+  description = "ARIMA Time Series Model",
+  copyright = NULL,
+  transforms = NULL,
+  missing_value_replacement = NULL,
+  exact_least_squares = TRUE,
+  ...
+)
 }
 \arguments{
-\item{model}{an ARIMA object from the package \pkg{forecast}.}
+\item{model}{An ARIMA object from the package \pkg{forecast}.}
 
 \item{model_name}{A name to be given to the PMML model.}
 
@@ -25,6 +32,9 @@
 \item{missing_value_replacement}{Value to be used as the 'missingValueReplacement'
 attribute for all MiningFields.}
 
+\item{exact_least_squares}{(seasonal models only) If TRUE, export with exact least squares;
+otherwise, use conditional least squares.}
+
 \item{...}{Further arguments passed to or from other methods.}
 }
 \value{
@@ -34,9 +44,15 @@ PMML representation of the \code{ARIMA} object.
 Generate PMML for an ARIMA object the \bold{forecast} package.
 }
 \details{
-The model is represented in the PMML TimeSeriesModel format with conditional
-least squares forecasting. Note that ARIMA models in R are
-estimated using a state space formulation.
+The model is represented in the PMML TimeSeriesModel format.
+Non-seasonal models are represented with conditional
+least squares. For models with a seasonal component, the PMML can be exported with conditional
+least squares or exact least squares. Note that ARIMA models in R are
+estimated using a state space formulation. When using conditional least squares with seasonal models,
+forecast results between R and PMML may not match.
+
+Prediction intervals are exported for non-seasonal models only. For ARIMA models with d=2, the intervals
+between R and PMML may not match.
 
 Transforms are currently not supported for ARIMA models.
 }

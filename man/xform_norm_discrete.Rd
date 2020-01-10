@@ -4,8 +4,13 @@
 \alias{xform_norm_discrete}
 \title{Normalize discrete values in accordance with the PMML element \bold{NormDiscrete}.}
 \usage{
-xform_norm_discrete(wrap_object, xform_info = NA, input_var = NA,
-  inputVar, map_missing_to = NA, ...)
+xform_norm_discrete(
+  wrap_object,
+  xform_info = NA,
+  input_var = NA,
+  map_missing_to = NA,
+  ...
+)
 }
 \arguments{
 \item{wrap_object}{Output of xform_wrap or another transformation function.}
@@ -15,8 +20,6 @@ the input variable to be transformed.}
 
 \item{input_var}{The input variable name in the data on which the
 transformation is to be applied.}
-
-\item{inputVar}{Deprecated.}
 
 \item{map_missing_to}{Value to be given to the transformed variable if the
 value of the input variable is missing.}

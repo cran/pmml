@@ -1,7 +1,7 @@
 # PMML: Predictive Model Markup Language
 #
 # Copyright (c) 2009-2016, Zementis, Inc.
-# Copyright (c) 2016-2019, Software AG, Darmstadt, Germany and/or Software AG
+# Copyright (c) 2016-2020, Software AG, Darmstadt, Germany and/or Software AG
 # USA Inc., Reston, VA, USA, and/or its subsidiaries and/or its affiliates
 # and/or their licensors.
 #
@@ -33,7 +33,6 @@
 #' @param missing_value_replacement Value to be used as the 'missingValueReplacement'
 #' attribute for all MiningFields.
 #' @param algorithm_name The variety of kmeans used.
-#' @param algorithm.name Deprecated.
 #'
 #' @inheritParams pmml
 #'
@@ -62,17 +61,8 @@ pmml.kmeans <- function(model,
                         transforms = NULL,
                         missing_value_replacement = NULL,
                         algorithm_name = "KMeans: Hartigan and Wong",
-                        algorithm.name,
                         ...) {
   if (!inherits(model, "kmeans")) stop("Not a legitimate kmeans object")
-
-  # Deprecated argument.
-  if (!missing(algorithm.name)) {
-    warning("argument algorithm.name is deprecated; please use algorithm_name instead.",
-      call. = FALSE
-    )
-    algorithm_name <- algorithm.name
-  }
 
   field <- NULL
   field$name <- colnames(model$centers)
