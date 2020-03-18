@@ -12,7 +12,9 @@
   copyright = NULL,
   transforms = NULL,
   missing_value_replacement = NULL,
+  ts_type = "arima",
   exact_least_squares = TRUE,
+  cpi_levels = c(80, 95),
   ...
 )
 }
@@ -32,8 +34,12 @@
 \item{missing_value_replacement}{Value to be used as the 'missingValueReplacement'
 attribute for all MiningFields.}
 
-\item{exact_least_squares}{(seasonal models only) If TRUE, export with exact least squares;
+\item{ts_type}{The type of time series representation for PMML: "arima" or "statespace".}
+
+\item{exact_least_squares}{Deprecated. For seasonal models only, if TRUE, export with exact least squares;
 otherwise, use conditional least squares.}
+
+\item{cpi_levels}{Vector of confidence levels for prediction intervals.}
 
 \item{...}{Further arguments passed to or from other methods.}
 }
@@ -44,15 +50,35 @@ PMML representation of the \code{ARIMA} object.
 Generate PMML for an ARIMA object the \bold{forecast} package.
 }
 \details{
-The model is represented in the PMML TimeSeriesModel format.
-Non-seasonal models are represented with conditional
-least squares. For models with a seasonal component, the PMML can be exported with conditional
-least squares or exact least squares. Note that ARIMA models in R are
-estimated using a state space formulation. When using conditional least squares with seasonal models,
-forecast results between R and PMML may not match.
+The model is represented as a PMML TimeSeriesModel.
 
-Prediction intervals are exported for non-seasonal models only. For ARIMA models with d=2, the intervals
+When \code{ts_type = "arima"}, the R object is exported as ARIMA in PMML.
+Non-seasonal models are represented with conditional
+least squares (CLS). For models with a seasonal component, the PMML can be exported with CLS
+or exact least squares (ELS). Note that ARIMA models in R are
+estimated using a state space representation. Therefore, when using CLS with seasonal models,
+forecast results between R and PMML may not match exactly. Prediction intervals
+are exported for non-seasonal models only. For ARIMA models with d=2, the prediction intervals
 between R and PMML may not match.
+
+\code{exact_least_squares} is deprecated, and will be removed in a future version, at which point
+ELS will be the only representation used when \code{ts_type = "arima"}.
+
+When \code{ts_type = "statespace"}, the R object is exported as StateSpaceModel in PMML.
+
+\code{ts_type} also affects the dataType of OutputField elements. When \code{ts_type = "arima"},
+the forecast
+and prediction interval OutputFields are of dataType "double". Otherwise, these fields are of
+dataType "string", and contain a collection of all values up to and including the steps ahead value supplied
+during scoring. 
+String output in this form is facilitated by Extension elements in the PMML file,
+and is supported by Zementis Server 10.6.0.0.
+
+\code{cpi_levels} behaves similar to \code{levels} in \code{forecast::forecast}: values must be
+between 0 and 100,
+non-inclusive.
+
+ARIMA models with a drift term will be supported in a future version.
 
 Transforms are currently not supported for ARIMA models.
 }
@@ -71,6 +97,12 @@ mod_02 <- Arima(JohnsonJohnson,
   seasonal = c(1, 1, 1)
 )
 mod_02_pmml <- pmml(mod_02)
+
+# non-seasonal model exported as StateSpaceModel
+data("WWWusage")
+mod <- Arima(WWWusage, order = c(3, 1, 1))
+mod_pmml <- pmml(mod, ts_type = "statespace")
+
 }
 \author{
 Dmitriy Bolotov

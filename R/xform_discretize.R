@@ -160,7 +160,7 @@
 #'   c(NA, 3, "closed", 2, "Open", 3),
 #'   c(NA, 4, "closed", 3, "Open", 4),
 #'   c("[4", 5, "closed", 4, "Open", NA)
-#' ))
+#' ), stringsAsFactors = TRUE)
 #'
 #' # Give column names to make it look nice; not necessary!
 #' colnames(m) <- c(
@@ -416,7 +416,14 @@ xform_discretize <-
 
       colnames(dataMatrix) <- dataMatrix[1, ]
       fieldsMap <- list(dataMatrix)
-      suppressWarnings(newrow <- data.frame(type, dataType, I(orig_field_name), sampleMin, sampleMax, xformedMin, xformedMax, centers, scales, I(fieldsMap), transform, default, missingValue, xform_function, row.names = derivedFieldName, check.names = FALSE))
+      suppressWarnings(newrow <- data.frame(type, dataType, I(orig_field_name),
+        sampleMin, sampleMax, xformedMin,
+        xformedMax, centers, scales, I(fieldsMap),
+        transform, default, missingValue,
+        xform_function,
+        row.names = derivedFieldName,
+        check.names = FALSE, stringsAsFactors = TRUE
+      ))
 
       suppressWarnings(newBoxData$field_data <- rbind(newBoxData$field_data, newrow))
 
@@ -446,7 +453,15 @@ xform_discretize <-
         default <- default_value[k]
         missingValue <- map_missing_to[k]
 
-        suppressWarnings(newrow <- data.frame(type = "derived", dataType = dataType, I(orig_field_name), sampleMin, sampleMax, xformedMin, xformedMax, centers, scales, I(fieldsMap), transform = "discretize", default, missingValue, xform_function, row.names = derivedFieldName, check.names = FALSE))
+        suppressWarnings(newrow <- data.frame(
+          type = "derived", dataType = dataType,
+          I(orig_field_name), sampleMin, sampleMax,
+          xformedMin, xformedMax, centers, scales,
+          I(fieldsMap), transform = "discretize",
+          default, missingValue, xform_function,
+          row.names = derivedFieldName,
+          check.names = FALSE, stringsAsFactors = TRUE
+        ))
 
         suppressWarnings(newBoxData$field_data <- rbind(newBoxData$field_data, newrow))
 
@@ -502,7 +517,7 @@ xform_discretize <-
   origName <- colnames(dataMatrix)[1]
   derivedName <- colnames(dataMatrix)[2]
 
-  if (newBoxData$field_data[ origName, "dataType" ] != "numeric") {
+  if (newBoxData$field_data[origName, "dataType"] != "numeric") {
     stop("Non-numeric matrices not yet supported for transformations")
   }
 
@@ -573,10 +588,12 @@ xform_discretize <-
   rownames(col) <- NULL
 
   if (dataType == "numeric") {
-    newBoxData$data <- data.frame(newBoxData$data, as.numeric(col), check.names = FALSE)
+    newBoxData$data <- data.frame(newBoxData$data, as.numeric(col),
+      check.names = FALSE, stringsAsFactors = TRUE
+    )
     colnames(newBoxData$data)[ncol(newBoxData$data)] <- derivedName
   } else {
-    newBoxData$data <- data.frame(newBoxData$data, col, check.names = FALSE)
+    newBoxData$data <- data.frame(newBoxData$data, col, check.names = FALSE, stringsAsFactors = TRUE)
     newBoxData$data[, dim(newBoxData$data)[2]] <- as.factor(newBoxData$data[, dim(newBoxData$data)[2]])
   }
   if (!is.null(newBoxData$matrixData)) {

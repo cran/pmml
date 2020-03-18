@@ -123,7 +123,7 @@ add_data_field_attributes <- function(xml_model = NULL, attributes = NULL, field
   formulaString <- lapply(formulaFields, FUN = toString)
 
   if (is.vector(attributes)) {
-    attributes <- data.frame(attributes)
+    attributes <- data.frame(attributes, stringsAsFactors = TRUE)
     colnames(attributes) <- field
     fieldNames <- field
   } else {

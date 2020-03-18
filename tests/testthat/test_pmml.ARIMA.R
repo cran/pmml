@@ -182,11 +182,16 @@ test_that("Seasonal ARIMA with 0,0,0 non-seasonal component contains Nonseasonal
 })
 
 test_that("ARIMA with both intercept and drift terms throws error", {
+  # drift and intercept
   fit_11 <- Arima(AirPassengers, order = c(1, 0, 1), include.drift = TRUE)
-  expect_error(pmml(fit_11), "ARIMA models with both mean and drift terms not supported.")
+  expect_error(pmml(fit_11), "ARIMA models with a drift term not supported.")
 
   fit_12 <- Arima(AirPassengers, order = c(2, 0, 2), include.drift = TRUE)
-  expect_error(pmml(fit_12), "ARIMA models with both mean and drift terms not supported.")
+  expect_error(pmml(fit_12), "ARIMA models with a drift term not supported.")
+
+  # drift term only
+  fit_12a <- Arima(AirPassengers, order = c(2, 1, 2), include.drift = TRUE)
+  expect_error(pmml(fit_12a), "ARIMA models with a drift term not supported.")
 })
 
 test_that("Error if exact_least_squares is not logical", {
@@ -237,7 +242,7 @@ test_that("seasonal models do not include CPI in Output", {
 test_that("non-seasonal models include CPI in Output", {
   fit_18 <- Arima(AirPassengers, order = c(2, 2, 2))
   p_fit_18 <- pmml(fit_18)
-  expect_equal(toString(p_fit_18[[3]][[2]]), "<Output>\n <OutputField name=\"Predicted_ts_value\" optype=\"continuous\" dataType=\"double\" feature=\"predictedValue\"/>\n <OutputField name=\"cpi_80_lower\" optype=\"continuous\" dataType=\"double\" feature=\"standardError\">\n  <Extension extender=\"ADAPA\" name=\"cpi\" value=\"LOWER80\"/>\n </OutputField>\n <OutputField name=\"cpi_80_upper\" optype=\"continuous\" dataType=\"double\" feature=\"standardError\">\n  <Extension extender=\"ADAPA\" name=\"cpi\" value=\"UPPER80\"/>\n </OutputField>\n <OutputField name=\"cpi_95_lower\" optype=\"continuous\" dataType=\"double\" feature=\"standardError\">\n  <Extension extender=\"ADAPA\" name=\"cpi\" value=\"LOWER95\"/>\n </OutputField>\n <OutputField name=\"cpi_95_upper\" optype=\"continuous\" dataType=\"double\" feature=\"standardError\">\n  <Extension extender=\"ADAPA\" name=\"cpi\" value=\"UPPER95\"/>\n </OutputField>\n</Output>")
+  expect_equal(toString(p_fit_18[[3]][[2]]), "<Output>\n <OutputField name=\"Predicted_ts_value\" optype=\"continuous\" dataType=\"double\" feature=\"predictedValue\"/>\n <OutputField name=\"cpi_80_lower\" optype=\"continuous\" dataType=\"double\" feature=\"confidenceIntervalLower\" value=\"80\"/>\n <OutputField name=\"cpi_80_upper\" optype=\"continuous\" dataType=\"double\" feature=\"confidenceIntervalUpper\" value=\"80\"/>\n <OutputField name=\"cpi_95_lower\" optype=\"continuous\" dataType=\"double\" feature=\"confidenceIntervalLower\" value=\"95\"/>\n <OutputField name=\"cpi_95_upper\" optype=\"continuous\" dataType=\"double\" feature=\"confidenceIntervalUpper\" value=\"95\"/>\n</Output>")
 })
 
 test_that("FinalOmega is 0", {
@@ -260,4 +265,31 @@ test_that("seasonal models with ELS contain correct matrices", {
 
   # MeasurementMatrix
   expect_equal(toString(p_fit_21[[3]][[4]][[3]][[1]][[4]][[1]]), "<Matrix nbRows=\"1\" nbCols=\"27\">\n <Array type=\"real\">1 0 0 0 0 0 0 0 0 0 0 0 0 2 -1 0 0 0 0 0 0 0 0 0 1 -2 1</Array>\n</Matrix>")
+})
+
+
+test_that("Output dataType changes according to ts_type", {
+  fit_23 <- Arima(AirPassengers, order = c(1, 2, 0))
+  p_fit_23 <- pmml(fit_23, ts_type = "arima")
+  p_fit_23_b <- pmml(fit_23, ts_type = "statespace")
+
+  expect_equal(toString(p_fit_23[[3]][[2]]), "<Output>\n <OutputField name=\"Predicted_ts_value\" optype=\"continuous\" dataType=\"double\" feature=\"predictedValue\"/>\n <OutputField name=\"cpi_80_lower\" optype=\"continuous\" dataType=\"double\" feature=\"confidenceIntervalLower\" value=\"80\"/>\n <OutputField name=\"cpi_80_upper\" optype=\"continuous\" dataType=\"double\" feature=\"confidenceIntervalUpper\" value=\"80\"/>\n <OutputField name=\"cpi_95_lower\" optype=\"continuous\" dataType=\"double\" feature=\"confidenceIntervalLower\" value=\"95\"/>\n <OutputField name=\"cpi_95_upper\" optype=\"continuous\" dataType=\"double\" feature=\"confidenceIntervalUpper\" value=\"95\"/>\n</Output>")
+  expect_equal(toString(p_fit_23_b[[3]][[2]]), "<Output>\n <OutputField name=\"Predicted_ts_value\" optype=\"continuous\" dataType=\"string\" feature=\"predictedValue\">\n  <Extension extender=\"ADAPA\" name=\"dataType\" value=\"json\"/>\n </OutputField>\n <OutputField name=\"cpi_80_lower\" optype=\"continuous\" dataType=\"string\" feature=\"confidenceIntervalLower\" value=\"80\">\n  <Extension extender=\"ADAPA\" name=\"dataType\" value=\"json\"/>\n </OutputField>\n <OutputField name=\"cpi_80_upper\" optype=\"continuous\" dataType=\"string\" feature=\"confidenceIntervalUpper\" value=\"80\">\n  <Extension extender=\"ADAPA\" name=\"dataType\" value=\"json\"/>\n </OutputField>\n <OutputField name=\"cpi_95_lower\" optype=\"continuous\" dataType=\"string\" feature=\"confidenceIntervalLower\" value=\"95\">\n  <Extension extender=\"ADAPA\" name=\"dataType\" value=\"json\"/>\n </OutputField>\n <OutputField name=\"cpi_95_upper\" optype=\"continuous\" dataType=\"string\" feature=\"confidenceIntervalUpper\" value=\"95\">\n  <Extension extender=\"ADAPA\" name=\"dataType\" value=\"json\"/>\n </OutputField>\n</Output>")
+})
+
+
+
+## Tests for StateSpaceModel
+
+test_that("bestFit TimeSeriesModel node matches ts_type", {
+  fit_22 <- Arima(WWWusage, c(1, 1, 1))
+  p_fit_22 <- pmml(fit_22, ts_type = "statespace")
+  expect_equal(xmlGetAttr(p_fit_22[[3]], name = "bestFit"), "StateSpaceModel")
+
+  p_fit_22_a <- pmml(fit_22, ts_type = "arima")
+  expect_equal(xmlGetAttr(p_fit_22_a[[3]], name = "bestFit"), "ARIMA")
+
+  # test that the default is "arima"
+  p_fit_22_b <- pmml(fit_22)
+  expect_equal(xmlGetAttr(p_fit_22_b[[3]], name = "bestFit"), "ARIMA")
 })

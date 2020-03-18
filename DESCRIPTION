@@ -1,7 +1,7 @@
 Package: pmml
 Type: Package
 Title: Generate PMML for Various Models
-Version: 2.2.0
+Version: 2.3.0
 Authors@R: c(
     person("Dmitriy", "Bolotov", email = "dmitriy.bolotov@softwareag.com", role = c("aut", "cre")),
     person("Tridivesh", "Jena", email = "tridivesh.jena@softwareag.com", role = "aut"),
@@ -25,10 +25,10 @@ URL: https://softwareag.github.io/r-pmml/,
         https://www.softwareag.com/zementis
 BugReports: https://github.com/SoftwareAG/r-pmml/issues
 NeedsCompilation: no
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.0
 VignetteBuilder: knitr
 Encoding: UTF-8
-Packaged: 2020-01-09 19:30:24 UTC; dmbo
+Packaged: 2020-03-18 06:17:32 UTC; dmbo
 Author: Dmitriy Bolotov [aut, cre],
   Tridivesh Jena [aut],
   Graham Williams [aut],
@@ -40,4 +40,4 @@ Author: Dmitriy Bolotov [aut, cre],
   Software AG [cph]
 Maintainer: Dmitriy Bolotov <dmitriy.bolotov@softwareag.com>
 Repository: CRAN
-Date/Publication: 2020-01-11 00:50:20 UTC
+Date/Publication: 2020-03-18 07:20:02 UTC
