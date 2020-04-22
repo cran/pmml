@@ -1,7 +1,7 @@
 Package: pmml
 Type: Package
 Title: Generate PMML for Various Models
-Version: 2.3.0
+Version: 2.3.1
 Authors@R: c(
     person("Dmitriy", "Bolotov", email = "dmitriy.bolotov@softwareag.com", role = c("aut", "cre")),
     person("Tridivesh", "Jena", email = "tridivesh.jena@softwareag.com", role = "aut"),
@@ -15,20 +15,20 @@ Authors@R: c(
 Depends: XML
 Suggests: ada, amap, arules, caret, clue, data.table, forecast, gbm,
         glmnet, Matrix, neighbr, nnet, rpart, randomForestSRC (<=
-        2.5.0), randomForest, kernlab, e1071, testthat, survival,
-        xgboost, knitr, rmarkdown, covr
+        2.5.0), randomForest, rattle, kernlab, e1071, testthat,
+        survival, xgboost, knitr, rmarkdown, covr
 Imports: methods, stats, utils, stringr
 License: GPL-3 | file LICENSE
 Description: The Predictive Model Markup Language (PMML) is an XML-based language which provides a way for applications to define machine learning, statistical and data mining models and to share models between PMML compliant applications. More information about the PMML industry standard and the Data Mining Group can be found at <http://www.dmg.org>. The generated PMML can be imported into any PMML consuming application, such as Zementis Predictive Analytics products, which integrate with web services, relational database systems and deploy natively on Hadoop in conjunction with Hive, Spark or Storm, as well as allow predictive analytics to be executed for IBM z Systems mainframe applications and real-time, streaming analytics platforms. The package isofor (used for anomaly detection) can be installed with devtools::install_github("Zelazny7/isofor").
 URL: https://softwareag.github.io/r-pmml/,
         https://github.com/SoftwareAG/r-pmml,
-        https://www.softwareag.com/zementis
+        https://www.softwareag.com/corporate/products/az/zementis/default.html
 BugReports: https://github.com/SoftwareAG/r-pmml/issues
 NeedsCompilation: no
 RoxygenNote: 7.1.0
 VignetteBuilder: knitr
 Encoding: UTF-8
-Packaged: 2020-03-18 06:17:32 UTC; dmbo
+Packaged: 2020-04-22 02:02:33 UTC; dmbo
 Author: Dmitriy Bolotov [aut, cre],
   Tridivesh Jena [aut],
   Graham Williams [aut],
@@ -40,4 +40,4 @@ Author: Dmitriy Bolotov [aut, cre],
   Software AG [cph]
 Maintainer: Dmitriy Bolotov <dmitriy.bolotov@softwareag.com>
 Repository: CRAN
-Date/Publication: 2020-03-18 07:20:02 UTC
+Date/Publication: 2020-04-22 10:02:14 UTC

@@ -1,5 +1,3 @@
-context("test pmml.svm converter")
-
 library(e1071)
 data("audit")
 
@@ -16,6 +14,10 @@ svm_model_1 <- svm(df_1,
   nu = 0.10, scale = TRUE, kernel = "radial"
 )
 
+
+teardown({
+  detach("package:e1071", unload = TRUE)
+})
 
 test_that("error when dataset is null for one-classification", {
   expect_error(

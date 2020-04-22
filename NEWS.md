@@ -1,3 +1,9 @@
+# pmml 2.3.1
+## Bug Fixes
+  - pmml.xgb.Booster() no longer switches probabilities for "binary:logistic" objective function.
+  - add_data_field_attributes() now throws appropriate errors instead of using print() statements.
+
+
 # pmml 2.3.0
 ## New Features
 * `pmml.ARIMA()` can now export models with StateSpaceModel representation. This is controlled by a new parameter, `ts_type`. The default option (`ts_type = "arima"`) still exports an ARIMA representation as before. When `ts_type = "statespace"`, the exported PMML uses a StateSpaceModel element.

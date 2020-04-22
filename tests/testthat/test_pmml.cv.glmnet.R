@@ -1,8 +1,10 @@
-context("test pmml.cv.glmnet converter")
-
 # these tests use examples from cv.glmnet documentation
 
 library(glmnet)
+
+teardown({
+  detach("package:glmnet", unload = TRUE)
+})
 
 test_that("pmml.cv.glmnet throws no error when family is gaussian", {
   x <- matrix(rnorm(100 * 20), 100, 20)
