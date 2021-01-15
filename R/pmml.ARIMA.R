@@ -24,8 +24,6 @@
 #' @param missing_value_replacement Value to be used as the 'missingValueReplacement'
 #' attribute for all MiningFields.
 #' @param ts_type The type of time series representation for PMML: "arima" or "statespace".
-#' @param exact_least_squares Deprecated. For seasonal models only, if TRUE, export with exact least squares;
-#' otherwise, use conditional least squares.
 #' @param cpi_levels Vector of confidence levels for prediction intervals.
 #'
 #' @inheritParams pmml
@@ -34,33 +32,25 @@
 #'
 #' @details The model is represented as a PMML TimeSeriesModel.
 #'
-#' When \code{ts_type = "arima"}, the R object is exported as ARIMA in PMML.
-#' Non-seasonal models are represented with conditional
-#' least squares (CLS). For models with a seasonal component, the PMML can be exported with CLS
-#' or exact least squares (ELS). Note that ARIMA models in R are
+#' When \code{ts_type = "statespace"} (by default), the R object is exported as StateSpaceModel in PMML.
+#'
+#' When \code{ts_type = "arima"}, the R object is exported as ARIMA in PMML with conditional
+#' least squares (CLS). Note that ARIMA models in R are
 #' estimated using a state space representation. Therefore, when using CLS with seasonal models,
-#' forecast results between R and PMML may not match exactly. Prediction intervals
+#' forecast results between R and PMML may not match exactly. Additionally, when ts_type="arima", prediction intervals
 #' are exported for non-seasonal models only. For ARIMA models with d=2, the prediction intervals
 #' between R and PMML may not match.
 #'
-#' \code{exact_least_squares} is deprecated, and will be removed in a future version, at which point
-#' ELS will be the only representation used when \code{ts_type = "arima"}.
-#'
-#' When \code{ts_type = "statespace"}, the R object is exported as StateSpaceModel in PMML.
-#'
-#' \code{ts_type} also affects the dataType of OutputField elements. When \code{ts_type = "arima"},
-#' the forecast
-#' and prediction interval OutputFields are of dataType "double". Otherwise, these fields are of
-#' dataType "string", and contain a collection of all values up to and including the steps ahead value supplied
+#' OutputField elements are exported with
+#' dataType "string", and contain a collection of all values up to and including the steps-ahead value supplied
 #' during scoring.
 #' String output in this form is facilitated by Extension elements in the PMML file,
-#' and is supported by Zementis Server 10.6.0.0.
+#' and is supported by Zementis Server since version 10.6.0.0.
 #'
 #' \code{cpi_levels} behaves similar to \code{levels} in \code{forecast::forecast}: values must be
-#' between 0 and 100,
-#' non-inclusive.
+#' between 0 and 100, non-inclusive.
 #'
-#' ARIMA models with a drift term will be supported in a future version.
+#' Models with a drift term will be supported in a future version.
 #'
 #' Transforms are currently not supported for ARIMA models.
 #'
@@ -82,10 +72,10 @@
 #' )
 #' mod_02_pmml <- pmml(mod_02)
 #'
-#' # non-seasonal model exported as StateSpaceModel
+#' # non-seasonal model exported with Conditional Least Squares
 #' data("WWWusage")
 #' mod <- Arima(WWWusage, order = c(3, 1, 1))
-#' mod_pmml <- pmml(mod, ts_type = "statespace")
+#' mod_pmml <- pmml(mod, ts_type = "arima")
 #' @export pmml.ARIMA
 #' @export
 pmml.ARIMA <- function(model,
@@ -95,25 +85,13 @@ pmml.ARIMA <- function(model,
                        copyright = NULL,
                        transforms = NULL,
                        missing_value_replacement = NULL,
-                       ts_type = "arima",
-                       exact_least_squares = TRUE,
+                       ts_type = "statespace",
                        cpi_levels = c(80, 95),
                        ...) {
   if (!inherits(model, "ARIMA")) stop("Not a legitimate ARIMA object.")
 
-  # Deprecated argument.
-  if (!missing(exact_least_squares)) {
-    warning("argument exact_least_squares is deprecated.",
-      call. = FALSE
-    )
-  }
-
   if (!(ts_type %in% c("arima", "statespace"))) {
     stop('ts_type must be one of "arima" or "statespace".')
-  }
-
-  if (!is.logical(exact_least_squares)) {
-    stop("exact_least_squares must be logical (TRUE/FALSE).")
   }
 
   if (ts_type == "arima") {
@@ -167,7 +145,8 @@ pmml.ARIMA <- function(model,
     ts_model <- append.XMLNode(
       ts_model,
       # .pmmlOutput(field, target)
-      .make_arima_output_node(target, .has_seasonal_comp(model), cpi_levels, output_type)
+      # .make_arima_output_node(target, .has_seasonal_comp(model), cpi_levels, output_type)
+      .make_arima_output_node(target, .has_seasonal_comp(model), cpi_levels, "string") # set output="string"
     )
 
 
@@ -178,18 +157,7 @@ pmml.ARIMA <- function(model,
 
     arima_constant <- .get_model_constant(model)
 
-    # exact_least_squares only has an effect if model has seasonal component.
-    # if model is non-seasonal and ts_type="arima", always export in conditional least squares format.
-    if (!.has_seasonal_comp(model)) { # if model does not have seasonal component, set to FALSE
-      exact_least_squares <- FALSE
-    }
-
-
-    prediction_method <- if (exact_least_squares) {
-      "exactLeastSquares"
-    } else {
-      "conditionalLeastSquares"
-    }
+    prediction_method <- "conditionalLeastSquares"
 
     arima_node <- xmlNode("ARIMA", attrs = c(
       RMSE = arima_rmse,
@@ -199,22 +167,25 @@ pmml.ARIMA <- function(model,
     ))
 
     if (.has_nonseasonal_comp(model)) {
-      arima_node <- append.XMLNode(arima_node, .make_nsc_node(model, exact_least_squares))
+      # arima_node <- append.XMLNode(arima_node, .make_nsc_node(model, exact_least_squares))
+      arima_node <- append.XMLNode(arima_node, .make_nsc_node(model, FALSE))
     } else {
       # crete a non-seasonal node with all zeros
-      arima_node <- append.XMLNode(arima_node, .make_zero_nsc_node(model, exact_least_squares))
+      # arima_node <- append.XMLNode(arima_node, .make_zero_nsc_node(model, exact_least_squares))
+      arima_node <- append.XMLNode(arima_node, .make_zero_nsc_node(model, FALSE))
     }
 
     if (.has_seasonal_comp(model)) {
-      arima_node <- append.XMLNode(arima_node, .make_sc_node(model, exact_least_squares))
+      # arima_node <- append.XMLNode(arima_node, .make_sc_node(model, exact_least_squares))
+      arima_node <- append.XMLNode(arima_node, .make_sc_node(model, FALSE))
     }
 
-    if (exact_least_squares) {
-      arima_node <- append.XMLNode(
-        arima_node,
-        .make_mls_node(model, ts_type)
-      )
-    }
+    # if (exact_least_squares) {
+    #   arima_node <- append.XMLNode(
+    #     arima_node,
+    #     .make_mls_node(model, ts_type)
+    #   )
+    # }
 
 
     ts_model <- append.XMLNode(ts_model, arima_node)
@@ -243,9 +214,9 @@ pmml.ARIMA <- function(model,
 
     state_space_node <- xmlNode("StateSpaceModel",
       attrs = c(
-        intercept = toString(.get_model_constant(model)),
-        variance = model$sigma2,
-        observationVariance = toString(model$model$h)
+        # intercept = toString(.get_model_constant(model)),
+        variance = model$sigma2
+        # observationVariance = toString(model$model$h)
       )
     )
 
@@ -265,15 +236,18 @@ pmml.ARIMA <- function(model,
       .make_matrix_node(matrix(model$model$Z, nrow = 1))
     )
 
-    # intercept vector - replaced with intercept attribute
-    # intercept_v_node <- .make_intercept_v_node(model)
+    # intercept vector - replaces intercept attribute
+    intercept_v_node <- .make_intercept_v_node(model)
 
-    # variance vector - not used
-    # variance_v_node <- .make_variance_v_node(model)
+    # ObservationVarianceMatrix - replaces observationVariance attribute
+    ovm_node <- append.XMLNode(
+      xmlNode("ObservationVarianceMatrix"),
+      .make_matrix_node(matrix(model$model$h, nrow = 1))
+    )
 
     # psi vector - not used
 
-    # dynamic regressor
+    # dynamic regressor - not used
 
     # PredictedCovarianceMatrix
     pscm_node <- append.XMLNode(
@@ -298,8 +272,10 @@ pmml.ARIMA <- function(model,
       state_v_node,
       trans_m_node,
       meas_m_node,
+      intercept_v_node,
       pscm_node,
-      sscm_node
+      sscm_node,
+      ovm_node
     )
 
     ts_model <- append.XMLNode(ts_model, state_space_node)
@@ -312,17 +288,17 @@ pmml.ARIMA <- function(model,
 
 
 .check_cpi_levels <- function(cpi_levels) {
-  # If levels are between 0 and 1, they should be converted to percentage first.
-  if (min(cpi_levels) > 0 & max(cpi_levels) < 1) {
-    cpi_levels <- 100 * cpi_levels
-  }
-
   if (length(cpi_levels) == 0) {
     stop("Length of cpi_levels must be greater than 0.")
   }
 
   if (!is.numeric(cpi_levels)) {
     stop("cpi_levels must be numeric.")
+  }
+
+  # If levels are between 0 and 1, they should be converted to percentage first.
+  if (min(cpi_levels) > 0 & max(cpi_levels) < 1) {
+    cpi_levels <- 100 * cpi_levels
   }
 
   if (min(cpi_levels) < 0 | max(cpi_levels) > 99.99) {
@@ -349,24 +325,18 @@ pmml.ARIMA <- function(model,
 }
 
 
-# .make_intercept_v_node <- function(model) {
-#   iv_node <- xmlNode("InterceptVector")
-#   const <- .get_model_constant(model)
-#   iv_node <- append.XMLNode(iv_node, xmlNode("Array",
-#     attrs = c(type = "real", n = "1"),
-#     value = const
-#   ))
-#   return(iv_node)
-# }
+.make_intercept_v_node <- function(model) {
+  iv_node <- xmlNode("InterceptVector",
+    attrs = c(type = "observation")
+  )
+  const <- .get_model_constant(model)
+  iv_node <- append.XMLNode(iv_node, xmlNode("Array",
+    attrs = c(type = "real", n = "1"),
+    value = const
+  ))
+  return(iv_node)
+}
 
-# .make_variance_v_node <- function(model) {
-#   vv_node <- xmlNode("VarianceVector")
-#   vv_node <- append.XMLNode(vv_node, xmlNode("Array",
-#     attrs = c(type = "real", n = "1"),
-#     value = model$sigma2
-#   ))
-#   return(vv_node)
-# }
 
 .make_arima_output_node <- function(target,
                                     has_seasonal_comp,
@@ -418,8 +388,6 @@ pmml.ARIMA <- function(model,
     }
   }
 
-
-
   return(output_node)
 }
 
@@ -431,24 +399,6 @@ pmml.ARIMA <- function(model,
     value = "json"
   )))
 }
-
-# .make_pi_node_0 <- function(perc, interv) {
-#   # DEPRECATED
-#   # create prediction interval output node
-#   pi_node <- xmlNode("OutputField", attrs = c(
-#     name = paste("cpi_", perc, "_", interv, sep = ""),
-#     optype = "continuous",
-#     dataType = "double",
-#     feature = "standardError"
-#   ))
-#   ext_node <- xmlNode("Extension", attrs = c(
-#     extender = "ADAPA",
-#     name = "cpi",
-#     value = paste(toupper(interv), perc, sep = "")
-#   ))
-#   pi_node <- append.XMLNode(pi_node, ext_node)
-#   return(pi_node)
-# }
 
 
 .make_pi_node <- function(perc, interv, output_type) {
@@ -479,14 +429,6 @@ pmml.ARIMA <- function(model,
 
   return(pi_node)
 }
-
-# .make_h_vector_node <- function(model) {
-#   hv_node <- xmlNode("HVector")
-#
-#   hv_node <- append.XMLNode(hv_node, xmlNode("Array", attrs = c(type = "real", n = "1"), value = 0))
-#
-#   return(hv_node)
-# }
 
 
 .make_mls_node <- function(model, ts_type) {

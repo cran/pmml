@@ -14,6 +14,32 @@
 
 <title>Supported Packages and Additional Functions</title>
 
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
 
 
 
@@ -309,7 +335,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div id="references" class="section level2">
 <h2>References</h2>
 <ul>
-<li><a href="http://dmg.org/pmml/v4-4/GeneralStructure.html">DMG PMML 4.4 specification</a></li>
+<li><a href="http://dmg.org/pmml/v4-4-1/GeneralStructure.html">DMG PMML 4.4.1 specification</a></li>
 </ul>
 </div>
 

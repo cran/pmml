@@ -20,8 +20,8 @@
 
 #' pmml: Generate PMML for R Models
 #'
-#' This package contains functions to export various R models to PMML, as well
-#' as generate data transformations in PMML format.
+#' Export various R models to PMML and generate data transformations in PMML
+#' format.
 #'
 #' @section Functions:
 #' \itemize{
@@ -59,20 +59,20 @@
 #'
 #' @section References:
 #' \itemize{
-#' \item \href{http://dmg.org/pmml/v4-3/GeneralStructure.html}{PMML home page}
+#' \item \href{http://dmg.org/pmml/v4-4-1/GeneralStructure.html}{PMML home page}
 #'
-#' \item \href{http://dmg.org/pmml/v4-3/Transformations.html}{PMML transformations}
+#' \item \href{http://dmg.org/pmml/v4-4-1/Transformations.html}{PMML transformations}
 #'
 #' \item A. Guazzelli, W. Lin, T. Jena (2012), \emph{PMML in Action: Unleashing
 #' the Power of Open Standards for Data Mining and Predictive Analytics}.
 #' CreativeSpace (Second Edition) -
-#' \href{http://www.amazon.com/dp/1470003244}{Available on Amazon.com}.
+#' \href{https://www.amazon.com/dp/1470003244}{Available on Amazon.com}.
 #'
 #' \item A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), PMML: An Open
 #' Standard for Sharing Models. \emph{The R journal}, Volume 1/1, 60-65
 #'
 #' \item T. Jena, A. Guazzelli, W. Lin, M. Zeller (2013).
-#' \href{http://kdd13pmml.files.wordpress.com/2013/07/jena_et_al.pdf}{The R
+#' \href{https://kdd13pmml.files.wordpress.com/2013/07/jena_et_al.pdf}{The R
 #' pmmlTransformations Package.} In \emph{Proceedings of the 19th ACM SIGKDD
 #' Conference on Knowledge Discovery and Data Mining}
 #'

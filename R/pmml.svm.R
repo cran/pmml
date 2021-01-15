@@ -98,7 +98,7 @@
 #' Probability Theory Group (Formerly: E1071), TU Wien} \url{https://CRAN.R-project.org/package=e1071}
 #'
 #' * Chang, Chih-Chung and Lin, Chih-Jen, \emph{LIBSVM: a library for Support Vector Machines}
-#'   \url{http://www.csie.ntu.edu.tw/~cjlin/libsvm}
+#'   \url{https://www.csie.ntu.edu.tw/~cjlin/libsvm/}
 #'
 #' @examples
 #'
@@ -131,7 +131,7 @@
 #' }
 #'
 #' @seealso \code{\link[pmml]{pmml}},
-#' \href{http://dmg.org/pmml/v4-3/SupportVectorMachine.html}{PMML SVM specification}
+#' \href{http://dmg.org/pmml/v4-4-1/SupportVectorMachine.html}{PMML SVM specification}
 #'
 #' @export pmml.svm
 #' @export
