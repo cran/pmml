@@ -95,11 +95,27 @@ fit_pmml[[3]][[1]] #Mining Schema node
 ## -----------------------------------------------------------------------------
 fit_pmml[[3]][[3]]
 
-## ----echo=FALSE---------------------------------------------------------------
-funcs <- rbind(c("+","-","/","*","^","<","<=",">",">=","&&","&","|","||","==","!=","!","ceiling","prod","log"),
-c("+","-","/","*","pow","lessThan","lessOrEqual","greaterThan","greaterOrEqual","and","and","or","or","equal","notEqual","not","ceil","product","ln"))
+## -----------------------------------------------------------------------------
+iris_box <- xform_wrap(iris)
 
-kable(funcs)
+iris_box <- xform_function(wrap_object = iris_box,
+                              orig_field_name = "Sepal.Length",
+                              new_field_name = "SL_factor",
+                              new_field_data_type = "factor",
+                              expression = "if(Sepal.Length<5.1) {'level_A'} else if (Sepal.Length>6.6) {'level_B'} else {'level_C'}")
+
+kable(head(iris_box$data, 3))
+
+## -----------------------------------------------------------------------------
+fit <- lm(Petal.Width ~ SL_factor, data=iris_box$data)
+fit_pmml <- pmml(fit, transform=iris_box)
+
+## ----echo=FALSE---------------------------------------------------------------
+R <- c("+","-","/","*","^","<","<=",">",">=","&&","&","|","||","==","!=","!","ceiling","prod","log")
+PMML <- c("+","-","/","*","pow","lessThan","lessOrEqual","greaterThan","greaterOrEqual","and","and","or","or","equal","notEqual","not","ceil","product","ln")
+
+funcs_df <- data.frame(R, PMML)
+knitr::kable(funcs_df)
 
 ## -----------------------------------------------------------------------------
 isIn <- function(x, ...) {

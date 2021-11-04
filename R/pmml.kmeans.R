@@ -1,7 +1,7 @@
 # PMML: Predictive Model Markup Language
 #
 # Copyright (c) 2009-2016, Zementis, Inc.
-# Copyright (c) 2016-2020, Software AG, Darmstadt, Germany and/or Software AG
+# Copyright (c) 2016-2021, Software AG, Darmstadt, Germany and/or Software AG
 # USA Inc., Reston, VA, USA, and/or its subsidiaries and/or its affiliates
 # and/or their licensors.
 #
@@ -58,6 +58,7 @@ pmml.kmeans <- function(model,
                         app_name = "SoftwareAG PMML Generator",
                         description = "KMeans cluster model",
                         copyright = NULL,
+                        model_version = NULL,
                         transforms = NULL,
                         missing_value_replacement = NULL,
                         algorithm_name = "KMeans: Hartigan and Wong",
@@ -93,7 +94,8 @@ pmml.kmeans <- function(model,
   #----------------------------------------------------------
   # PMML -> Header
 
-  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app_name))
+  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, model_version,
+                                           app_name))
 
   #-----------------------------------------------------------
   # PMML -> DataDictionary

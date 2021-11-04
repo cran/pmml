@@ -1,7 +1,7 @@
 # PMML: Predictive Model Markup Language
 #
 # Copyright (c) 2009-2016, Zementis, Inc.
-# Copyright (c) 2016-2020, Software AG, Darmstadt, Germany and/or Software AG
+# Copyright (c) 2016-2021, Software AG, Darmstadt, Germany and/or Software AG
 # USA Inc., Reston, VA, USA, and/or its subsidiaries and/or its affiliates
 # and/or their licensors.
 #
@@ -20,12 +20,12 @@
 
 #' Add a function transformation to a xform_wrap object.
 #'
-#' @param wrap_object Output of xform_wrap or another transformation function
-#' @param orig_field_name String specifying name(s) of the original data field(s) being used in the transformation
-#' @param new_field_name Name of the new field created by the transformation
-#' @param new_field_data_type Data type of the new field created by the transformation
-#' @param expression String expression specifying the transformation
-#' @param map_missing_to Value to be given to the transformed variable if the value of any input variable is missing
+#' @param wrap_object Output of xform_wrap or another transformation function.
+#' @param orig_field_name String specifying name(s) of the original data field(s) being used in the transformation.
+#' @param new_field_name Name of the new field created by the transformation.
+#' @param new_field_data_type R data type of the new field created by the transformation ("numeric" or "factor").
+#' @param expression String expression specifying the transformation.
+#' @param map_missing_to Value to be given to the transformed variable if the value of any input variable is missing.
 #'
 #' @details
 #'
@@ -39,6 +39,11 @@
 #' The name of the new field is optional (a default name is provided), but an error
 #' will be thrown if attempting to create a field with a name that already exists in
 #' the xform_wrap object.
+#' 
+#' When \code{new_field_data_type = "numeric"}, the \code{DerivedField} attributes
+#' in PMML will be \code{dataType = "double"} and \code{optype = "continuous"}. 
+#' When \code{new_field_data_type = "factor"}, these attributes will be
+#' \code{dataType = "string"} and \code{optype = "categorical"}.
 #'
 #'
 #' @return R object containing the raw data, the transformed data and data statistics.
@@ -78,19 +83,49 @@
 #' @export
 xform_function <- function(wrap_object, orig_field_name, new_field_name = "newField",
                            new_field_data_type = "numeric", expression, map_missing_to = NA) {
+  
+  if (!(new_field_data_type %in% c("numeric", "factor"))){
+    stop('new_field_data_type must be "numeric" or "factor".')
+  }
+  
   wrap_object$data$new_field_name <- NA
+  
 
   parsed_text <- parse(text = expression)
 
-  ## Apply an if-else formula to the new data column.
-  for (n in 1:length(wrap_object$data$new_field_name)) {
-    boxrow <- wrap_object$data[n, ]
-    wrap_object$data$new_field_name[n] <- eval(parsed_text, boxrow)
+  # Calculate the expression for each row in the new data column. For factors,
+  # convert to character to avoid assigning integers to new_field_name. This
+  # check is only necessary for when eval() is applied to a factor input.
+  if (new_field_data_type == "numeric") {
+    for (n in 1:length(wrap_object$data$new_field_name)) {
+      boxrow <- wrap_object$data[n, ]
+      wrap_object$data$new_field_name[n] <- eval(parsed_text, boxrow)
+    } 
+  } else { # new_field_data_type == "factor"
+    for (n in 1:length(wrap_object$data$new_field_name)) {
+      boxrow <- wrap_object$data[n, ]
+      wrap_object$data$new_field_name[n] <- toString(eval(parsed_text, boxrow))
+    } 
+  }
+    
+    
+  # for (n in 1:length(wrap_object$data$new_field_name)) {
+  #   boxrow <- wrap_object$data[n, ]
+  #   wrap_object$data$new_field_name[n] <- eval(parsed_text, boxrow)
+  # }
+
+  # Change class of new column to match new_field_data_type
+  if(!(class(wrap_object$data$new_field_name) == new_field_data_type)) {
+    if (new_field_data_type == "numeric") {
+      wrap_object$data$new_field_name <- as.numeric(wrap_object$data$new_field_name)
+    } else { # else convert to factor
+      wrap_object$data$new_field_name <- as.factor(wrap_object$data$new_field_name)
+    }
   }
 
   names(wrap_object$data)[names(wrap_object$data) == "new_field_name"] <- new_field_name
 
-  # New column for formula; only create if doesn't already exist;.
+  # New column for formula; only create if doesn't already exist.
   # This is unnecessary if xform_function is already added by xform_wrap().
   if (!("xform_function" %in% colnames(wrap_object$field_data))) {
     wrap_object$field_data$xform_function <- "NA"
@@ -114,6 +149,12 @@ xform_function <- function(wrap_object, orig_field_name, new_field_name = "newFi
   #
   # newrow <- data.frame(temprow, stringsAsFactors = TRUE)
   # colnames(newrow) <- colnames(wrap_object$field_data)
+  
+  # if temprow's dataType is not a factor level in wrap_object$field_data$dataType, add it
+  if (!(unname(temprow['dataType']) %in% levels(wrap_object$field_data$dataType))) {
+    num_dataType_levels <- length(levels(wrap_object$field_data$dataType))
+    levels(wrap_object$field_data$dataType)[num_dataType_levels+1] <- unname(temprow['dataType'])
+  }
   wrap_object$field_data <- rbind(wrap_object$field_data, temprow)
 
   # Add data to new row

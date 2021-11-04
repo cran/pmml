@@ -1,7 +1,7 @@
 # PMML: Predictive Model Markup Language
 #
 # Copyright (c) 2009-2016, Zementis, Inc.
-# Copyright (c) 2016-2020, Software AG, Darmstadt, Germany and/or Software AG
+# Copyright (c) 2016-2021, Software AG, Darmstadt, Germany and/or Software AG
 # USA Inc., Reston, VA, USA, and/or its subsidiaries and/or its affiliates
 # and/or their licensors.
 #
@@ -48,7 +48,7 @@
 #' # Train set contains all predicted variables, features, and ID column:
 #' train_set <- iris[1:140, ]
 #'
-#' # Omit predicted variables or ID column from test set:
+#' # Omit predicted variables and ID column from test set:
 #' test_set <- iris[141:150, -c(4, 5, 6)]
 #'
 #' fit <- knn(
@@ -115,6 +115,7 @@ pmml.neighbr <- function(model,
                          app_name = "SoftwareAG PMML Generator",
                          description = "K Nearest Neighbors Model",
                          copyright = NULL,
+                         model_version = NULL,
                          transforms = NULL,
                          missing_value_replacement = NULL,
                          ...) {
@@ -164,7 +165,8 @@ pmml.neighbr <- function(model,
   pmml <- .pmmlRootNode()
 
   # PMML -> Header
-  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app_name))
+  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright,
+                                           model_version, app_name))
 
   # PMML -> DataDictionary
   pmml <- append.XMLNode(pmml, .pmmlDataDictionary(field, transformed = transforms))

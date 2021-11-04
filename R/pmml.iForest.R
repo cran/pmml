@@ -1,7 +1,7 @@
 # PMML: Predictive Model Markup Language
 #
 # Copyright (c) 2009-2016, Zementis, Inc.
-# Copyright (c) 2016-2020, Software AG, Darmstadt, Germany and/or Software AG
+# Copyright (c) 2016-2021, Software AG, Darmstadt, Germany and/or Software AG
 # USA Inc., Reston, VA, USA, and/or its subsidiaries and/or its affiliates
 # and/or their licensors.
 #
@@ -59,7 +59,7 @@
 #' @seealso \code{\link[pmml]{pmml}}
 #'
 #' @references
-#' \href{https://github.com/Zelazny7/isofor}{isofor package on GitHub}
+#' \href{https://github.com/gravesee/isofor}{isofor package on GitHub}
 #'
 #' @export pmml.iForest
 #' @export
@@ -68,6 +68,7 @@ pmml.iForest <- function(model,
                          app_name = "SoftwareAG PMML Generator",
                          description = "Isolation Forest Model",
                          copyright = NULL,
+                         model_version = NULL,
                          transforms = NULL,
                          missing_value_replacement = NULL,
                          anomaly_threshold = 0.6,
@@ -100,7 +101,8 @@ pmml.iForest <- function(model,
 
   # PMML -> Header
 
-  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, app_name))
+  pmml <- append.XMLNode(pmml, .pmmlHeader(description, copyright, model_version,
+                                           app_name))
 
   # PMML -> DataDictionary
 

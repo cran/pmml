@@ -10,6 +10,7 @@
   app_name = "SoftwareAG PMML Generator",
   description = "K Nearest Neighbors Model",
   copyright = NULL,
+  model_version = NULL,
   transforms = NULL,
   missing_value_replacement = NULL,
   ...
@@ -25,6 +26,8 @@
 \item{description}{A descriptive text for the Header element of the PMML.}
 
 \item{copyright}{The copyright notice for the model.}
+
+\item{model_version}{A string specifying the model version.}
 
 \item{transforms}{Data transformations.}
 
@@ -60,7 +63,7 @@ iris$ID <- c(1:150)
 # Train set contains all predicted variables, features, and ID column:
 train_set <- iris[1:140, ]
 
-# Omit predicted variables or ID column from test set:
+# Omit predicted variables and ID column from test set:
 test_set <- iris[141:150, -c(4, 5, 6)]
 
 fit <- knn(

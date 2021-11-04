@@ -29,17 +29,17 @@ test_that("xform_wrap does not convert all columns to factors for tibbles", {
 
 
 
-test_that("xform_z_score centers and scales for derived fields equal specific values", {
-  iris_box <- xform_wrap(iris)
-  iris_box <- xform_z_score(iris_box, "1")
-  iris_box <- xform_z_score(iris_box, "2")
-  expect_equal(iris_box$field_data["derived_Sepal.Length", "transform"], "zxform")
-  expect_equal(iris_box$field_data["derived_Sepal.Width", "transform"], "zxform")
-  expect_equal(iris_box$field_data["derived_Sepal.Length", "centers"], 5.843333, tolerance = 1e-6)
-  expect_equal(iris_box$field_data["derived_Sepal.Length", "scales"], 0.8280661, tolerance = 1e-6)
-  expect_equal(iris_box$field_data["derived_Sepal.Width", "centers"], 3.057333, tolerance = 1e-6)
-  expect_equal(iris_box$field_data["derived_Sepal.Width", "scales"], 0.4358663, tolerance = 1e-6)
-})
+# test_that("xform_z_score centers and scales for derived fields equal specific values", {
+#   iris_box <- xform_wrap(iris)
+#   iris_box <- xform_z_score(iris_box, "1")
+#   iris_box <- xform_z_score(iris_box, "2")
+#   expect_equal(iris_box$field_data["derived_Sepal.Length", "transform"], "zxform")
+#   expect_equal(iris_box$field_data["derived_Sepal.Width", "transform"], "zxform")
+#   expect_equal(iris_box$field_data["derived_Sepal.Length", "centers"], 5.843333, tolerance = 1e-6)
+#   expect_equal(iris_box$field_data["derived_Sepal.Length", "scales"], 0.8280661, tolerance = 1e-6)
+#   expect_equal(iris_box$field_data["derived_Sepal.Width", "centers"], 3.057333, tolerance = 1e-6)
+#   expect_equal(iris_box$field_data["derived_Sepal.Width", "scales"], 0.4358663, tolerance = 1e-6)
+# })
 
 test_that("xform_min_max normalizes all data to be between 0 and 1", {
   iris_box <- xform_wrap(iris)
@@ -73,153 +73,6 @@ test_that("rename_wrap_var box$field_data and box$data contain renamed variable"
   iris_box <- rename_wrap_var(wrap_object = iris_box, xform_info = "column1->SL")
   expect_equal(row.names(iris_box$field_data)[[1]], "SL")
   expect_equal(names(iris_box$data)[[1]], "SL")
-})
-
-test_that("xform_discretize produces correct field_data and data values", {
-  iris_box <- xform_wrap(iris)
-  t <- list()
-  m <- data.frame(rbind(
-    c("Petal.Length", "dis_pl", "leftInterval", "leftValue", "rightInterval", "rightValue"),
-    c("double", "integer", "string", "double", "string", "double"),
-    c("0)", 0, "open", NA, "Open", 0),
-    c(NA, 1, "closed", 0, "Open", 1),
-    c(NA, 2, "closed", 1, "Open", 2),
-    c(NA, 3, "closed", 2, "Open", 3),
-    c(NA, 4, "closed", 3, "Open", 4),
-    c("[4", 5, "closed", 4, "Open", NA)
-  ), stringsAsFactors = TRUE)
-  t[[1]] <- m
-  def <- c(11)
-  mis <- c(22)
-  iris_box <- xform_discretize(iris_box, xform_info = t, default_value = def, map_missing_to = mis)
-
-  expect_equal(iris_box$field_data["dis_pl", "transform"], "discretize")
-  expect_equal(iris_box$field_data["dis_pl", "default"], 11)
-  expect_equal(iris_box$field_data["dis_pl", "missingValue"], 22)
-  expect_true(iris_box$data$dis_pl[[1]] == 2)
-})
-
-
-test_that("xform_discretize produces correct discretization for a closed left interval", {
-  iris_box <- xform_wrap(iris)
-  t <- list()
-  m <- data.frame(rbind(
-    c("Petal.Length", "dis_pl", "leftInterval", "leftValue", "rightInterval", "rightValue"),
-    c("double", "integer", "string", "double", "string", "double"),
-    c("0)", 0, "open", NA, "Open", 0),
-    c(NA, 1, "closed", 0, "Open", 1),
-    c(NA, 2, "closed", 1, "Open", 2),
-    c(NA, 3, "closed", 2, "Open", 3),
-    c(NA, 4, "closed", 3, "Open", 4),
-    c("[4", 5, "closed", 4, "Open", NA)
-  ))
-  t[[1]] <- m
-  def <- c(11)
-  mis <- c(22)
-  iris_box <- xform_discretize(iris_box, xform_info = t, default_value = def, map_missing_to = mis)
-
-  f <- iris_box$data$dis_pl[iris_box$data$Petal.Length == 4]
-  expect_equal(as.numeric(levels(f))[f], c(5, 5, 5, 5, 5)) # test that value 4 is transformed to 5
-})
-
-test_that("xform_discretize produces correct discretization for a closed right interval", {
-  iris_box <- xform_wrap(iris)
-  t <- list()
-  m <- data.frame(rbind(
-    c("Petal.Length", "dis_pl", "leftInterval", "leftValue", "rightInterval", "rightValue"),
-    c("double", "integer", "string", "double", "string", "double"),
-    c("0]", 0, "open", NA, "Closed", 0),
-    c(NA, 1, "open", 0, "Closed", 1),
-    c(NA, 2, "open", 1, "Closed", 2),
-    c(NA, 3, "open", 2, "Closed", 3),
-    c(NA, 4, "open", 3, "Closed", 4),
-    c("(4", 5, "open", 4, "Open", NA)
-  ))
-  t[[1]] <- m
-  def <- c(11)
-  mis <- c(22)
-  iris_box <- xform_discretize(iris_box, xform_info = t, default_value = def, map_missing_to = mis)
-
-  f <- iris_box$data$dis_pl[iris_box$data$Petal.Length == 4]
-  expect_equal(as.numeric(levels(f))[f], c(4, 4, 4, 4, 4)) # test that value 4 is transformed to 4
-})
-
-
-test_that("xform_map produces correct mapping for a data point", {
-  audit_box <- xform_wrap(audit)
-  t <- list()
-  m <- data.frame(
-    c("Sex", "string", "Male", "Female"), c("Employment", "string", "PSLocal", "PSState"),
-    c("d_sex", "integer", 1, 0)
-  )
-  t[[1]] <- m
-  audit_box <- xform_map(audit_box, xform_info = t, default_value = c(3), map_missing_to = 2)
-
-  expect_equal(audit_box$field_data["d_sex", "transform"], "MapValues")
-  expect_equal(audit_box$field_data["d_sex", "default"], 3)
-  expect_equal(audit_box$field_data["d_sex", "missingValue"], 2)
-  expect_true(audit_box$data$d_sex[[1]] == 3)
-})
-
-test_that("xform_function works correctly", {
-  iris_box <- xform_wrap(iris)
-  iris_box <- xform_function(iris_box,
-    orig_field_name = "Sepal.Length",
-    new_field_name = "Sepal.Length.Transformed",
-    expression = "(Sepal.Length^2)/100"
-  )
-  expect_equal(iris_box$field_data["Sepal.Length.Transformed", "orig_field_name"], "Sepal.Length")
-  expect_equal(iris_box$field_data["Sepal.Length.Transformed", "xform_function"], "(Sepal.Length^2)/100")
-  expect_equal(iris_box$data$Sepal.Length.Transformed[[1]], 0.2601)
-})
-
-test_that("xform_function does not create an unnecessary NA factor", {
-  iris_box_xf <- xform_wrap(iris)
-  iris_box_xf <- xform_function(iris_box_xf,
-    orig_field_name = "Sepal.Width",
-    new_field_name = "Sepal.Width.sq",
-    expression = "Sepal.Width^2",
-    new_field_data_type = "numeric"
-  )
-  expect_equal(levels(iris_box_xf$field_data$dataType), c("factor", "numeric"))
-
-  iris_box_xf_2 <- xform_wrap(iris)
-  iris_box_xf_2 <- xform_function(iris_box_xf_2,
-    orig_field_name = "Sepal.Length,Petal.Length",
-    new_field_name = "Length.Ratio",
-    expression = "Sepal.Length / Petal.Length"
-  )
-  expect_equal(levels(iris_box_xf_2$field_data$dataType), c("factor", "numeric"))
-})
-
-
-
-test_that("xform_discretize does not give error when 1st column of data matrix is a factor", {
-  iris2 <- iris
-  iris2[, 6] <- iris2[, 1]
-  colnames(iris2)[6] <- "Sepal.Length"
-  iris2[, 1] <- iris2[, 5]
-  iris2[, 5] <- NULL
-  colnames(iris2)[1] <- "Species"
-  iris_box <- xform_wrap(iris2)
-
-  t <- list()
-  m <- data.frame(rbind(
-    c("Petal.Length", "dis_pl", "leftInterval", "leftValue", "rightInterval", "rightValue"),
-    c("double", "integer", "string", "double", "string", "double"),
-    c(NA, 0, "open", NA, "Open", 0),
-    c(NA, 1, "closed", 0, "Closed", 1),
-    c(NA, 2, "open", 1, "Closed", 2),
-    c(NA, 3, "open", 2, "Open", 3),
-    c(NA, 4, "closed", 3, "Open", 4),
-    c(NA, 5, "closed", 4, "Open", NA)
-  ))
-  t[[1]] <- m
-  def <- c(11)
-  mis <- c(22)
-
-  iris_box <- xform_discretize(iris_box, xform_info = t, default_value = def, map_missing_to = mis)
-  expect_equal(iris_box$field_data[6, 11], "discretize")
 })
 
 
