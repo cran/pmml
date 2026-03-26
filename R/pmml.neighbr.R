@@ -106,13 +106,13 @@
 #' }
 #'
 #' @seealso \code{\link[pmml]{pmml}},
-#' \href{http://dmg.org/pmml/v4-4-1/KNN.html}{PMML KNN specification}
+#' \href{https://dmg.org/pmml/v4-4-1/KNN.html}{PMML KNN specification}
 #'
 #' @export pmml.neighbr
 #' @export
 pmml.neighbr <- function(model,
                          model_name = "kNN_model",
-                         app_name = "SoftwareAG PMML Generator",
+                         app_name = "R PMML Generator - Package pmml",
                          description = "K Nearest Neighbors Model",
                          copyright = NULL,
                          model_version = NULL,

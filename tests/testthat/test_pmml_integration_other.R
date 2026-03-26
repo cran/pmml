@@ -1,3 +1,4 @@
+
 data(iris)
 data(audit)
 data("WWWusage")
@@ -120,6 +121,7 @@ test_that("AnomalyDetectionModel/iForest PMML output matches R", {
   skip_on_cran()
   skip_on_ci()
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
   skip_if_not_installed("isofor")
   library(isofor)
@@ -167,6 +169,7 @@ test_that("ClusteringModel/stats kmeans PMML output matches R", {
   skip_on_cran()
   skip_on_ci()
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
   
   skip_if_not_installed("clue")
@@ -265,6 +268,7 @@ test_that("GeneralRegressionModel/glmnet PMML output matches R", {
   skip_on_cran()
   skip_on_ci()
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
   skip_if_not_installed("glmnet")
   library(glmnet)
@@ -439,6 +443,7 @@ test_that("GeneralRegressionModel/stats PMML output matches R", {
   skip_on_cran()
   skip_on_ci()
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
 
   # suppress warning: "glm.fit: fitted probabilities numerically 0 or 1 occurred"
@@ -607,6 +612,7 @@ test_that("MiningModel/ada PMML output matches R", {
   skip_on_cran()
   skip_on_ci()
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
   skip_if_not_installed("ada")
   library(ada)
@@ -692,6 +698,7 @@ test_that("MiningModel/gbm PMML output matches R", {
   skip_on_cran()
   skip_on_ci()
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
   skip_if_not_installed("gbm")
   skip_if_not_installed("caret")
@@ -850,6 +857,7 @@ test_that("MiningModel/randomForest PMML output matches R", {
   skip_on_ci()
   skip_if_not_installed("randomForest")
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
   library(randomForest)
 
@@ -1062,6 +1070,7 @@ test_that("NaiveBayesModel/e1071 PMML output matches R", {
   skip_on_cran()
   skip_on_ci()
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
   skip_if_not_installed("e1071")
   library(e1071)
@@ -1322,6 +1331,7 @@ test_that("NearestNeighborModel/neighbr PMML output matches R", {
   skip_on_cran()
   skip_on_ci()
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
   skip_if_not_installed("neighbr")
   library(neighbr)
@@ -1442,6 +1452,7 @@ test_that("NeuralNetwork/nnet PMML output matches R", {
   skip_on_cran()
   skip_on_ci()
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
   skip_if_not_installed("nnet")
   library(nnet)
@@ -1547,6 +1558,7 @@ test_that("RegressionModel/nnet PMML output matches R", {
   skip_on_cran()
   skip_on_ci()
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
   skip_if_not_installed("nnet")
   library(nnet)
@@ -1633,6 +1645,7 @@ test_that("SupportVectorMachineModel/kernlab PMML output matches R", {
   skip_on_cran()
   skip_on_ci()
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
   skip_if_not_installed("kernlab")
   library(kernlab)
@@ -1822,6 +1835,7 @@ test_that("TreeModel/rpart PMML output matches R", {
   skip_on_cran()
   skip_on_ci()
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
   skip_if_not_installed("rpart")
   library(rpart)

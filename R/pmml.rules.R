@@ -33,7 +33,19 @@
 #' @aliases pmml.rules pmml.itemsets
 #'
 #' @author Graham Williams, Michael Hahsler
-#'
+#' 
+#' @examples
+#' \dontrun{
+#' 
+#' library(arules)
+#' data(Adult)
+#' 
+#' rules <- apriori(Adult, support = 0.5, confidence = 0.9)
+#' 
+#' rules_pmml <- pmml(rules)
+#' rules_pmml
+#' 
+#' }
 #' @references
 #' \href{https://CRAN.R-project.org/package=arules}{arules: Mining Association
 #' Rules and Frequent Itemsets}
@@ -42,7 +54,7 @@
 #' @export
 pmml.rules <- function(model,
                        model_name = "arules_Model",
-                       app_name = "SoftwareAG PMML Generator",
+                       app_name = "R PMML Generator - Package pmml",
                        description = "Association Rules Model",
                        copyright = NULL,
                        model_version = NULL,

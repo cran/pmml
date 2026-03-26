@@ -29,6 +29,7 @@ test_that("AnomalyDetectionModel/e1071 one-classification PMML output matches R"
 
   skip_if_not_installed("e1071")
   library(e1071)
+  skip_if_not_installed("zementisr")
   library(zementisr)
 
 
@@ -277,6 +278,7 @@ test_that("SupportVectorMachineModel/e1071 PMML output matches R", {
 
   skip_if_not_installed("e1071")
   library(e1071)
+  skip_if_not_installed("zementisr")
   library(zementisr)
 
   fit <- svm(Petal.Width ~ ., data = iris[, 1:4], kernel = "linear")

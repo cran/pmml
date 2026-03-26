@@ -8,7 +8,7 @@
 \method{pmml}{cv.glmnet}(
   model,
   model_name = "Elasticnet_Model",
-  app_name = "SoftwareAG PMML Generator",
+  app_name = "R PMML Generator - Package pmml",
   description = "Generalized Linear Regression Model",
   copyright = NULL,
   model_version = NULL,

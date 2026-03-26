@@ -8,7 +8,7 @@
 \method{pmml}{coxph}(
   model,
   model_name = "CoxPH_Survival_Regression_Model",
-  app_name = "SoftwareAG PMML Generator",
+  app_name = "R PMML Generator - Package pmml",
   description = "CoxPH Survival Regression Model",
   copyright = NULL,
   model_version = NULL,

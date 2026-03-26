@@ -26,10 +26,10 @@ test_that("invalidValueTreatment attribute is exported correctly for xgboost mod
   library(xgboost)
   data(agaricus.train, package = "xgboost")
   train <- agaricus.train
-  invisible(capture.output(model_fit <- xgboost(
-    data = train$data, label = train$label,
-    max_depth = 2, eta = 1, nthread = 2, nrounds = 2, objective = "binary:logistic",
-    save_name = tmp_02_save
+  invisible(capture.output(model_fit <- xgb.train(
+    params = list(max_depth = 2, eta = 1, objective = "binary:logistic", nthread = 2),
+    data = xgb.DMatrix(data = train$data, label = train$label),
+    nrounds = 2
   )))
   xgb.dump(model_fit, tmp_02_dump)
 
@@ -42,20 +42,20 @@ test_that("invalidValueTreatment attribute is exported correctly for xgboost mod
   # parent segment
   ms2 <- unlist(xmlToList(model_pmml)$MiningModel$MiningSchema)
   expect_equal(ms2, c(
-    "odor", "active", "returnInvalid", "stalk-root", "active", "returnInvalid",
-    "spore-print-color", "active", "returnInvalid", "f", "predicted", "returnInvalid"
+    "odor", "active", "returnInvalid", "spore-print-color", "active", "returnInvalid",
+    "stalk-root", "active", "returnInvalid", "f", "predicted", "returnInvalid"
   ))
   # child segment 0
   ms3 <- unlist(xmlToList(model_pmml)$MiningModel$Segmentation[[2]]$MiningSchema)
   expect_equal(ms3, c(
-    "odor", "active", "asIs", "stalk-root", "active", "asIs",
-    "spore-print-color", "active", "asIs", "f", "predicted", "asIs"
+    "odor", "active", "asIs", "spore-print-color", "active", "asIs",
+    "stalk-root", "active", "asIs", "f", "predicted", "asIs"
   ))
   # child segment 1
   ms4 <- unlist(xmlToList(model_pmml)$MiningModel$Segmentation[[5]]$MiningSchema)
   expect_equal(ms4, c(
-    "odor", "active", "asIs", "stalk-root", "active", "asIs",
-    "spore-print-color", "active", "asIs", "f", "predicted", "asIs"
+    "odor", "active", "asIs", "spore-print-color", "active", "asIs",
+    "stalk-root", "active", "asIs", "f", "predicted", "asIs"
   ))
 
   # child segment 2 - the regression model segment
@@ -76,20 +76,20 @@ test_that("invalidValueTreatment attribute is exported correctly for xgboost mod
   # parent segment
   ms22 <- xmlToList(model_pmml_2)$MiningModel$MiningSchema
   expect_equal(unlist(ms22), c(
-    "odor", "active", "returnInvalid", "stalk-root", "active", "returnInvalid",
-    "spore-print-color", "active", "returnInvalid", "f", "predicted", "returnInvalid"
+    "odor", "active", "returnInvalid", "spore-print-color", "active", "returnInvalid",
+    "stalk-root", "active", "returnInvalid", "f", "predicted", "returnInvalid"
   ))
   # child segment 0
   ms23 <- unlist(xmlToList(model_pmml_2)$MiningModel$Segmentation[[2]]$MiningSchema)
   expect_equal(ms23, c(
-    "odor", "active", "returnInvalid", "stalk-root", "active", "returnInvalid",
-    "spore-print-color", "active", "returnInvalid", "f", "predicted", "returnInvalid"
+    "odor", "active", "returnInvalid", "spore-print-color", "active", "returnInvalid",
+    "stalk-root", "active", "returnInvalid", "f", "predicted", "returnInvalid"
   ))
   # child segment 1
   ms24 <- unlist(xmlToList(model_pmml_2)$MiningModel$Segmentation[[5]]$MiningSchema)
   expect_equal(ms24, c(
-    "odor", "active", "returnInvalid", "stalk-root", "active", "returnInvalid",
-    "spore-print-color", "active", "returnInvalid", "f", "predicted", "returnInvalid"
+    "odor", "active", "returnInvalid", "spore-print-color", "active", "returnInvalid",
+    "stalk-root", "active", "returnInvalid", "f", "predicted", "returnInvalid"
   ))
 
   # child segment 2 - the regression model segment
@@ -109,21 +109,21 @@ test_that("invalidValueTreatment attribute is exported correctly for xgboost mod
   # parent segment
   ms32 <- xmlToList(model_pmml_3)$MiningModel$MiningSchema
   expect_equal(unlist(ms32), c(
-    "odor", "active", "asIs", "stalk-root", "active", "asIs",
-    "spore-print-color", "active", "asIs", "f", "predicted", "asIs"
+    "odor", "active", "asIs", "spore-print-color", "active", "asIs",
+    "stalk-root", "active", "asIs", "f", "predicted", "asIs"
   ))
 
   # child segment 0
   ms33 <- unlist(xmlToList(model_pmml_3)$MiningModel$Segmentation[[2]]$MiningSchema)
   expect_equal(ms33, c(
-    "odor", "active", "asIs", "stalk-root", "active", "asIs",
-    "spore-print-color", "active", "asIs", "f", "predicted", "asIs"
+    "odor", "active", "asIs", "spore-print-color", "active", "asIs",
+    "stalk-root", "active", "asIs", "f", "predicted", "asIs"
   ))
   # child segment 1
   ms34 <- unlist(xmlToList(model_pmml_3)$MiningModel$Segmentation[[5]]$MiningSchema)
   expect_equal(ms34, c(
-    "odor", "active", "asIs", "stalk-root", "active", "asIs",
-    "spore-print-color", "active", "asIs", "f", "predicted", "asIs"
+    "odor", "active", "asIs", "spore-print-color", "active", "asIs",
+    "stalk-root", "active", "asIs", "f", "predicted", "asIs"
   ))
 
   # child segment 2 - the regression model segment
@@ -283,10 +283,10 @@ test_that("error is thrown if invalidValueTreatment argument is incorrect", {
   library(xgboost)
   data(agaricus.train, package = "xgboost")
   train <- agaricus.train
-  invisible(capture.output(model_fit_2 <- xgboost(
-    data = train$data, label = train$label,
-    max_depth = 2, eta = 1, nthread = 2, nrounds = 2, objective = "binary:logistic",
-    save_name = tmp_03_save
+  invisible(capture.output(model_fit_2 <- xgb.train(
+    params = list(max_depth = 2, eta = 1, objective = "binary:logistic", nthread = 2),
+    data = xgb.DMatrix(data = train$data, label = train$label),
+    nrounds = 2
   )))
   xgb.dump(model_fit_2, tmp_03_dump)
 

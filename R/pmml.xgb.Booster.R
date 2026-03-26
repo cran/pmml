@@ -20,7 +20,7 @@
 
 #' Generate PMML for a xgb.Booster object from the package \pkg{xgboost}.
 #'
-#' @param model An object created by the 'xgboost' function.
+#' @param model An object created by the 'xgb.train' function.
 #' @param missing_value_replacement Value to be used as the 'missingValueReplacement'
 #' attribute for all MiningFields.
 #' @param input_feature_names Input variable names used in training the model.
@@ -34,8 +34,8 @@
 #'
 #' @return PMML representation of the xgb.Booster object.
 #'
-#' @details The \code{xgboost} function takes as its input either an \code{xgb.DMatrix} object or
-#' a numeric matrix. The input field information is not stored in the R model object,
+#' @details The \code{xgb.train} function takes as its input an \code{xgb.DMatrix} object.
+#' The input field information is not stored in the R model object,
 #' hence the field information must be passed on as inputs. This enables the PMML
 #' to specify field names in its model representation. The R model object does not store
 #' information about the fitted tree structure either. However, this information can
@@ -54,7 +54,7 @@
 #' @author Tridivesh Jena
 #'
 #' @seealso \code{\link[pmml]{pmml}},
-#' \href{http://dmg.org/pmml/v4-4-1/GeneralStructure.html}{PMML schema}
+#' \href{https://dmg.org/pmml/v4-4-1/GeneralStructure.html}{PMML schema}
 #'
 #' @references
 #' \href{https://CRAN.R-project.org/package=xgboost}{xgboost: Extreme Gradient Boosting}
@@ -70,10 +70,10 @@
 #' train <- agaricus.train
 #' test <- agaricus.test
 #'
-#' model1 <- xgboost(
-#'   data = train$data, label = train$label,
-#'   max_depth = 2, eta = 1, nthread = 2,
-#'   nrounds = 2, objective = "binary:logistic"
+#' model1 <- xgb.train(
+#'   params = list(max_depth = 2, eta = 1, objective = "binary:logistic"),
+#'   data = xgb.DMatrix(train$data, label = train$label),
+#'   nthread = 2, nrounds = 2
 #' )
 #'
 #' # Save the tree information in an external file:
@@ -88,11 +88,10 @@
 #' )
 #'
 #' # Multinomial model using iris data:
-#' model2 <- xgboost(
-#'   data = as.matrix(iris[, 1:4]),
-#'   label = as.numeric(iris[, 5]) - 1,
-#'   max_depth = 2, eta = 1, nthread = 2, nrounds = 2,
-#'   objective = "multi:softprob", num_class = 3
+#' model2 <- xgb.train(
+#'   params = list(max_depth = 2, eta = 1, objective = "multi:softprob", num_class = 3),
+#'   data = xgb.DMatrix(as.matrix(iris[, 1:4]), label = as.numeric(iris[, 5]) - 1),
+#'   nthread = 2, nrounds = 2
 #' )
 #'
 #' # Save the tree information in an external file:
@@ -110,7 +109,7 @@
 #' @export
 pmml.xgb.Booster <- function(model,
                              model_name = "xboost_Model",
-                             app_name = "SoftwareAG PMML Generator",
+                             app_name = "R PMML Generator - Package pmml",
                              description = "Extreme Gradient Boosting Model",
                              copyright = NULL,
                              model_version = NULL,
@@ -139,7 +138,13 @@ pmml.xgb.Booster <- function(model,
   # names as an input parameter. This can be in the example format of
   # colnames(iris) or colnames(dtrain$data) where dtrain is a xgb.DMatrix.
 
-  if (!(model$params$objective %in% c("multi:softprob", "multi:softmax", "binary:logistic"))) {
+  # xgboost 2.0+ stores params as attributes, older versions in a list element.
+  objective <- model$params$objective
+  if (is.null(objective)) {
+    objective <- attr(model, "params")$objective
+  }
+
+  if (!(objective %in% c("multi:softprob", "multi:softmax", "binary:logistic"))) {
     stop("Only the following objectives are supported: multi:softprob, multi:softmax, binary:logistic.")
   }
 
@@ -170,8 +175,10 @@ pmml.xgb.Booster <- function(model,
     )), ".")
   }
 
-  # get tree split information
-  dtable <- xgboost::xgb.model.dt.tree(input_feature_names, model)
+  # get tree split information.
+  # Note: feature_names is deprecated in xgboost 2.0+ but still works; 
+  # suppress the warning until a better way to set names on a booster is found.
+  dtable <- suppressWarnings(xgboost::xgb.model.dt.tree(model = model, feature_names = input_feature_names))
   # get all features used
   used_features <- unique(unlist(dtable[, 4], use.names = F))
   # get rid of leaves
@@ -292,7 +299,7 @@ pmml.xgb.Booster <- function(model,
     invalidValueTreatment = parent_invalid_value_treatment
   ))
 
-  objective <- model$params$objective
+  # objective already extracted earlier
   if (objective %in% c("binary:logistic", "multi:softprob", "multi:softmax")) {
     type <- "classification"
   } else {

@@ -7,7 +7,7 @@
 \method{pmml}{svm}(
   model,
   model_name = "LIBSVM_Model",
-  app_name = "SoftwareAG PMML Generator",
+  app_name = "R PMML Generator - Package pmml",
   description = "Support Vector Machine Model",
   copyright = NULL,
   model_version = NULL,
@@ -154,5 +154,5 @@ Probability Theory Group (Formerly: E1071), TU Wien} \url{https://CRAN.R-project
 }
 \seealso{
 \code{\link[pmml]{pmml}},
-\href{http://dmg.org/pmml/v4-4-1/SupportVectorMachine.html}{PMML SVM specification}
+\href{https://dmg.org/pmml/v4-4-1/SupportVectorMachine.html}{PMML SVM specification}
 }

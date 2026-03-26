@@ -66,7 +66,7 @@
 #' @export
 pmml.ada <- function(model,
                      model_name = "AdaBoost_Model",
-                     app_name = "SoftwareAG PMML Generator",
+                     app_name = "R PMML Generator - Package pmml",
                      description = "AdaBoost Model",
                      copyright = NULL,
                      model_version = NULL,

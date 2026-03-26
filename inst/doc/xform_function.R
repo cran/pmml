@@ -1,7 +1,7 @@
-## ---- echo = FALSE------------------------------------------------------------
+## ----echo = FALSE-------------------------------------------------------------
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 
-## ---- echo=FALSE,warning=FALSE,message=FALSE,results="hide"-------------------
+## ----echo=FALSE,warning=FALSE,message=FALSE,results="hide"--------------------
 library(pmml)
 library(knitr)
 

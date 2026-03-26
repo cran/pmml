@@ -479,18 +479,18 @@ test_that("MiningModel/gbm PMML validates against schema", {
   fit <- gbm(target ~ ., data = credit, n.trees = 4, interaction.depth = 4, distribution = "gaussian")
   expect_equal(validate_pmml(pmml(fit), schema), 0)
 
-  fit <- gbm(target ~ ., data = credit_class, n.trees = 5, distribution = "multinomial", interaction.depth = 4)
+  expect_warning(fit <- gbm(target ~ ., data = credit_class, n.trees = 5, distribution = "multinomial", interaction.depth = 4))
   expect_equal(validate_pmml(pmml(fit), schema), 0)
 
   fit <- gbm(target ~ ., data = credit_class_01, n.trees = 3, interaction.depth = 4, distribution = "bernoulli")
   expect_equal(validate_pmml(pmml(fit), schema), 0)
 
-  fit <- gbm(Species ~ ., data = iris, n.trees = 2, interaction.depth = 3, distribution = "multinomial")
+  expect_warning(fit <- gbm(Species ~ ., data = iris, n.trees = 2, interaction.depth = 3, distribution = "multinomial"))
   expect_equal(validate_pmml(pmml(fit), schema), 0)
 
   box_obj <- xform_wrap(iris_p)
   box_obj <- zmz_transform_iris(box_obj)
-  fit <- gbm(class ~ ddd1 + ddd2 + ddd3 + ddd4, data = box_obj$data, n.trees = 2, interaction.depth = 3, distribution = "multinomial")
+  expect_warning(fit <- gbm(class ~ ddd1 + ddd2 + ddd3 + ddd4, data = box_obj$data, n.trees = 2, interaction.depth = 3, distribution = "multinomial"))
   p_fit <- pmml(fit, transforms = box_obj)
   expect_equal(validate_pmml(p_fit, schema), 0)
 })
@@ -606,10 +606,10 @@ test_that("MiningModel/xgboost PMML validates against schema", {
   skip_if_not_installed("xgboost")
   library(xgboost)
 
-  invisible(capture.output(fit <- xgboost(
-    data = as.matrix(iris[, 1:4]), label = as.numeric(iris[, 5]) - 1,
-    max_depth = 2, eta = 1, nthread = 2, nrounds = 2, objective = "multi:softprob", num_class = 3,
-    save_name = xgb_tmp_01_save
+  invisible(capture.output(fit <- xgb.train(
+    params = list(max_depth = 2, eta = 1, objective = "multi:softprob", num_class = 3, nthread = 2),
+    data = xgb.DMatrix(data = as.matrix(iris[, 1:4]), label = as.numeric(iris[, 5]) - 1),
+    nrounds = 2
   )))
   xgb.dump(fit, xgb_tmp_01_dump)
 
@@ -621,10 +621,10 @@ test_that("MiningModel/xgboost PMML validates against schema", {
 
   audit_factor <- audit
   audit_factor[, 13] <- as.factor(audit_factor[, 13])
-  invisible(capture.output(fit <- xgboost(
-    data = as.matrix(audit_factor[, c(2, 7, 9, 10, 12)]),
-    label = as.numeric(audit_factor[, 13]) - 1, max_depth = 2, nrounds = 2,
-    objective = "binary:logistic", save_name = xgb_tmp_01_save
+  invisible(capture.output(fit <- xgb.train(
+    params = list(max_depth = 2, objective = "binary:logistic"),
+    data = xgb.DMatrix(data = as.matrix(audit_factor[, c(2, 7, 9, 10, 12)]), label = as.numeric(audit_factor[, 13]) - 1),
+    nrounds = 2
   )))
   xgb.dump(fit, xgb_tmp_01_dump)
   pmml_fit <- pmml(fit,
@@ -634,12 +634,10 @@ test_that("MiningModel/xgboost PMML validates against schema", {
   expect_equal(validate_pmml(pmml_fit, schema), 0)
 
 
-  invisible(capture.output(fit <- xgboost(
-    data = as.matrix(audit_factor[, c(2, 7, 9, 10, 12)]),
-    label = as.numeric(audit_factor[, 13]) - 1,
-    max_depth = 2, nrounds = 2,
-    objective = "binary:logistic",
-    save_name = xgb_tmp_01_save
+  invisible(capture.output(fit <- xgb.train(
+    params = list(max_depth = 2, objective = "binary:logistic"),
+    data = xgb.DMatrix(data = as.matrix(audit_factor[, c(2, 7, 9, 10, 12)]), label = as.numeric(audit_factor[, 13]) - 1),
+    nrounds = 2
   )))
   xgb.dump(fit, xgb_tmp_01_dump)
   pmml_fit <- pmml(fit,
@@ -651,10 +649,10 @@ test_that("MiningModel/xgboost PMML validates against schema", {
 
 
   sparse_mat <- as.matrix(sparse.model.matrix(Adjusted ~ . - 1, data = audit[, c("Marital", "Sex", "Adjusted")]))
-  invisible(capture.output(fit <- xgboost(
-    data = sparse_mat, label = audit[, c("Adjusted")], max_depth = 2,
-    eta = 1, nthread = 2, nrounds = 2, objective = "binary:logistic",
-    save_name = xgb_tmp_01_save
+  invisible(capture.output(fit <- xgb.train(
+    params = list(max_depth = 2, eta = 1, objective = "binary:logistic", nthread = 2),
+    data = xgb.DMatrix(data = sparse_mat, label = audit[, c("Adjusted")]),
+    nrounds = 2
   )))
   xgb.dump(fit, xgb_tmp_01_dump)
   pmml_fit <- pmml(fit,
@@ -669,11 +667,10 @@ test_that("MiningModel/xgboost PMML validates against schema", {
   iris_string_subsets <- iris[1:100, ]
   iris_string_subsets[, 5] <- as.factor(as.character(iris_string_subsets[, 5]))
   colnames(iris_string_subsets) <- c("V11", "V112", "V128", "V22", "V1")
-  invisible(capture.output(fit <- xgboost(
-    data = as.matrix(iris_string_subsets[, 1:4]),
-    label = as.numeric(iris_string_subsets[, 5]) - 1,
-    max_depth = 3, eta = 1, nthread = 1, nrounds = 3, objective = "binary:logistic",
-    save_name = xgb_tmp_01_save
+  invisible(capture.output(fit <- xgb.train(
+    params = list(max_depth = 3, eta = 1, objective = "binary:logistic", nthread = 1),
+    data = xgb.DMatrix(data = as.matrix(iris_string_subsets[, 1:4]), label = as.numeric(iris_string_subsets[, 5]) - 1),
+    nrounds = 3
   )))
   xgb.dump(fit, xgb_tmp_01_dump)
   pmml_fit <- pmml(fit,
@@ -687,11 +684,10 @@ test_that("MiningModel/xgboost PMML validates against schema", {
 
   iris_string_subsets <- iris
   colnames(iris_string_subsets) <- c("V11", "V112", "V128", "V1281", "V1")
-  invisible(capture.output(fit <- xgboost(
-    data = as.matrix(iris_string_subsets[, 1:4]), label = as.numeric(iris_string_subsets[, 5]) - 1,
-    max_depth = 4, eta = 1, nthread = 1, nrounds = 3, num_class = 3,
-    objective = "multi:softprob",
-    save_name = xgb_tmp_01_save
+  invisible(capture.output(fit <- xgb.train(
+    params = list(max_depth = 4, eta = 1, objective = "multi:softprob", num_class = 3, nthread = 1),
+    data = xgb.DMatrix(data = as.matrix(iris_string_subsets[, 1:4]), label = as.numeric(iris_string_subsets[, 5]) - 1),
+    nrounds = 3
   )))
   xgb.dump(fit, xgb_tmp_01_dump)
   pmml_fit <- pmml(fit,
@@ -701,11 +697,10 @@ test_that("MiningModel/xgboost PMML validates against schema", {
   expect_equal(validate_pmml(pmml_fit, schema), 0)
 
   # Use larger number of trees (nrounds) so that some are created with no branches.
-  invisible(capture.output(fit <- xgboost(
-    data = as.matrix(iris_string_subsets[, 1:4]), label = as.numeric(iris_string_subsets[, 5]) - 1,
-    max_depth = 4, eta = 1, nthread = 1, nrounds = 18, num_class = 3,
-    objective = "multi:softprob",
-    save_name = xgb_tmp_01_save
+  invisible(capture.output(fit <- xgb.train(
+    params = list(max_depth = 4, eta = 1, objective = "multi:softprob", num_class = 3, nthread = 1),
+    data = xgb.DMatrix(data = as.matrix(iris_string_subsets[, 1:4]), label = as.numeric(iris_string_subsets[, 5]) - 1),
+    nrounds = 18
   )))
   xgb.dump(fit, xgb_tmp_01_dump)
   pmml_fit <- pmml(fit,
@@ -715,11 +710,10 @@ test_that("MiningModel/xgboost PMML validates against schema", {
   expect_equal(validate_pmml(pmml_fit, schema), 0)
 
   # Multinomial model with one tree each
-  invisible(capture.output(fit <- xgboost(
-    data = as.matrix(iris_string_subsets[, 1:4]), label = as.numeric(iris_string_subsets[, 5]) - 1,
-    max_depth = 4, eta = 1, nthread = 1, nrounds = 1, num_class = 3,
-    objective = "multi:softprob",
-    save_name = xgb_tmp_01_save
+  invisible(capture.output(fit <- xgb.train(
+    params = list(max_depth = 4, eta = 1, objective = "multi:softprob", num_class = 3, nthread = 1),
+    data = xgb.DMatrix(data = as.matrix(iris_string_subsets[, 1:4]), label = as.numeric(iris_string_subsets[, 5]) - 1),
+    nrounds = 1
   )))
   xgb.dump(fit, xgb_tmp_01_dump)
   pmml_fit <- pmml(fit,
@@ -730,10 +724,10 @@ test_that("MiningModel/xgboost PMML validates against schema", {
 
 
   iris_matrix <- as.matrix(iris[, 1:4])
-  invisible(capture.output(model8 <- xgboost(
-    data = iris_matrix, label = as.numeric(iris[, 5]) - 1,
-    max_depth = 4, eta = 1, nthread = 1, nrounds = 2, num_class = 3,
-    objective = "multi:softmax", save_name = xgb_tmp_01_save
+  invisible(capture.output(model8 <- xgb.train(
+    params = list(max_depth = 4, eta = 1, objective = "multi:softmax", num_class = 3, nthread = 1),
+    data = xgb.DMatrix(data = iris_matrix, label = as.numeric(iris[, 5]) - 1),
+    nrounds = 2
   )))
   xgb.dump(model8, xgb_tmp_01_dump)
   pmml_fit <- pmml(model8,
@@ -750,11 +744,10 @@ test_that("MiningModel/xgboost PMML validates against schema", {
   output_vector <- as.numeric(audit_factor$Adjusted) - 1
   audit_box_filt <- box_obj$data[!names(box_obj$data) %in% c("Marital", "Sex", "Adjusted")]
   set.seed(234)
-  invisible(capture.output(fit <- xgboost(
-    data = as.matrix(audit_box_filt),
-    label = output_vector, max_depth = 2,
-    eta = 1, nthread = 2, nrounds = 2, objective = "binary:logistic",
-    save_name = xgb_tmp_01_save
+  invisible(capture.output(fit <- xgb.train(
+    params = list(max_depth = 2, eta = 1, objective = "binary:logistic", nthread = 2),
+    data = xgb.DMatrix(data = as.matrix(audit_box_filt), label = output_vector),
+    nrounds = 2
   )))
   xgb.dump(fit, xgb_tmp_01_dump)
   p_fit <- pmml(fit,
@@ -773,11 +766,10 @@ test_that("MiningModel/xgboost PMML validates against schema", {
   output_vector <- as.numeric(audit_factor$Adjusted) - 1
   audit_box_filt <- box_obj$data[!names(box_obj$data) %in% c("Marital", "Sex", "Adjusted")]
   set.seed(234)
-  invisible(capture.output(fit <- xgboost(
-    data = as.matrix(audit_box_filt),
-    label = output_vector, max_depth = 2,
-    eta = 1, nthread = 2, nrounds = 2, objective = "binary:logistic",
-    save_name = xgb_tmp_01_save
+  invisible(capture.output(fit <- xgb.train(
+    params = list(max_depth = 2, eta = 1, objective = "binary:logistic", nthread = 2),
+    data = xgb.DMatrix(data = as.matrix(audit_box_filt), label = output_vector),
+    nrounds = 2
   )))
   xgb.dump(fit, xgb_tmp_01_dump)
   p_fit <- pmml(fit,

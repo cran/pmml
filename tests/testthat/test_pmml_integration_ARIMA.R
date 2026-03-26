@@ -1,5 +1,4 @@
 
-
 forecast_with_cpi <- function(model, h) {
   # create data frame of point forecast and CPI
   pr <- forecast(model, h)
@@ -111,6 +110,7 @@ test_that("TimeSeriesModel/forecast PMML output matches R for non-seasonal and t
   # skip("skip non-seasonal ts_type='arima'")
 
   skip_if_not_installed("forecast")
+  skip_if_not_installed("zementisr")
   library(zementisr)
   library(forecast)
 
@@ -186,6 +186,7 @@ test_that("TimeSeriesModel/forecast PMML output matches R for seasonal,ts_type='
   # skip("skip seasonal CLS")
 
   skip_if_not_installed("forecast")
+  skip_if_not_installed("zementisr")
   library(zementisr)
   library(forecast)
 
@@ -271,6 +272,7 @@ test_that("TimeSeriesModel/forecast PMML output matches R for statespace represe
   # skip("skip statespace")
 
   skip_if_not_installed("forecast")
+  skip_if_not_installed("zementisr")
   library(zementisr)
   library(forecast)
 

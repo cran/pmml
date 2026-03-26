@@ -7,7 +7,7 @@
 \method{pmml}{nnet}(
   model,
   model_name = "NeuralNet_model",
-  app_name = "SoftwareAG PMML Generator",
+  app_name = "R PMML Generator - Package pmml",
   description = "Neural Network Model",
   copyright = NULL,
   model_version = NULL,

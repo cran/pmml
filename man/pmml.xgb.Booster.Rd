@@ -7,7 +7,7 @@
 \method{pmml}{xgb.Booster}(
   model,
   model_name = "xboost_Model",
-  app_name = "SoftwareAG PMML Generator",
+  app_name = "R PMML Generator - Package pmml",
   description = "Extreme Gradient Boosting Model",
   copyright = NULL,
   model_version = NULL,
@@ -23,7 +23,7 @@
 )
 }
 \arguments{
-\item{model}{An object created by the 'xgboost' function.}
+\item{model}{An object created by the 'xgb.train' function.}
 
 \item{model_name}{A name to be given to the PMML model.}
 
@@ -61,8 +61,8 @@ PMML representation of the xgb.Booster object.
 Generate PMML for a xgb.Booster object from the package \pkg{xgboost}.
 }
 \details{
-The \code{xgboost} function takes as its input either an \code{xgb.DMatrix} object or
-a numeric matrix. The input field information is not stored in the R model object,
+The \code{xgb.train} function takes as its input an \code{xgb.DMatrix} object.
+The input field information is not stored in the R model object,
 hence the field information must be passed on as inputs. This enables the PMML
 to specify field names in its model representation. The R model object does not store
 information about the fitted tree structure either. However, this information can
@@ -89,10 +89,10 @@ data(agaricus.test, package = "xgboost")
 train <- agaricus.train
 test <- agaricus.test
 
-model1 <- xgboost(
-  data = train$data, label = train$label,
-  max_depth = 2, eta = 1, nthread = 2,
-  nrounds = 2, objective = "binary:logistic"
+model1 <- xgb.train(
+  params = list(max_depth = 2, eta = 1, objective = "binary:logistic"),
+  data = xgb.DMatrix(train$data, label = train$label),
+  nthread = 2, nrounds = 2
 )
 
 # Save the tree information in an external file:
@@ -107,11 +107,10 @@ model1_pmml <- pmml(model1,
 )
 
 # Multinomial model using iris data:
-model2 <- xgboost(
-  data = as.matrix(iris[, 1:4]),
-  label = as.numeric(iris[, 5]) - 1,
-  max_depth = 2, eta = 1, nthread = 2, nrounds = 2,
-  objective = "multi:softprob", num_class = 3
+model2 <- xgb.train(
+  params = list(max_depth = 2, eta = 1, objective = "multi:softprob", num_class = 3),
+  data = xgb.DMatrix(as.matrix(iris[, 1:4]), label = as.numeric(iris[, 5]) - 1),
+  nthread = 2, nrounds = 2
 )
 
 # Save the tree information in an external file:
@@ -131,7 +130,7 @@ model2_pmml <- pmml(model2,
 }
 \seealso{
 \code{\link[pmml]{pmml}},
-\href{http://dmg.org/pmml/v4-4-1/GeneralStructure.html}{PMML schema}
+\href{https://dmg.org/pmml/v4-4-1/GeneralStructure.html}{PMML schema}
 }
 \author{
 Tridivesh Jena

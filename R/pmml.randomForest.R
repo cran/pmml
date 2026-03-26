@@ -57,7 +57,7 @@
 #' @export
 pmml.randomForest <- function(model,
                               model_name = "randomForest_Model",
-                              app_name = "SoftwareAG PMML Generator",
+                              app_name = "R PMML Generator - Package pmml",
                               description = "Random Forest Tree Model",
                               copyright = NULL,
                               model_version = NULL,

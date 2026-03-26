@@ -7,7 +7,7 @@
 pmml(
   model = NULL,
   model_name = "R_Model",
-  app_name = "SoftwareAG PMML Generator",
+  app_name = "R PMML Generator - Package pmml",
   description = NULL,
   copyright = NULL,
   model_version = NULL,
@@ -102,9 +102,9 @@ iris_trans_pmml <- pmml(NULL, transforms = iris_trans)
 \references{
 \itemize{
 
-\item \href{http://dmg.org/pmml/v4-4-1/GeneralStructure.html}{PMML home page}
+\item \href{https://dmg.org/pmml/v4-4-1/GeneralStructure.html}{PMML home page}
 
-\item \href{http://dmg.org/pmml/v4-4-1/Transformations.html}{PMML transformations}
+\item \href{https://dmg.org/pmml/v4-4-1/Transformations.html}{PMML transformations}
 
 }
 }

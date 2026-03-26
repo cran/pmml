@@ -8,7 +8,7 @@ the package \pkg{stats}.}
 \method{pmml}{kmeans}(
   model,
   model_name = "KMeans_Model",
-  app_name = "SoftwareAG PMML Generator",
+  app_name = "R PMML Generator - Package pmml",
   description = "KMeans cluster model",
   copyright = NULL,
   model_version = NULL,

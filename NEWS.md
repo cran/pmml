@@ -1,5 +1,11 @@
-# pmml 2.5.1.9000
-## Breaking Changes
+# pmml 2.6.0 (03/26/2026)
+
+## Maintainer Change
+* The maintainer is now Michael Hahsler.
+
+## Changes
+* Updated XGBoost PMML export and tests for compatibility with XGBoost 2.0+ (b-rodrigues)
+* Many fixes for CRAN.
 * Removed support for RandomForestSRC package.
 
 # pmml 2.5.1

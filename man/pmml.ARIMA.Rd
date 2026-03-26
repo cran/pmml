@@ -7,7 +7,7 @@
 \method{pmml}{ARIMA}(
   model,
   model_name = "ARIMA_model",
-  app_name = "SoftwareAG PMML Generator",
+  app_name = "R PMML Generator - Package pmml",
   description = "ARIMA Time Series Model",
   copyright = NULL,
   model_version = NULL,

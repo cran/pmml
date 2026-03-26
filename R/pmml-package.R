@@ -50,7 +50,7 @@
 #' provides a way for applications to define machine learning, statistical and
 #' data mining models and to share models between PMML compliant applications.
 #' More information about the PMML industry standard and the Data Mining Group
-#' can be found at <http://www.dmg.org>. The generated PMML can be imported
+#' can be found at <https://www.dmg.org>. The generated PMML can be imported
 #' into any PMML consuming application, such as Zementis Predictive Analytics
 #' products, which integrate with web services, relational database systems and
 #' deploy natively on Hadoop in conjunction with Hive, Spark or Storm, as well
@@ -59,14 +59,13 @@
 #'
 #' @section References:
 #' \itemize{
-#' \item \href{http://dmg.org/pmml/v4-4-1/GeneralStructure.html}{PMML home page}
+#' \item \href{https://dmg.org/pmml/v4-4-1/GeneralStructure.html}{PMML home page}
 #'
-#' \item \href{http://dmg.org/pmml/v4-4-1/Transformations.html}{PMML transformations}
+#' \item \href{https://dmg.org/pmml/v4-4-1/Transformations.html}{PMML transformations}
 #'
 #' \item A. Guazzelli, W. Lin, T. Jena (2012), \emph{PMML in Action: Unleashing
 #' the Power of Open Standards for Data Mining and Predictive Analytics}.
-#' CreativeSpace (Second Edition) -
-#' \href{https://www.amazon.com/dp/1470003244}{Available on Amazon.com}.
+#' CreateSpace Independent Publishing Platform (Second Edition).
 #'
 #' \item A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), PMML: An Open
 #' Standard for Sharing Models. \emph{The R journal}, Volume 1/1, 60-65

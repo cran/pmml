@@ -15,11 +15,10 @@ test_that("discrete variables are one-hot-encoded", {
   data(agaricus.train, package = "xgboost")
   train <- agaricus.train
 
-  invisible(capture.output(model_fit <- xgboost(
-    data = train$data, label = train$label,
-    max_depth = 2, eta = 1, nthread = 2, nrounds = 2, objective = "binary:logistic",
-    eval_metric = "error",
-    save_name = tmp_01_save
+  invisible(capture.output(model_fit <- xgb.train(
+    params = list(max_depth = 2, eta = 1, objective = "binary:logistic", nthread = 2, eval_metric = "error"),
+    data = xgb.DMatrix(train$data, label = train$label),
+    nrounds = 2
   )))
 
   xgb.dump(model_fit, tmp_01_dump)
@@ -39,19 +38,17 @@ test_that("discrete variables are one-hot-encoded", {
 test_that("error is thrown when objective = reg:linear", {
   skip_if_not_installed("xgboost")
   library(xgboost)
-  modX <- xgboost(
-    data = as.matrix(iris[, 1:3]), label = iris[, 4],
-    max_depth = 2, eta = 1, nthread = 2, nrounds = 2,
-    objective = "reg:squarederror", # objective = "reg:linear" is deprecated
-    verbose = 0,
-    save_name = tmp_01_save
-  )
+  invisible(capture.output(model_fit <- xgb.train(
+    params = list(max_depth = 2, eta = 1, objective = "reg:squarederror", nthread = 2, verbosity = 0),
+    data = xgb.DMatrix(as.matrix(iris[, 1:3]), label = iris[, 4]),
+    nrounds = 2
+  )))
 
-  xgb.dump(modX, tmp_01_dump)
+  xgb.dump(model_fit, tmp_01_dump)
 
   expect_error(
     pmml(
-      model = modX, input_feature_names = colnames(iris[, 1:3]),
+      model = model_fit, input_feature_names = colnames(iris[, 1:3]),
       output_label_name = "Petal.Width",
       xgb_dump_file = tmp_01_dump
     ),
@@ -67,10 +64,10 @@ test_that("error is thrown when objective = reg:logistic", {
   dat_07 <- as.matrix(iris[1:100, 1:4])
   label_07 <- as.numeric(iris[1:100, 5]) - 1
 
-  modX <- xgboost(
-    data = dat_07, label = label_07, max_depth = 2,
-    nrounds = 2, objective = "reg:logistic", verbose = 0,
-    save_name = tmp_01_save
+  modX <- xgb.train(
+    params = list(max_depth = 2, objective = "reg:logistic", verbosity = 0),
+    data = xgb.DMatrix(dat_07, label = label_07),
+    nrounds = 2
   )
   xgb.dump(modX, tmp_01_dump)
 
@@ -94,11 +91,10 @@ test_that("error is thrown when objective = binary:logitraw", {
   ir[, 5] <- as.character(ir[, 5])
   ir[, 5] <- as.factor(ir[, 5])
 
-  model9 <- xgboost(
-    data = as.matrix(ir[, 1:4]), label = as.numeric(ir[, 5]) - 1,
-    max_depth = 3, nrounds = 3, objective = "binary:logitraw",
-    eval_metric = "auc", verbose = 0,
-    save_name = tmp_01_save
+  model9 <- xgb.train(
+    params = list(max_depth = 3, objective = "binary:logitraw", eval_metric = "auc", verbosity = 0),
+    data = xgb.DMatrix(as.matrix(ir[, 1:4]), label = as.numeric(ir[, 5]) - 1),
+    nrounds = 3
   )
 
   xgb.dump(model9, tmp_01_dump)

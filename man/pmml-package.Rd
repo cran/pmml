@@ -3,7 +3,6 @@
 \docType{package}
 \name{pmml-package}
 \alias{pmml-package}
-\alias{_PACKAGE}
 \title{pmml: Generate PMML for R Models}
 \description{
 Export various R models to PMML and generate data transformations in PMML
@@ -41,7 +40,7 @@ The Predictive Model Markup Language (PMML) is an XML-based language which
 provides a way for applications to define machine learning, statistical and
 data mining models and to share models between PMML compliant applications.
 More information about the PMML industry standard and the Data Mining Group
-can be found at <http://www.dmg.org>. The generated PMML can be imported
+can be found at <https://www.dmg.org>. The generated PMML can be imported
 into any PMML consuming application, such as Zementis Predictive Analytics
 products, which integrate with web services, relational database systems and
 deploy natively on Hadoop in conjunction with Hive, Spark or Storm, as well
@@ -52,14 +51,13 @@ applications and real-time, streaming analytics platforms.
 \section{References}{
 
 \itemize{
-\item \href{http://dmg.org/pmml/v4-4-1/GeneralStructure.html}{PMML home page}
+\item \href{https://dmg.org/pmml/v4-4-1/GeneralStructure.html}{PMML home page}
 
-\item \href{http://dmg.org/pmml/v4-4-1/Transformations.html}{PMML transformations}
+\item \href{https://dmg.org/pmml/v4-4-1/Transformations.html}{PMML transformations}
 
 \item A. Guazzelli, W. Lin, T. Jena (2012), \emph{PMML in Action: Unleashing
 the Power of Open Standards for Data Mining and Predictive Analytics}.
-CreativeSpace (Second Edition) -
-\href{https://www.amazon.com/dp/1470003244}{Available on Amazon.com}.
+CreateSpace Independent Publishing Platform (Second Edition).
 
 \item A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), PMML: An Open
 Standard for Sharing Models. \emph{The R journal}, Volume 1/1, 60-65
@@ -75,22 +73,21 @@ Conference on Knowledge Discovery and Data Mining}
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://open-source.softwareag.com/r-pmml/}
-  \item \url{https://github.com/SoftwareAG/r-pmml}
-  \item \url{https://www.softwareag.com/corporate/products/az/zementis/default.html}
-  \item Report bugs at \url{https://github.com/SoftwareAG/r-pmml/issues}
+  \item \url{https://github.com/mhahsler/r-pmml}
+  \item Report bugs at \url{https://github.com/mhahsler/r-pmml/issues}
 }
 
 }
 \author{
-\strong{Maintainer}: Dmitriy Bolotov \email{dmitriy.bolotov@softwareag.com}
+\strong{Maintainer}: Michael Hahsler \email{mhahsler@lyle.smu.edu}
 
 Authors:
 \itemize{
+  \item Bruno Rodrigues
+  \item Dmitriy Bolotov \email{dmitriy.bolotov@softwareag.com}
   \item Tridivesh Jena \email{tridivesh.jena@softwareag.com}
   \item Graham Williams \email{graham.williams@togaware.net}
   \item Wen-Ching Lin
-  \item Michael Hahsler \email{michael@hahsler.net}
   \item Hemant Ishwaran
   \item Udaya B. Kogalur
   \item Rajarshi Guha \email{rguha@indiana.edu}

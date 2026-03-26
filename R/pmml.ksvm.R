@@ -57,7 +57,7 @@
 #' @export
 pmml.ksvm <- function(model,
                       model_name = "SVM_model",
-                      app_name = "SoftwareAG PMML Generator",
+                      app_name = "R PMML Generator - Package pmml",
                       description = "Support Vector Machine Model",
                       copyright = NULL,
                       model_version = NULL,

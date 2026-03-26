@@ -13,6 +13,7 @@ test_that("RegressionModel/stats PMML output matches R", {
   skip_on_cran()
   skip_on_ci()
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
 
   fit <- lm(Sepal.Length ~ ., data = iris)
@@ -123,6 +124,7 @@ test_that("lm model with integer feature - output matches R", {
   skip_on_cran()
   skip_on_ci()
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
 
   dat <- iris
@@ -146,6 +148,7 @@ test_that("lm model with logical feature - output matches R", {
   # Logical feature is exported with dataType="boolean" and optype="categorical
   skip("skip")
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
   dat <- iris
   dat$SL_logi <- unlist(lapply(dat$Sepal.Length, function(x) {
@@ -175,6 +178,7 @@ test_that("lm model with factor feature - output matches R", {
   skip_on_cran()
   skip_on_ci()
 
+  skip_if_not_installed("zementisr")
   library(zementisr)
 
   dat <- iris
