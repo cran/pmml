@@ -43,12 +43,12 @@
 #' therefore not match exactly for cases involving very small probabilities.
 #'
 #' @references \itemize{
-#' \item \href{https://CRAN.R-project.org/package=e1071}{e1071: Misc Functions of the Department of Statistics, Probability Theory Group (Formerly: E1071), TU Wien (on CRAN)}
+#' \item [e1071: Misc Functions of the Department of Statistics, Probability Theory Group (Formerly: E1071), TU Wien (on CRAN)](https://CRAN.R-project.org/package=e1071)
 #'
 #' \item A. Guazzelli, T. Jena, W. Lin, M. Zeller (2013). Extending the Naive
 #' Bayes Model Element in PMML: Adding Support for Continuous Input Variables.
-#' In \emph{Proceedings of the 19th ACM SIGKDD Conference on Knowledge
-#' Discovery and Data Mining}.
+#' In *Proceedings of the 19th ACM SIGKDD Conference on Knowledge
+#' Discovery and Data Mining*.
 #'
 #' }
 #' @examples

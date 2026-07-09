@@ -34,30 +34,30 @@
 #'
 #' @return PMML representation of the xgb.Booster object.
 #'
-#' @details The \code{xgb.train} function takes as its input an \code{xgb.DMatrix} object.
+#' @details The `xgb.train` function takes as its input an `xgb.DMatrix` object.
 #' The input field information is not stored in the R model object,
 #' hence the field information must be passed on as inputs. This enables the PMML
 #' to specify field names in its model representation. The R model object does not store
 #' information about the fitted tree structure either. However, this information can
-#' be extracted from the \code{xgb.model.dt.tree} function and the file saved using the
-#' \code{xgb.dump} function. The xgboost library is therefore needed in the environment and this
+#' be extracted from the `xgb.model.dt.tree` function and the file saved using the
+#' `xgb.dump` function. The xgboost library is therefore needed in the environment and this
 #' saved file is needed as an input as well.
 #'
-#' The following objectives are currently supported: \code{multi:softprob},
-#' \code{multi:softmax}, \code{binary:logistic}.
+#' The following objectives are currently supported: `multi:softprob`,
+#' `multi:softmax`, `binary:logistic`.
 #'
 #' The pmml exporter will throw an error if the xgboost model model only has one tree.
 #'
 #' The exporter only works with numeric matrices. Sparse matrices must be converted to
-#' \code{matrix} objects before training an xgboost model for the export to work correctly.
+#' `matrix` objects before training an xgboost model for the export to work correctly.
 #'
 #' @author Tridivesh Jena
 #'
-#' @seealso \code{\link[pmml]{pmml}},
-#' \href{https://dmg.org/pmml/v4-4-1/GeneralStructure.html}{PMML schema}
+#' @seealso [pmml::pmml()],
+#' [PMML schema](https://dmg.org/pmml/v4-4-1/GeneralStructure.html)
 #'
 #' @references
-#' \href{https://CRAN.R-project.org/package=xgboost}{xgboost: Extreme Gradient Boosting}
+#' [xgboost: Extreme Gradient Boosting](https://CRAN.R-project.org/package=xgboost)
 #'
 #' @examples
 #' \dontrun{

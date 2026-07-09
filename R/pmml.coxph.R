@@ -29,7 +29,7 @@
 #'
 #' @details
 #' A coxph object is the result of fitting a proportional hazards regression
-#' model, using the \code{coxph} function from the package \pkg{survival}. Although
+#' model, using the `coxph` function from the package \pkg{survival}. Although
 #' the \pkg{survival} package supports special terms "cluster", "tt" and
 #' "strata", only the special term "strata" is supported by the \pkg{pmml}
 #' package. Note that special term "strata" cannot be a multiplicative variable
@@ -38,8 +38,8 @@
 #' @author Graham Williams
 #'
 #' @references
-#' \href{https://CRAN.R-project.org/package=survival}{coxph: Survival
-#' Analysis}
+#' [coxph: Survival
+#' Analysis](https://CRAN.R-project.org/package=survival)
 #'
 #' @export pmml.coxph
 #' @export

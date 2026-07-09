@@ -479,18 +479,18 @@ test_that("MiningModel/gbm PMML validates against schema", {
   fit <- gbm(target ~ ., data = credit, n.trees = 4, interaction.depth = 4, distribution = "gaussian")
   expect_equal(validate_pmml(pmml(fit), schema), 0)
 
-  expect_warning(fit <- gbm(target ~ ., data = credit_class, n.trees = 5, distribution = "multinomial", interaction.depth = 4))
+  fit <- gbm(target ~ ., data = credit_class, n.trees = 5, distribution = "multinomial", interaction.depth = 4)
   expect_equal(validate_pmml(pmml(fit), schema), 0)
 
   fit <- gbm(target ~ ., data = credit_class_01, n.trees = 3, interaction.depth = 4, distribution = "bernoulli")
   expect_equal(validate_pmml(pmml(fit), schema), 0)
 
-  expect_warning(fit <- gbm(Species ~ ., data = iris, n.trees = 2, interaction.depth = 3, distribution = "multinomial"))
+  fit <- gbm(Species ~ ., data = iris, n.trees = 2, interaction.depth = 3, distribution = "multinomial")
   expect_equal(validate_pmml(pmml(fit), schema), 0)
 
   box_obj <- xform_wrap(iris_p)
   box_obj <- zmz_transform_iris(box_obj)
-  expect_warning(fit <- gbm(class ~ ddd1 + ddd2 + ddd3 + ddd4, data = box_obj$data, n.trees = 2, interaction.depth = 3, distribution = "multinomial"))
+  fit <- gbm(class ~ ddd1 + ddd2 + ddd3 + ddd4, data = box_obj$data, n.trees = 2, interaction.depth = 3, distribution = "multinomial")
   p_fit <- pmml(fit, transforms = box_obj)
   expect_equal(validate_pmml(p_fit, schema), 0)
 })

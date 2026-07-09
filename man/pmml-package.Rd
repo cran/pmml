@@ -11,8 +11,8 @@ format.
 \section{Functions}{
 
 \itemize{
-\item \code{\link{pmml}} exports R model objects to PMML format.
-\item \code{\link{xform_wrap}} creates an object with that can then be used
+\item \code{\link[=pmml]{pmml()}} exports R model objects to PMML format.
+\item \code{\link[=xform_wrap]{xform_wrap()}} creates an object with that can then be used
 to describe transformations to be exported to PMML.
 }
 }
@@ -40,7 +40,7 @@ The Predictive Model Markup Language (PMML) is an XML-based language which
 provides a way for applications to define machine learning, statistical and
 data mining models and to share models between PMML compliant applications.
 More information about the PMML industry standard and the Data Mining Group
-can be found at <https://www.dmg.org>. The generated PMML can be imported
+can be found at \url{https://dmg.org}. The generated PMML can be imported
 into any PMML consuming application, such as Zementis Predictive Analytics
 products, which integrate with web services, relational database systems and
 deploy natively on Hadoop in conjunction with Hive, Spark or Storm, as well
@@ -63,8 +63,7 @@ CreateSpace Independent Publishing Platform (Second Edition).
 Standard for Sharing Models. \emph{The R journal}, Volume 1/1, 60-65
 
 \item T. Jena, A. Guazzelli, W. Lin, M. Zeller (2013).
-\href{https://kdd13pmml.files.wordpress.com/2013/07/jena_et_al.pdf}{The R
-pmmlTransformations Package.} In \emph{Proceedings of the 19th ACM SIGKDD
+\href{https://kdd13pmml.files.wordpress.com/2013/07/jena_et_al.pdf}{The R pmmlTransformations Package.} In \emph{Proceedings of the 19th ACM SIGKDD
 Conference on Knowledge Discovery and Data Mining}
 
 }
@@ -83,6 +82,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item Michael Hahsler \email{mhahsler@lyle.smu.edu}
   \item Bruno Rodrigues
   \item Dmitriy Bolotov \email{dmitriy.bolotov@softwareag.com}
   \item Tridivesh Jena \email{tridivesh.jena@softwareag.com}

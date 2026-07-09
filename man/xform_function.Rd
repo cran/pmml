@@ -81,5 +81,5 @@ Sepal.Length.Transformed + Width.Sum, data = iris_box$data)
 fit_pmml <- pmml(fit, transform = iris_box)
 }
 \seealso{
-\code{\link{xform_wrap}}
+\code{\link[=xform_wrap]{xform_wrap()}}
 }

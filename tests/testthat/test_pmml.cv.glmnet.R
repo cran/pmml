@@ -83,7 +83,10 @@ test_that("pmml.cv.glmnet throws error when family is cox", {
   ty <- rexp(N, hx)
   tcens <- rbinom(n = N, prob = .3, size = 1) # censoring indicator
   y <- cbind(time = ty, status = 1 - tcens) # y=Surv(ty,1-tcens) with library(survival)
-  fit <- cv.glmnet(x, y, family = "cox")
+  # Starting in glmnet 5.1, the default Cox tie-handling method will change 
+  # from 'breslow' to 'efron' (matching survival::coxph). 
+  # To silence this message and lock in the v5.0 default, pass cox.ties = 'breslow' explicitly.
+  fit <- cv.glmnet(x, y, family = "cox", cox.ties = 'breslow')
   expect_error(pmml(fit),
     "Only poisson and gaussian family types supported.",
     fixed = TRUE

@@ -68,8 +68,7 @@ rm(iris_rf)
 }
 }
 \references{
-\href{https://CRAN.R-project.org/package=randomForest}{randomForest:
-Breiman and Cutler's random forests for classification and regression}
+\href{https://CRAN.R-project.org/package=randomForest}{randomForest: Breiman and Cutler's random forests for classification and regression}
 }
 \author{
 Tridivesh Jena

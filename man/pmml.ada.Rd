@@ -71,8 +71,7 @@ fit_pmml <- pmml(fit)
 }
 }
 \references{
-\href{https://CRAN.R-project.org/package=ada}{ada: an R package for
-stochastic boosting (on CRAN)}
+\href{https://CRAN.R-project.org/package=ada}{ada: an R package for stochastic boosting (on CRAN)}
 }
 \author{
 Wen Lin

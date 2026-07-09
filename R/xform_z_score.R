@@ -19,7 +19,7 @@
 # #############################################################################
 
 #' Perform a z-score normalization on continuous values in accordance with the
-#' PMML element \bold{NormContinuous}.
+#' PMML element **NormContinuous**.
 #'
 #'
 #' @param wrap_object Output of xform_wrap or another transformation function.
@@ -32,28 +32,28 @@
 #' statistics.
 #'
 #' @details
-#' Perform a z-score normalization on data given in \code{xform_wrap} format.
+#' Perform a z-score normalization on data given in `xform_wrap` format.
 #'
-#' Given an input variable named \bold{InputVar}, the name of the transformed
-#' variable \bold{OutputVar}, and the desired value of the transformed variable
-#' if the input variable value is missing \bold{missingVal}, the xform_z_score
+#' Given an input variable named **InputVar**, the name of the transformed
+#' variable **OutputVar**, and the desired value of the transformed variable
+#' if the input variable value is missing **missingVal**, the xform_z_score
 #' command including all the optional parameters is:
 #'
-#' \code{
+#' `
 #' xform_info="InputVar -> OutputVar", map_missing_to="missingVal"
-#' }
+#' `
 #'
 #' Two methods can be used to refer to the variables. The first
-#' method is to use its column number; given the \bold{data} attribute of the
-#' \bold{boxData} object, this would be the order at which the variable
+#' method is to use its column number; given the **data** attribute of the
+#' **boxData** object, this would be the order at which the variable
 #' appears. This can be indicated in the format "column#". The second method is
 #' to refer to the variable by its name.
 #'
 #' The name of the transformed
 #' variable is optional; if the name is not provided, the transformed variable
-#' is given the name: "derived_" + \emph{original_variable_name}
+#' is given the name: "derived_" + *original_variable_name*
 #'
-#' \bold{missingValue}, an optional parameter, is the value to be given to the
+#' **missingValue**, an optional parameter, is the value to be given to the
 #' output variable if the input variable value is missing. If no input variable
 #' names are provided, by default all numeric variables are transformed. Note
 #' that in this case a replacement value for missing input values cannot be
@@ -61,7 +61,7 @@
 #'
 #' @author Tridivesh Jena
 #'
-#' @seealso \code{\link{xform_wrap}}
+#' @seealso [xform_wrap()]
 #'
 #' @keywords manip utilities methods
 #'

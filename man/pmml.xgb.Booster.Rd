@@ -129,7 +129,7 @@ model2_pmml <- pmml(model2,
 \href{https://CRAN.R-project.org/package=xgboost}{xgboost: Extreme Gradient Boosting}
 }
 \seealso{
-\code{\link[pmml]{pmml}},
+\code{\link[=pmml]{pmml()}},
 \href{https://dmg.org/pmml/v4-4-1/GeneralStructure.html}{PMML schema}
 }
 \author{

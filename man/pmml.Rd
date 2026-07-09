@@ -109,14 +109,14 @@ iris_trans_pmml <- pmml(NULL, transforms = iris_trans)
 }
 }
 \seealso{
-\code{\link{pmml.ada}}, \code{\link{pmml.rules}},
-\code{\link{pmml.coxph}}, \code{\link{pmml.cv.glmnet}},
-\code{\link{pmml.glm}}, \code{\link{pmml.hclust}},
-\code{\link{pmml.kmeans}}, \code{\link{pmml.ksvm}}, \code{\link{pmml.lm}},
-\code{\link{pmml.multinom}}, \code{\link{pmml.naiveBayes}},
-\code{\link{pmml.neighbr}}, \code{\link{pmml.nnet}},
-\code{\link{pmml.rpart}}, \code{\link{pmml.svm}},
-\code{\link{pmml.xgb.Booster}}
+\code{\link[=pmml.ada]{pmml.ada()}}, \code{\link[=pmml.rules]{pmml.rules()}},
+\code{\link[=pmml.coxph]{pmml.coxph()}}, \code{\link[=pmml.cv.glmnet]{pmml.cv.glmnet()}},
+\code{\link[=pmml.glm]{pmml.glm()}}, \code{\link[=pmml.hclust]{pmml.hclust()}},
+\code{\link[=pmml.kmeans]{pmml.kmeans()}}, \code{\link[=pmml.ksvm]{pmml.ksvm()}}, \code{\link[=pmml.lm]{pmml.lm()}},
+\code{\link[=pmml.multinom]{pmml.multinom()}}, \code{\link[=pmml.naiveBayes]{pmml.naiveBayes()}},
+\code{\link[=pmml.nnet]{pmml.nnet()}},
+\code{\link[=pmml.rpart]{pmml.rpart()}}, \code{\link[=pmml.svm]{pmml.svm()}},
+\code{\link[=pmml.xgb.Booster]{pmml.xgb.Booster()}}
 }
 \author{
 Graham Williams

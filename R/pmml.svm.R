@@ -49,27 +49,27 @@
 #' the LIBSVM defines the winning category as the right side of threshold 0.
 #'
 #' For a regression model, the exported PMML code has two OutputField elements. The OutputField
-#' \code{predictedValue} shows the support vector machine output per DMG definition. The OutputField
-#' \code{svm_predict_function} gives the value corresponding to the R predict function for the svm
+#' `predictedValue` shows the support vector machine output per DMG definition. The OutputField
+#' `svm_predict_function` gives the value corresponding to the R predict function for the svm
 #' model. This output should be used when making model predictions.
 #'
 #'
 #' @section One-Classification SVM Models:
 #'
 #' For a one-classification svm (OCSVM) model, the PMML has two OutputField elements:
-#' \code{anomalyScore} and one of \code{anomaly} or \code{outlier}.
+#' `anomalyScore` and one of `anomaly` or `outlier`.
 #'
-#' The OutputField \code{anomalyScore} is the signed distance to the separating boundary;
-#' \code{anomalyScore} corresponds to the \code{decision.values} attribute of the output of the
+#' The OutputField `anomalyScore` is the signed distance to the separating boundary;
+#' `anomalyScore` corresponds to the `decision.values` attribute of the output of the
 #' svm predict function in R.
 #'
-#' The second OutputField depends the value of \code{detect_anomaly}. By default, \code{detect_anomaly} is TRUE,
-#' which results in the second OutputField being \code{anomaly}.
-#' The \code{anomaly} OutputField is TRUE when an anomaly is detected.
+#' The second OutputField depends the value of `detect_anomaly`. By default, `detect_anomaly` is TRUE,
+#' which results in the second OutputField being `anomaly`.
+#' The `anomaly` OutputField is TRUE when an anomaly is detected.
 #' This field conforms to the DMG definition of an anomaly detection model. This value is the
 #' opposite of the prediction by the e1071::svm object in R.
 #'
-#' Setting \code{detect_anomaly} to FALSE results in the second field instead being \code{inlier}.
+#' Setting `detect_anomaly` to FALSE results in the second field instead being `inlier`.
 #' This OutputField is TRUE when an inlier is
 #' detected, and conforms to the e1071 definition of one-class SVMs. This field is FALSE when
 #' an anomaly is detected; that is, the R svm model predicts whether an observation belongs to the
@@ -79,13 +79,13 @@
 #' For example, say that for an an observation, the R OCSVM model predicts a positive
 #' decision value of 0.4 and label of TRUE. According to the R object, this means that the
 #' observation is an inlier. By default, the PMML export of this model will give the following for the
-#' same input: \code{anomalyScore = 0.4, anomaly = "false"}. According to the PMML, the observation is not an anomaly.
-#' If the same R object is instead exported with \code{detect_anomaly = FALSE},
-#' the PMML will then give: \code{anomalyScore = 0.4, inlier = "true"}, and this result agrees with R.
+#' same input: `anomalyScore = 0.4, anomaly = "false"`. According to the PMML, the observation is not an anomaly.
+#' If the same R object is instead exported with `detect_anomaly = FALSE`,
+#' the PMML will then give: `anomalyScore = 0.4, inlier = "true"`, and this result agrees with R.
 #'
-#' Note that there is no sign flip for \code{anomalyScore} between R and PMML for OCSVM models.
+#' Note that there is no sign flip for `anomalyScore` between R and PMML for OCSVM models.
 #'
-#' To export a OCSVM model, an additional argument, \code{dataset}, is required by the function.
+#' To export a OCSVM model, an additional argument, `dataset`, is required by the function.
 #' This argument expects a dataframe with data that was used to train the model. This is
 #' necessary because for one-class svm, the R svm object does not contain information about
 #' the data types of the features used to train the model. The exporter does not yet support
@@ -94,11 +94,11 @@
 #' integer class.
 #'
 #' @references
-#' * R project CRAN package: \emph{\bold{e1071}: Misc Functions of the Department of Statistics,
-#' Probability Theory Group (Formerly: E1071), TU Wien} \url{https://CRAN.R-project.org/package=e1071}
+#' * R project CRAN package: \emph{**e1071**: Misc Functions of the Department of Statistics,
+#' Probability Theory Group (Formerly: E1071), TU Wien} <https://CRAN.R-project.org/package=e1071>
 #'
-#' * Chang, Chih-Chung and Lin, Chih-Jen, \emph{LIBSVM: a library for Support Vector Machines}
-#'   \url{https://www.csie.ntu.edu.tw/~cjlin/libsvm/}
+#' * Chang, Chih-Chung and Lin, Chih-Jen, *LIBSVM: a library for Support Vector Machines*
+#'   <https://www.csie.ntu.edu.tw/~cjlin/libsvm/>
 #'
 #' @examples
 #' \dontrun{
@@ -129,8 +129,8 @@
 #' fit_pmml <- pmml(fit, dataset = iris[, 1:4])
 #' }
 #'
-#' @seealso \code{\link[pmml]{pmml}},
-#' \href{https://dmg.org/pmml/v4-4-1/SupportVectorMachine.html}{PMML SVM specification}
+#' @seealso [pmml::pmml()],
+#' [PMML SVM specification](https://dmg.org/pmml/v4-4-1/SupportVectorMachine.html)
 #'
 #' @export pmml.svm
 #' @export

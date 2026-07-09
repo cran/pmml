@@ -56,8 +56,7 @@ rm(fit)
 }
 }
 \references{
-\href{https://CRAN.R-project.org/package=nnet}{nnet: Feed-forward
-Neural Networks and Multinomial Log-Linear Models (on CRAN)}
+\href{https://CRAN.R-project.org/package=nnet}{nnet: Feed-forward Neural Networks and Multinomial Log-Linear Models (on CRAN)}
 }
 \author{
 Tridivesh Jena

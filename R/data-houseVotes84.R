@@ -45,8 +45,8 @@
 #' \cr V16 \tab Boolean variable \cr }
 #' @references
 #'
-#' \href{http://archive.ics.uci.edu/ml/datasets/Congressional+Voting+Records}{UCI
-#' Machine Learning Repository}
+#' [UCI
+#' Machine Learning Repository](http://archive.ics.uci.edu/ml/datasets/Congressional+Voting+Records)
 #'
 #' @keywords datasets
 #'

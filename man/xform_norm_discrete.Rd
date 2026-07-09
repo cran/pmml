@@ -2,7 +2,7 @@
 % Please edit documentation in R/xform_norm_discrete.R
 \name{xform_norm_discrete}
 \alias{xform_norm_discrete}
-\title{Normalize discrete values in accordance with the PMML element \bold{NormDiscrete}.}
+\title{Normalize discrete values in accordance with the PMML element \strong{NormDiscrete}.}
 \usage{
 xform_norm_discrete(
   wrap_object,
@@ -31,17 +31,17 @@ R object containing the raw data, the transformed data and data
 statistics.
 }
 \description{
-Normalize discrete values in accordance with the PMML element \bold{NormDiscrete}.
+Normalize discrete values in accordance with the PMML element \strong{NormDiscrete}.
 }
 \details{
 Define a new derived variable for each possible value of a categorical
-variable. Given a categorical variable \bold{catVar} with possible discrete
-values \bold{A} and \bold{B}, this will create 2 derived variables
-\bold{catVar_A} and \bold{catVar_B}. If, for example, the input value of
-\bold{catVar} is \bold{A} then \bold{catVar_A} equals 1 and \bold{catVar_B}
+variable. Given a categorical variable \strong{catVar} with possible discrete
+values \strong{A} and \strong{B}, this will create 2 derived variables
+\strong{catVar_A} and \strong{catVar_B}. If, for example, the input value of
+\strong{catVar} is \strong{A} then \strong{catVar_A} equals 1 and \strong{catVar_B}
 equals 0.
 
-Given an input variable, \bold{input_var} and \bold{missingVal}, the desired
+Given an input variable, \strong{input_var} and \strong{missingVal}, the desired
 value of the transformed variable if the input variable value is missing,
 the xform_norm_discrete command including all optional parameters is in the
 format:
@@ -49,20 +49,20 @@ format:
 xform_info="input_var=input_variable, map_missing_to=missingVal"
 
 There are two methods in which the input variable can be referred to. The
-first method is to use its column number; given the \bold{data} attribute of
-the \bold{boxData} object, this would be the order at which the variable
+first method is to use its column number; given the \strong{data} attribute of
+the \strong{boxData} object, this would be the order at which the variable
 appears. This can be indicated in the format "column#". The second method is
 to refer to the variable by its name.
 
-The \bold{xform_info} and \bold{input_var} parameters provide the same
+The \strong{xform_info} and \strong{input_var} parameters provide the same
 information. While either one may be used when using this function, at least
-one of them is required. If both parameters are given, the \bold{input_var}
+one of them is required. If both parameters are given, the \strong{input_var}
 parameter is used as the default.
 
 The output of this transformation is a set of transformed variables, one for
 each possible value of the input variable. For example, given possible
-values of the input variable \bold{val1}, \bold{val2}, ... these transformed
-variables are by default named \bold{input_var_val1}, \bold{input_var_val2},
+values of the input variable \strong{val1}, \strong{val2}, ... these transformed
+variables are by default named \strong{input_var_val1}, \strong{input_var_val2},
 ...
 }
 \examples{
@@ -94,7 +94,7 @@ iris_box <- xform_wrap(iris)
 iris_box <- xform_norm_discrete(iris_box, xform_info = "Species")
 }
 \seealso{
-\code{\link{xform_wrap}}
+\code{\link[=xform_wrap]{xform_wrap()}}
 }
 \author{
 Tridivesh Jena

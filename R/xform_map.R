@@ -19,7 +19,7 @@
 # #############################################################################
 
 #' Implement a map between discrete values in accordance with the PMML element
-#' \bold{MapValues}.
+#' **MapValues**.
 #'
 #'
 #' @param wrap_object Output of xform_wrap or another transformation function.
@@ -46,9 +46,9 @@
 #' referred to in the transform command or as a list of data frames, each data
 #' frame defining a map transform for one variable.
 #'
-#' Given a map from the combination of variables \bold{InVar1}, \bold{InVar2},
-#' ... to the transformed variable \bold{OutVar}, where the variables have the
-#' data types \bold{InType1}, \bold{InType2}, ... and \bold{OutType}, the map
+#' Given a map from the combination of variables **InVar1**, **InVar2**,
+#' ... to the transformed variable **OutVar**, where the variables have the
+#' data types **InType1**, **InType2**, ... and **OutType**, the map
 #' command is in the format:
 #'
 #' \preformatted{
@@ -56,18 +56,18 @@
 #' table = "TableFileName", default_value = "defVal", map_missing_to = "missingVal"
 #' }
 #'
-#' where \bold{TableFileName} is the name of the CSV file containing the map.
+#' where **TableFileName** is the name of the CSV file containing the map.
 #' The map can be a N to 1 map where N is greater or equal to 1. The data types
 #' of the variables can be any of the ones defined in the PMML format including
-#' integer, double or string. \bold{defVal} is the default value of the
+#' integer, double or string. **defVal** is the default value of the
 #' transformed variable and if any of the map input values are missing,
-#' \bold{missingVal} is the value of the transformed variable.
+#' **missingVal** is the value of the transformed variable.
 #'
 #' The arguments InType, OutType, default_value and map_missing_to are optional.
 #' The CSV file containing the table should not have any row and column
 #' identifiers, and the values given must be in the same order as in the map
 #' command. If the data types of the variables are not given, the data types of
-#' the input variables are attempted to be determined from the \bold{boxData}
+#' the input variables are attempted to be determined from the **boxData**
 #' argument.  If that is not possible, the data type is assumed to be string.
 #'
 #' It is also possible to give the maps to be implemented without an external
@@ -86,7 +86,7 @@
 #'
 #' @author Tridivesh Jena
 #'
-#' @seealso \code{\link{xform_wrap}}, \code{\link[pmml]{pmml}}
+#' @seealso [xform_wrap()], [pmml::pmml()]
 #'
 #' @keywords manip
 #'

@@ -33,13 +33,13 @@
 #'
 #' @inheritParams pmml
 #'
-#' @return PMML representation of the \code{multinom} object.
+#' @return PMML representation of the `multinom` object.
 #'
 #' @author Tridivesh Jena
 #'
 #' @references
-#' \href{https://CRAN.R-project.org/package=nnet}{nnet: Feed-forward
-#' Neural Networks and Multinomial Log-Linear Models (on CRAN)}
+#' [nnet: Feed-forward
+#' Neural Networks and Multinomial Log-Linear Models (on CRAN)](https://CRAN.R-project.org/package=nnet)
 #'
 #' @examples
 #' \dontrun{

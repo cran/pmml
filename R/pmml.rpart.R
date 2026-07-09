@@ -37,8 +37,8 @@
 #' @author Graham Williams
 #'
 #' @references
-#' \href{https://CRAN.R-project.org/package=rpart}{rpart: Recursive
-#' Partitioning (on CRAN)}
+#' [rpart: Recursive
+#' Partitioning (on CRAN)](https://CRAN.R-project.org/package=rpart)
 #'
 #' @examples
 #' \dontrun{

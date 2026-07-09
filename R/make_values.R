@@ -26,7 +26,7 @@
 #' @param namespace The namespace of the PMML model
 #'
 #' @details
-#' This function is used the same way as the \code{make_intervals} function. If certain attributes for an
+#' This function is used the same way as the `make_intervals` function. If certain attributes for an
 #'  element should not be included, they should be input in the list as NULL.
 #'
 #' @return PMML Values elements.
@@ -40,7 +40,7 @@
 #'   list(1.1, 2.2, 3.3), list(NULL, NULL, NULL),
 #'   list("valid", NULL, "invalid")
 #' )
-#' @seealso \code{\link{make_intervals}} to make Interval child elements, \code{\link{add_data_field_children}}
+#' @seealso [make_intervals()] to make Interval child elements, [add_data_field_children()]
 #' to add these xml fragments to the DataDictionary PMML element.
 #'
 #' @export

@@ -7,8 +7,7 @@ test_that("pmml.gbm final Segment contains modelName attribute", {
 
   audit_dat <- audit[, -c(1, 4, 6, 9, 10, 11, 12)]
   
-  # currently gives: setting `distribution = "multinomial"` is ill-advised as it is currently broken. It exists only for backwards compatibility. Use at your own risk.
-  expect_warning(fit <- gbm(Adjusted ~ ., data = audit_dat, n.trees = 3, interaction.depth = 4, distribution = "multinomial"))
+  fit <- gbm(Adjusted ~ ., data = audit_dat, n.trees = 3, interaction.depth = 4, distribution = "multinomial")
   
   p_fit <- pmml(fit)
 

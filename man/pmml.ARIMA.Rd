@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmml.ARIMA.R
 \name{pmml.ARIMA}
 \alias{pmml.ARIMA}
-\title{Generate PMML for an ARIMA object the \bold{forecast} package.}
+\title{Generate PMML for an ARIMA object the \strong{forecast} package.}
 \usage{
 \method{pmml}{ARIMA}(
   model,
@@ -46,7 +46,7 @@ attribute for all MiningFields.}
 PMML representation of the \code{ARIMA} object.
 }
 \description{
-Generate PMML for an ARIMA object the \bold{forecast} package.
+Generate PMML for an ARIMA object the \strong{forecast} package.
 }
 \details{
 The model is represented as a PMML TimeSeriesModel.

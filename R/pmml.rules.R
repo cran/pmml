@@ -47,8 +47,7 @@
 #' 
 #' }
 #' @references
-#' \href{https://CRAN.R-project.org/package=arules}{arules: Mining Association
-#' Rules and Frequent Itemsets}
+#' [arules: Mining Association Rules and Frequent Itemsets](https://CRAN.R-project.org/package=arules)
 #'
 #' @export pmml.rules
 #' @export

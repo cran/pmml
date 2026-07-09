@@ -38,13 +38,13 @@
 #' speed of the transformation operations and the memory required. If there is
 #' not enough information about the data, they are given default values; the
 #' data is assumed to be the original data of data type string. The variable
-#' names are assumed to be \bold{X1}, \bold{X2}, ...  This information is then
+#' names are assumed to be **X1**, **X2**, ...  This information is then
 #' used by the transformation functions to calculate the derived variable
 #' values.
 #'
 #' @author Tridivesh Jena
 #'
-#' @seealso \code{\link[pmml]{pmml}}
+#' @seealso [pmml::pmml()]
 #'
 #' @examples
 #' # Load the standard iris dataset

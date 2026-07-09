@@ -18,11 +18,11 @@ Convert an R expression to PMML.
 \details{
 As long as the expression passed to the function is a valid R expression (e.g., no unbalanced parenthesis),
 it can contain arbitrary function names not defined in R. Variables in the expression passed
-to `xform_function` are always assumed to be fields, and not substituted. That is, even if `x` has a value in the
-R environment, the resulting expression will still use `x`.
+to \code{xform_function} are always assumed to be fields, and not substituted. That is, even if \code{x} has a value in the
+R environment, the resulting expression will still use \code{x}.
 
-An expression such as `foo(x)` is treated as a function `foo` with argument `x`. Consequently, passing in an
-R vector `c(1,2,3)` to `function_to_pmml()` will produce PMML where `c` is a function and `1,2,3` are the arguments.
+An expression such as \code{foo(x)} is treated as a function \code{foo} with argument \code{x}. Consequently, passing in an
+R vector \code{c(1,2,3)} to \code{function_to_pmml()} will produce PMML where \code{c} is a function and \verb{1,2,3} are the arguments.
 
 An expression starting with '-' or '+' (for example, "-3" or "-(a+b)") will be treated as if there is a 0
 before the initial '-' or '+' sign. This makes it possible to represent expressions that start with a sign,

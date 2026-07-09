@@ -51,8 +51,8 @@
 #' @author Wen Lin
 #'
 #' @references
-#' \href{https://CRAN.R-project.org/package=ada}{ada: an R package for
-#' stochastic boosting (on CRAN)}
+#' [ada: an R package for
+#' stochastic boosting (on CRAN)](https://CRAN.R-project.org/package=ada)
 #'
 #' @examples
 #' \dontrun{

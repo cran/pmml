@@ -24,8 +24,8 @@
 #' The kmeans object (a cluster described by k centroids) is
 #' converted into a PMML representation.
 #'
-#' A kmeans object is obtained by applying the \code{kmeans} function from the
-#' \code{stats} package. This method typically requires the user to normalize
+#' A kmeans object is obtained by applying the `kmeans` function from the
+#' `stats` package. This method typically requires the user to normalize
 #' all the variables; these operations can be done using transforms so that the
 #' normalization information is included in PMML.
 #'
@@ -39,8 +39,8 @@
 #' @author Graham Williams
 #'
 #' @references
-#' \href{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/kmeans.html}{R
-#' project: K-Means Clustering}
+#' [R
+#' project: K-Means Clustering](http://stat.ethz.ch/R-manual/R-devel/library/stats/html/kmeans.html)
 #'
 #' @examples
 #' \dontrun{

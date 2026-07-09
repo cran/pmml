@@ -101,8 +101,7 @@ model2_pmml <- pmml(model2, s = 0.006)
 }
 }
 \references{
-\href{https://CRAN.R-project.org/package=glmnet}{glmnet: Lasso and
-elastic-net regularized generalized linear models (on CRAN)}
+\href{https://CRAN.R-project.org/package=glmnet}{glmnet: Lasso and elastic-net regularized generalized linear models (on CRAN)}
 }
 \author{
 Tridivesh Jena

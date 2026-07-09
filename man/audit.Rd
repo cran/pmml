@@ -25,7 +25,7 @@ data(audit, package = "pmml")
 }
 \references{
 \itemize{
-\item Togaware rattle package : \emph{\bold{Audit dataset}} \cr
+\item Togaware rattle package : \emph{\strong{Audit dataset}} \cr
 \item \href{https://dmg.org/pmml_examples/index.html}{DMG description of the Audit dataset}
 }
 }

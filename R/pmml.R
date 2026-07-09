@@ -21,7 +21,7 @@
 #' Generate the PMML representation for R objects.
 #'
 #'
-#' \code{pmml} is a generic function implementing S3 methods used to produce
+#' `pmml` is a generic function implementing S3 methods used to produce
 #' the PMML (Predictive Model Markup Language) representation of an R model.
 #' The resulting PMML file can then be imported into other systems that accept
 #' PMML.
@@ -36,13 +36,13 @@
 #' @param transforms Data transformations.
 #' @param \dots Further arguments passed to or from other methods.
 #'
-#' @return An object of class \code{XMLNode} as that defined by the \pkg{XML} package.
+#' @return An object of class `XMLNode` as that defined by the \pkg{XML} package.
 #' This represents the top level, or root node, of the XML document and is of
-#' type PMML. It can be written to file with \code{saveXML}.
+#' type PMML. It can be written to file with `saveXML`.
 #'
 #' @details
 #' The data transformation functions previously available in the separate
-#' \code{pmmlTransformations} package have been merged into \code{pmml}
+#' `pmmlTransformations` package have been merged into `pmml`
 #' starting with version 2.0.0.
 #'
 #' This function can also be used to output variable transformations in PMML
@@ -50,10 +50,10 @@
 #' Various transformation operations can be implemented in R and those
 #' transformations can then be output in PMML format by calling the function
 #' with a NULL value for the model input and a data transformation object as
-#' the transforms input. Please see the documentation for \code{xform_wrap} for
+#' the transforms input. Please see the documentation for `xform_wrap` for
 #' more information on how to create a data transformation object.
 #'
-#' In addition, the \code{pmml} function can also be called using a
+#' In addition, the `pmml` function can also be called using a
 #' pre-existing PMML model as the first input and a data transformation object
 #' as the transforms input.  The result is a new PMML model with the
 #' transformation inserted as a "LocalTransformations" element in the original
@@ -71,33 +71,33 @@
 #' Please note that package \pkg{XML_3.95-0.1} or later is required to perform
 #' the full and correct functionality of \pkg{pmml}.
 #'
-#' If data used for an R model contains features of type \code{character},
+#' If data used for an R model contains features of type `character`,
 #' these must be converted to factors before the model is trained and converted
-#' with \code{pmml}.
+#' with `pmml`.
 #'
 #' A list of all the supported models and packages is available in the
 #' vignette:
 #'
-#' \code{vignette("packages_and_functions", package="pmml")}.
+#' `vignette("packages_and_functions", package="pmml")`.
 #'
 #'
 #' @author Graham Williams
 #'
-#' @seealso \code{\link{pmml.ada}}, \code{\link{pmml.rules}},
-#' \code{\link{pmml.coxph}}, \code{\link{pmml.cv.glmnet}},
-#' \code{\link{pmml.glm}}, \code{\link{pmml.hclust}},
-#' \code{\link{pmml.kmeans}}, \code{\link{pmml.ksvm}}, \code{\link{pmml.lm}},
-#' \code{\link{pmml.multinom}}, \code{\link{pmml.naiveBayes}},
-#' \code{\link{pmml.neighbr}}, \code{\link{pmml.nnet}},
-#' \code{\link{pmml.rpart}}, \code{\link{pmml.svm}},
-#' \code{\link{pmml.xgb.Booster}}
+#' @seealso [pmml.ada()], [pmml.rules()],
+#' [pmml.coxph()], [pmml.cv.glmnet()],
+#' [pmml.glm()], [pmml.hclust()],
+#' [pmml.kmeans()], [pmml.ksvm()], [pmml.lm()],
+#' [pmml.multinom()], [pmml.naiveBayes()],
+#' [pmml.nnet()],
+#' [pmml.rpart()], [pmml.svm()],
+#' [pmml.xgb.Booster()]
 #' @references
 #'
 #' \itemize{
 #'
-#' \item \href{https://dmg.org/pmml/v4-4-1/GeneralStructure.html}{PMML home page}
+#' \item [PMML home page](https://dmg.org/pmml/v4-4-1/GeneralStructure.html)
 #'
-#' \item \href{https://dmg.org/pmml/v4-4-1/Transformations.html}{PMML transformations}
+#' \item [PMML transformations](https://dmg.org/pmml/v4-4-1/Transformations.html)
 #'
 #' }
 #' @examples

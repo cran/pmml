@@ -3,7 +3,7 @@
 \name{xform_z_score}
 \alias{xform_z_score}
 \title{Perform a z-score normalization on continuous values in accordance with the
-PMML element \bold{NormContinuous}.}
+PMML element \strong{NormContinuous}.}
 \usage{
 xform_z_score(wrap_object, xform_info = NA, map_missing_to = NA, ...)
 }
@@ -23,23 +23,21 @@ statistics.
 }
 \description{
 Perform a z-score normalization on continuous values in accordance with the
-PMML element \bold{NormContinuous}.
+PMML element \strong{NormContinuous}.
 }
 \details{
 Perform a z-score normalization on data given in \code{xform_wrap} format.
 
-Given an input variable named \bold{InputVar}, the name of the transformed
-variable \bold{OutputVar}, and the desired value of the transformed variable
-if the input variable value is missing \bold{missingVal}, the xform_z_score
+Given an input variable named \strong{InputVar}, the name of the transformed
+variable \strong{OutputVar}, and the desired value of the transformed variable
+if the input variable value is missing \strong{missingVal}, the xform_z_score
 command including all the optional parameters is:
 
-\code{
-xform_info="InputVar -> OutputVar", map_missing_to="missingVal"
-}
+\verb{xform_info="InputVar -> OutputVar", map_missing_to="missingVal"}
 
 Two methods can be used to refer to the variables. The first
-method is to use its column number; given the \bold{data} attribute of the
-\bold{boxData} object, this would be the order at which the variable
+method is to use its column number; given the \strong{data} attribute of the
+\strong{boxData} object, this would be the order at which the variable
 appears. This can be indicated in the format "column#". The second method is
 to refer to the variable by its name.
 
@@ -47,7 +45,7 @@ The name of the transformed
 variable is optional; if the name is not provided, the transformed variable
 is given the name: "derived_" + \emph{original_variable_name}
 
-\bold{missingValue}, an optional parameter, is the value to be given to the
+\strong{missingValue}, an optional parameter, is the value to be given to the
 output variable if the input variable value is missing. If no input variable
 names are provided, by default all numeric variables are transformed. Note
 that in this case a replacement value for missing input values cannot be
@@ -95,7 +93,7 @@ iris_box <- xform_z_score(iris_box,
 )
 }
 \seealso{
-\code{\link{xform_wrap}}
+\code{\link[=xform_wrap]{xform_wrap()}}
 }
 \author{
 Tridivesh Jena

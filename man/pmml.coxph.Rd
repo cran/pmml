@@ -50,8 +50,7 @@ package. Note that special term "strata" cannot be a multiplicative variable
 and only numeric risk regression is supported.
 }
 \references{
-\href{https://CRAN.R-project.org/package=survival}{coxph: Survival
-Analysis}
+\href{https://CRAN.R-project.org/package=survival}{coxph: Survival Analysis}
 }
 \author{
 Graham Williams

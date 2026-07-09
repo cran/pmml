@@ -45,15 +45,15 @@ Add Output nodes to a PMML object.
 This function is meant to add any post-processing information to an existing model via
 the OutputField element. One can also use this to tell the PMML model to output other values
 not automatically added to the model output.
-  The first method is to use the 'make_output_nodes' helper function to make a list of output
+The first method is to use the 'make_output_nodes' helper function to make a list of output
 elements to be added. 'whichOutput' lets the function know which of the Output elements we want to
 work with; there may be more than one in a multiple model file. One can then add those elements there,
 at the desired index given by the 'at' parameter; the elements are inserted after the OutputField
 element at the 'at' index. In other words, find the 'whichOutput' Output element, add the 'outputNodes'
 child elements (which should be OutputField nodes) at the 'at' position in the child nodes.
-  This function can also be used with the 'nodeName' and 'attributes' to add the list of attributes to
+This function can also be used with the 'nodeName' and 'attributes' to add the list of attributes to
 an OutputField element with name 'nodeName' element using the 'xml_model', 'outputNodes' and 'at' parameters.
-  Finally, one can use this to add the transformation expression given by the 'xformText' parameter
+Finally, one can use this to add the transformation expression given by the 'xformText' parameter
 to the node with name 'nodeName'. The string given via 'xformText' is converted to an XML expression similarly
 to the function_to_pmml function. In other words, find the OutputField node with the name 'nodeName' and add
 the list of attributes given with 'attributes' and also, add the child transformations given in the 'xformText'

@@ -29,7 +29,6 @@ containing a binomial variable "class" and 16 other binary variables, those
 data(houseVotes84, package = "pmml")
 }
 \references{
-\href{http://archive.ics.uci.edu/ml/datasets/Congressional+Voting+Records}{UCI
-Machine Learning Repository}
+\href{http://archive.ics.uci.edu/ml/datasets/Congressional+Voting+Records}{UCI Machine Learning Repository}
 }
 \keyword{datasets}

@@ -29,7 +29,7 @@ should be stored in both formats, giving the user a choice in reducing the
 speed of the transformation operations and the memory required. If there is
 not enough information about the data, they are given default values; the
 data is assumed to be the original data of data type string. The variable
-names are assumed to be \bold{X1}, \bold{X2}, ...  This information is then
+names are assumed to be \strong{X1}, \strong{X2}, ...  This information is then
 used by the transformation functions to calculate the derived variable
 values.
 }
@@ -50,7 +50,7 @@ trans_pmml <- pmml(NULL, transforms = iris_box)
 trans_pmml_2 <- pmml(, transforms = iris_box)
 }
 \seealso{
-\code{\link[pmml]{pmml}}
+\code{\link[=pmml]{pmml()}}
 }
 \author{
 Tridivesh Jena

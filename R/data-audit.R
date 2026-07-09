@@ -41,8 +41,8 @@
 #'
 #' @references
 #' \itemize{
-#' \item Togaware rattle package : \emph{\bold{Audit dataset}} \cr
-#' \item \href{https://dmg.org/pmml_examples/index.html}{DMG description of the Audit dataset}
+#' \item Togaware rattle package : \emph{**Audit dataset**} \cr
+#' \item [DMG description of the Audit dataset](https://dmg.org/pmml_examples/index.html)
 #' }
 #'
 #' @keywords datasets

@@ -2,7 +2,7 @@
 % Please edit documentation in R/pmml.iForest.R
 \name{pmml.iForest}
 \alias{pmml.iForest}
-\title{Generate PMML for an iForest object from the \bold{isofor} package.}
+\title{Generate PMML for an iForest object from the \strong{isofor} package.}
 \usage{
 \method{pmml}{iForest}(
   model,
@@ -20,7 +20,7 @@
 )
 }
 \arguments{
-\item{model}{An iForest object from package \bold{isofor}.}
+\item{model}{An iForest object from package \strong{isofor}.}
 
 \item{model_name}{A name to be given to the PMML model.}
 
@@ -49,7 +49,7 @@ attribute for all MiningFields.}
 PMML representation of the \code{iForest} object.
 }
 \description{
-Generate PMML for an iForest object from the \bold{isofor} package.
+Generate PMML for an iForest object from the \strong{isofor} package.
 }
 \details{
 This function converts the iForest model object to the PMML format. The
@@ -79,7 +79,7 @@ mod_pmml <- pmml(mod)
 \href{https://github.com/gravesee/isofor}{isofor package on GitHub}
 }
 \seealso{
-\code{\link[pmml]{pmml}}
+\code{\link[=pmml]{pmml()}}
 }
 \author{
 Tridivesh Jena

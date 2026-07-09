@@ -58,8 +58,7 @@ rules_pmml
 }
 }
 \references{
-\href{https://CRAN.R-project.org/package=arules}{arules: Mining Association
-Rules and Frequent Itemsets}
+\href{https://CRAN.R-project.org/package=arules}{arules: Mining Association Rules and Frequent Itemsets}
 }
 \author{
 Graham Williams, Michael Hahsler

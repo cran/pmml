@@ -27,7 +27,7 @@
 #'
 #' @inheritParams pmml
 #'
-#' @return PMML representation of the \code{lm} object.
+#' @return PMML representation of the `lm` object.
 #'
 #' @details
 #' The resulting PMML representation will not encode interaction
@@ -36,7 +36,7 @@
 #' @author Rajarshi Guha
 #'
 #' @references
-#' \href{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/lm.html}{R project: Fitting Linear Models}
+#' [R project: Fitting Linear Models](http://stat.ethz.ch/R-manual/R-devel/library/stats/html/lm.html)
 #'
 #' @examples
 #'\dontrun{

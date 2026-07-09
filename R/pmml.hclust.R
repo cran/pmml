@@ -31,8 +31,8 @@
 #' @return PMML representation of the hclust object.
 #'
 #' @details
-#' This function converts a hclust object created by the \code{hclusterpar} function
-#' from the \pkg{amap} package.  A \code{hclust} object is a cluster model created
+#' This function converts a hclust object created by the `hclusterpar` function
+#' from the \pkg{amap} package.  A `hclust` object is a cluster model created
 #' hierarchically. The data is divided recursively until a criteria is met.
 #' This function then takes the final model and represents it as a standard
 #' k-means cluster model. This is possible since while the method of
@@ -41,16 +41,16 @@
 #'
 #' To use this pmml function, therefore, one must pick the number of clusters
 #' desired and the coordinate values at those cluster centers. This can be done
-#' using the \code{hclusterpar} and \code{centers.hclust} functions from the
-#' \pkg{amap} and \code{rattle} packages respectively.
+#' using the `hclusterpar` and `centers.hclust` functions from the
+#' \pkg{amap} and `rattle` packages respectively.
 #'
-#' The hclust object will be approximated by \code{k} centroids and is
+#' The hclust object will be approximated by `k` centroids and is
 #' converted into a PMML representation for kmeans clusters.
 #'
 #' @author Graham Williams
 #'
 #' @references
-#' \href{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/hclust.html}{R project: Hierarchical Clustering}
+#' [R project: Hierarchical Clustering](http://stat.ethz.ch/R-manual/R-devel/library/stats/html/hclust.html)
 #'
 #' @examples
 #' \dontrun{

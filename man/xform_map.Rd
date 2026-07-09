@@ -3,7 +3,7 @@
 \name{xform_map}
 \alias{xform_map}
 \title{Implement a map between discrete values in accordance with the PMML element
-\bold{MapValues}.}
+\strong{MapValues}.}
 \usage{
 xform_map(
   wrap_object,
@@ -41,7 +41,7 @@ statistics.
 }
 \description{
 Implement a map between discrete values in accordance with the PMML element
-\bold{MapValues}.
+\strong{MapValues}.
 }
 \details{
 Map discrete values of an input variable to a discrete value of the
@@ -49,9 +49,9 @@ transformed variable. The map can be given in an external table file
 referred to in the transform command or as a list of data frames, each data
 frame defining a map transform for one variable.
 
-Given a map from the combination of variables \bold{InVar1}, \bold{InVar2},
-... to the transformed variable \bold{OutVar}, where the variables have the
-data types \bold{InType1}, \bold{InType2}, ... and \bold{OutType}, the map
+Given a map from the combination of variables \strong{InVar1}, \strong{InVar2},
+... to the transformed variable \strong{OutVar}, where the variables have the
+data types \strong{InType1}, \strong{InType2}, ... and \strong{OutType}, the map
 command is in the format:
 
 \preformatted{
@@ -59,18 +59,18 @@ xform_info = "[InVar1,InVar2,... -> OutVar][InType1,InType2,... -> OutType]"
 table = "TableFileName", default_value = "defVal", map_missing_to = "missingVal"
 }
 
-where \bold{TableFileName} is the name of the CSV file containing the map.
+where \strong{TableFileName} is the name of the CSV file containing the map.
 The map can be a N to 1 map where N is greater or equal to 1. The data types
 of the variables can be any of the ones defined in the PMML format including
-integer, double or string. \bold{defVal} is the default value of the
+integer, double or string. \strong{defVal} is the default value of the
 transformed variable and if any of the map input values are missing,
-\bold{missingVal} is the value of the transformed variable.
+\strong{missingVal} is the value of the transformed variable.
 
 The arguments InType, OutType, default_value and map_missing_to are optional.
 The CSV file containing the table should not have any row and column
 identifiers, and the values given must be in the same order as in the map
 command. If the data types of the variables are not given, the data types of
-the input variables are attempted to be determined from the \bold{boxData}
+the input variables are attempted to be determined from the \strong{boxData}
 argument.  If that is not possible, the data type is assumed to be string.
 
 It is also possible to give the maps to be implemented without an external
@@ -148,7 +148,7 @@ fit <- lm(Adjusted ~ ., data = audit_box$data)
 fit_pmml <- pmml(fit, transforms = audit_box)
 }
 \seealso{
-\code{\link{xform_wrap}}, \code{\link[pmml]{pmml}}
+\code{\link[=xform_wrap]{xform_wrap()}}, \code{\link[=pmml]{pmml()}}
 }
 \author{
 Tridivesh Jena

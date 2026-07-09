@@ -18,7 +18,7 @@
 # GNU General Public License for details (http://www.gnu.org/licenses/).
 # #############################################################################
 
-#' Generate PMML for an ARIMA object the \bold{forecast} package.
+#' Generate PMML for an ARIMA object the **forecast** package.
 #'
 #' @param model An ARIMA object from the package \pkg{forecast}.
 #' @param missing_value_replacement Value to be used as the 'missingValueReplacement'
@@ -28,13 +28,13 @@
 #'
 #' @inheritParams pmml
 #'
-#' @return PMML representation of the \code{ARIMA} object.
+#' @return PMML representation of the `ARIMA` object.
 #'
 #' @details The model is represented as a PMML TimeSeriesModel.
 #'
-#' When \code{ts_type = "statespace"} (by default), the R object is exported as StateSpaceModel in PMML.
+#' When `ts_type = "statespace"` (by default), the R object is exported as StateSpaceModel in PMML.
 #'
-#' When \code{ts_type = "arima"}, the R object is exported as ARIMA in PMML with conditional
+#' When `ts_type = "arima"`, the R object is exported as ARIMA in PMML with conditional
 #' least squares (CLS). Note that ARIMA models in R are
 #' estimated using a state space representation. Therefore, when using CLS with seasonal models,
 #' forecast results between R and PMML may not match exactly. Additionally, when ts_type="arima", prediction intervals
@@ -47,7 +47,7 @@
 #' String output in this form is facilitated by Extension elements in the PMML file,
 #' and is supported by Zementis Server since version 10.6.0.0.
 #'
-#' \code{cpi_levels} behaves similar to \code{levels} in \code{forecast::forecast}: values must be
+#' `cpi_levels` behaves similar to `levels` in `forecast::forecast`: values must be
 #' between 0 and 100, non-inclusive.
 #'
 #' Models with a drift term will be supported in a future version.

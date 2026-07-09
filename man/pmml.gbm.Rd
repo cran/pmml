@@ -74,8 +74,7 @@ mod2_pmml <- pmml(mod2)
 }
 }
 \references{
-\href{https://CRAN.R-project.org/package=gbm}{gbm: Generalized Boosted
-Regression Models (on CRAN)}
+\href{https://CRAN.R-project.org/package=gbm}{gbm: Generalized Boosted Regression Models (on CRAN)}
 }
 \author{
 Tridivesh Jena

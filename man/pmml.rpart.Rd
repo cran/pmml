@@ -59,8 +59,7 @@ fit_pmml <- pmml(fit)
 }
 }
 \references{
-\href{https://CRAN.R-project.org/package=rpart}{rpart: Recursive
-Partitioning (on CRAN)}
+\href{https://CRAN.R-project.org/package=rpart}{rpart: Recursive Partitioning (on CRAN)}
 }
 \author{
 Graham Williams

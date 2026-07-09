@@ -41,7 +41,7 @@
 #'   list("openClosed", "openOpen", "closedOpen"),
 #'   list(NULL, 1, 2), list(1, 2, NULL)
 #' )
-#' @seealso \code{\link{make_values}} to make Values child elements, \code{\link{add_data_field_children}}
+#' @seealso [make_values()] to make Values child elements, [add_data_field_children()]
 #' to add these xml fragments to the DataDictionary PMML element.
 #'
 #' @export

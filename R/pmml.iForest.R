@@ -18,9 +18,9 @@
 # GNU General Public License for details (http://www.gnu.org/licenses/).
 # #############################################################################
 
-#' Generate PMML for an iForest object from the \bold{isofor} package.
+#' Generate PMML for an iForest object from the **isofor** package.
 #'
-#' @param model An iForest object from package \bold{isofor}.
+#' @param model An iForest object from package **isofor**.
 #' @param missing_value_replacement Value to be used as the 'missingValueReplacement'
 #' attribute for all MiningFields.
 #' @param anomaly_threshold Double between 0 and 1. Predicted values greater than this are classified as anomalies.
@@ -30,14 +30,14 @@
 #'
 #' @inheritParams pmml
 #'
-#' @return PMML representation of the \code{iForest} object.
+#' @return PMML representation of the `iForest` object.
 #'
 #' @author Tridivesh Jena
 #'
 #' @details This function converts the iForest model object to the PMML format. The
 #' PMML outputs the anomaly score as well as a boolean value indicating whether the
 #' input is an anomaly or not. This is done by simply comparing the anomaly score with
-#' \code{anomaly_threshold}, a parameter in the \code{pmml} function.
+#' `anomaly_threshold`, a parameter in the `pmml` function.
 #' The iForest function automatically adds an extra level to all categorical variables,
 #' labelled "."; this is kept in the PMML representation even though the use of this extra
 #' factor in the predict function is unclear.
@@ -56,10 +56,10 @@
 #' mod_pmml <- pmml(mod)
 #' }
 #'
-#' @seealso \code{\link[pmml]{pmml}}
+#' @seealso [pmml::pmml()]
 #'
 #' @references
-#' \href{https://github.com/gravesee/isofor}{isofor package on GitHub}
+#' [isofor package on GitHub](https://github.com/gravesee/isofor)
 #'
 #' @export pmml.iForest
 #' @export

@@ -35,8 +35,8 @@
 #' @author Tridivesh Jena
 #'
 #' @references
-#' \href{https://CRAN.R-project.org/package=nnet}{nnet: Feed-forward
-#' Neural Networks and Multinomial Log-Linear Models (on CRAN)}
+#' [nnet: Feed-forward
+#' Neural Networks and Multinomial Log-Linear Models (on CRAN)](https://CRAN.R-project.org/package=nnet)
 #'
 #' @examples
 #' \dontrun{

@@ -22,16 +22,16 @@ statistics.
 Rename a variable in the xform_wrap transform object.
 }
 \details{
-Once input data is wrapped by the \bold{xform_wrap} function, it is somewhat
+Once input data is wrapped by the \strong{xform_wrap} function, it is somewhat
 involved to rename a variable inside. This function makes it easier to do
-so.  Given a variable named \bold{input_var} and the name one wishes to
-rename it to, \bold{output_var}, the rename command options are:
+so.  Given a variable named \strong{input_var} and the name one wishes to
+rename it to, \strong{output_var}, the rename command options are:
 
 xform_info="input_var -> output_var"
 
 There are two methods in which the variables can be referred to. The first
-method is to use its column number; given the \bold{data} attribute of the
-\bold{boxData} object, this would be the order at which the variable
+method is to use its column number; given the \strong{data} attribute of the
+\strong{boxData} object, this would be the order at which the variable
 appears. This can be indicated in the format "column#". The second method is
 to refer to the variable by its name. This method will work even if the
 renamed value already exists; in which case there will be two variables with
@@ -53,7 +53,7 @@ iris_box <- rename_wrap_var(wrap_object = iris_box, xform_info = "column1->SL")
 iris_box <- rename_wrap_var(wrap_object = iris_box, xform_info = "Sepal.Width->SW")
 }
 \seealso{
-\code{\link{xform_wrap}}
+\code{\link[=xform_wrap]{xform_wrap()}}
 }
 \author{
 Tridivesh Jena

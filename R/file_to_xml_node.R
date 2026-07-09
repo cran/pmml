@@ -24,9 +24,9 @@
 #' @param file The external file to be read in. This file can be any file in
 #' PMML format, regardless of the source or model type.
 #'
-#' @return An object of class \code{XMLNode} as that defined by the \pkg{XML} package.
+#' @return An object of class `XMLNode` as that defined by the \pkg{XML} package.
 #' This represents the top level, or root node, of the XML document and is of
-#' type PMML. It can be written to file with \code{saveXML}.
+#' type PMML. It can be written to file with `saveXML`.
 #'
 #' @details
 #' Read in an external file and convert it into an XMLNode to be used

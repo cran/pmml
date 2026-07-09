@@ -68,6 +68,5 @@ model_pmml <- pmml(model, dataset = iris)
 }
 }
 \references{
-\href{https://CRAN.R-project.org/package=kernlab}{kernlab: Kernel-based
-Machine Learning Lab (on CRAN)}
+\href{https://CRAN.R-project.org/package=kernlab}{kernlab: Kernel-based Machine Learning Lab (on CRAN)}
 }

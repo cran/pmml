@@ -33,27 +33,27 @@
 #' @return PMML representation of the cv.glmnet object.
 #'
 #' @details
-#' The \code{glmnet} package expects the input and predicted values in a matrix
+#' The `glmnet` package expects the input and predicted values in a matrix
 #' format - not as arrays or data frames. As of now, it will also accept
 #' numerical values only. As such, any string variables must be converted to
 #' numerical ones. One possible way to do so is to use data transformation
 #' functions from this package. However, the result is a data frame. In all
 #' cases, lists, arrays and data frames can be converted to a matrix format
 #' using the data.matrix function from the base package. Given a data frame df,
-#' a matrix m can thus be created by using \code{m <- data.matrix(df)}.
+#' a matrix m can thus be created by using `m <- data.matrix(df)`.
 #'
 #' The PMML language requires variable names which will be read in as the
 #' column names of the input matrix. If the matrix does not have variable
 #' names, they will be given the default values of "X1", "X2", ...
 #'
-#' Currently, only \code{gaussian} and \code{poisson} family types are
+#' Currently, only `gaussian` and `poisson` family types are
 #' supported.
 #'
 #' @author Tridivesh Jena
 #'
 #' @references
-#' \href{https://CRAN.R-project.org/package=glmnet}{glmnet: Lasso and
-#' elastic-net regularized generalized linear models (on CRAN)}
+#' [glmnet: Lasso and
+#' elastic-net regularized generalized linear models (on CRAN)](https://CRAN.R-project.org/package=glmnet)
 #'
 #' @examples
 #' \dontrun{

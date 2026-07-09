@@ -19,7 +19,7 @@
 # #############################################################################
 
 #' Discretize a continuous variable as indicated by interval mappings in
-#' accordance with the PMML element \bold{Discretize}.
+#' accordance with the PMML element **Discretize**.
 #'
 #'
 #' @param wrap_object Output of xform_wrap or another transformation function.
@@ -50,25 +50,25 @@
 #'
 #' Given a list of intervals and the discrete value each interval is linked to,
 #' a discrete variable is defined with the value indicated by the interval
-#' where it lies in. If a continuous variable \bold{InVar} of data type
-#' \bold{InType} is to be converted to a variable \bold{OutVar} of data type
-#' \bold{OutType}, the transformation command is in the format:
+#' where it lies in. If a continuous variable **InVar** of data type
+#' **InType** is to be converted to a variable **OutVar** of data type
+#' **OutType**, the transformation command is in the format:
 #'
-#' xform_info = "[InVar->OutVar][InType->OutType]", table="TableFileName", \cr
+#' xform_info = "InVar->OutVar", table="TableFileName",
 #' default_value="defVal", map_missing_to="missingVal"
 #'
-#' where \bold{TableFileName} is the name of the CSV file containing the
+#' where **TableFileName** is the name of the CSV file containing the
 #' interval to discrete value map.  The data types of the variables can be any
 #' of the ones defined in the PMML format including integer, double or string.
-#' \bold{defVal} is the default value of the transformed variable and if any of
-#' the input values are missing, \bold{missingVal} is the value of the
+#' **defVal** is the default value of the transformed variable and if any of
+#' the input values are missing, **missingVal** is the value of the
 #' transformed variable.
 #'
 #' The arguments InType, OutType, default_value and map_missing_to are optional.
 #' The CSV file containing the table should not have any row and column
 #' identifiers, and the values given must be in the same order as in the map
 #' command. If the data types of the variables are not given, the data types of
-#' the input variables are attempted to be determined from the \bold{boxData}
+#' the input variables are attempted to be determined from the **boxData**
 #' argument.  If that is not possible, the data types are assumed to be string.
 #'
 #' Intervals are either given by the left or right limits, in which case the
@@ -84,8 +84,8 @@
 #' (leftVal,outVal5
 #' }
 #'
-#' which, given an input value \bold{inVal} and the output value to be
-#' calculated \bold{out}, means that:
+#' which, given an input value **inVal** and the output value to be
+#' calculated **out**, means that:
 #'
 #' \preformatted{
 #' if(inVal < rightVal1) out=outVal1
@@ -114,7 +114,7 @@
 #'
 #' @author Tridivesh Jena
 #'
-#' @seealso \code{\link{xform_wrap}}
+#' @seealso [xform_wrap()]
 #'
 #' @keywords manip
 #'

@@ -28,7 +28,7 @@ Create Values element, most likely to add to a DataDictionary element.
 }
 \details{
 This function is used the same way as the \code{make_intervals} function. If certain attributes for an
- element should not be included, they should be input in the list as NULL.
+element should not be included, they should be input in the list as NULL.
 }
 \examples{
 # define 3 values, none with a 'displayValue' attribute and 1 value
@@ -39,7 +39,7 @@ mv <- make_values(
 )
 }
 \seealso{
-\code{\link{make_intervals}} to make Interval child elements, \code{\link{add_data_field_children}}
+\code{\link[=make_intervals]{make_intervals()}} to make Interval child elements, \code{\link[=add_data_field_children]{add_data_field_children()}}
 to add these xml fragments to the DataDictionary PMML element.
 }
 \author{

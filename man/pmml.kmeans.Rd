@@ -62,8 +62,7 @@ cl_pmml <- pmml(cl)
 }
 }
 \references{
-\href{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/kmeans.html}{R
-project: K-Means Clustering}
+\href{http://stat.ethz.ch/R-manual/R-devel/library/stats/html/kmeans.html}{R project: K-Means Clustering}
 }
 \author{
 Graham Williams

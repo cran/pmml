@@ -25,8 +25,8 @@
 #'
 #' @section Functions:
 #' \itemize{
-#' \item \code{\link{pmml}} exports R model objects to PMML format.
-#' \item \code{\link{xform_wrap}} creates an object with that can then be used
+#' \item [pmml()] exports R model objects to PMML format.
+#' \item [xform_wrap()] creates an object with that can then be used
 #' to describe transformations to be exported to PMML.
 #' }
 #'
@@ -36,13 +36,13 @@
 #' \pkg{pmmlTransformations} package have been merged into \pkg{pmml} starting
 #' with version 2.0.0.
 #'
-#' The general methodology is to first wrap the data with \code{xform_wrap},
+#' The general methodology is to first wrap the data with `xform_wrap`,
 #' and then perform transformations using the following functions:
-#' \code{xform_discretize}, \code{xform_function}, \code{xform_map},
-#' \code{xform_min_max}, \code{xform_norm_discrete}, \code{xform_z_score}.
+#' `xform_discretize`, `xform_function`, `xform_map`,
+#' `xform_min_max`, `xform_norm_discrete`, `xform_z_score`.
 #' The model, including the transformations, can then be output in PMML format by
-#' calling the \code{pmml} function. The \code{pmml} function in this
-#' case has to be given an additional parameter, \code{transforms}.
+#' calling the `pmml` function. The `pmml` function in this
+#' case has to be given an additional parameter, `transforms`.
 #'
 #' @section PMML:
 #'
@@ -50,7 +50,7 @@
 #' provides a way for applications to define machine learning, statistical and
 #' data mining models and to share models between PMML compliant applications.
 #' More information about the PMML industry standard and the Data Mining Group
-#' can be found at <https://www.dmg.org>. The generated PMML can be imported
+#' can be found at <https://dmg.org>. The generated PMML can be imported
 #' into any PMML consuming application, such as Zementis Predictive Analytics
 #' products, which integrate with web services, relational database systems and
 #' deploy natively on Hadoop in conjunction with Hive, Spark or Storm, as well
@@ -59,21 +59,21 @@
 #'
 #' @section References:
 #' \itemize{
-#' \item \href{https://dmg.org/pmml/v4-4-1/GeneralStructure.html}{PMML home page}
+#' \item [PMML home page](https://dmg.org/pmml/v4-4-1/GeneralStructure.html)
 #'
-#' \item \href{https://dmg.org/pmml/v4-4-1/Transformations.html}{PMML transformations}
+#' \item [PMML transformations](https://dmg.org/pmml/v4-4-1/Transformations.html)
 #'
-#' \item A. Guazzelli, W. Lin, T. Jena (2012), \emph{PMML in Action: Unleashing
-#' the Power of Open Standards for Data Mining and Predictive Analytics}.
+#' \item A. Guazzelli, W. Lin, T. Jena (2012), *PMML in Action: Unleashing
+#' the Power of Open Standards for Data Mining and Predictive Analytics*.
 #' CreateSpace Independent Publishing Platform (Second Edition).
 #'
 #' \item A. Guazzelli, M. Zeller, W. Lin, G. Williams (2009), PMML: An Open
-#' Standard for Sharing Models. \emph{The R journal}, Volume 1/1, 60-65
+#' Standard for Sharing Models. *The R journal*, Volume 1/1, 60-65
 #'
 #' \item T. Jena, A. Guazzelli, W. Lin, M. Zeller (2013).
-#' \href{https://kdd13pmml.files.wordpress.com/2013/07/jena_et_al.pdf}{The R
-#' pmmlTransformations Package.} In \emph{Proceedings of the 19th ACM SIGKDD
-#' Conference on Knowledge Discovery and Data Mining}
+#' [The R
+#' pmmlTransformations Package.](https://kdd13pmml.files.wordpress.com/2013/07/jena_et_al.pdf) In *Proceedings of the 19th ACM SIGKDD
+#' Conference on Knowledge Discovery and Data Mining*
 #'
 #' }
 #'

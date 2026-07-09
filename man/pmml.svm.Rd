@@ -100,9 +100,9 @@ will match R's output.
 For example, say that for an an observation, the R OCSVM model predicts a positive
 decision value of 0.4 and label of TRUE. According to the R object, this means that the
 observation is an inlier. By default, the PMML export of this model will give the following for the
-same input: \code{anomalyScore = 0.4, anomaly = "false"}. According to the PMML, the observation is not an anomaly.
+same input: \verb{anomalyScore = 0.4, anomaly = "false"}. According to the PMML, the observation is not an anomaly.
 If the same R object is instead exported with \code{detect_anomaly = FALSE},
-the PMML will then give: \code{anomalyScore = 0.4, inlier = "true"}, and this result agrees with R.
+the PMML will then give: \verb{anomalyScore = 0.4, inlier = "true"}, and this result agrees with R.
 
 Note that there is no sign flip for \code{anomalyScore} between R and PMML for OCSVM models.
 
@@ -146,13 +146,14 @@ fit_pmml <- pmml(fit, dataset = iris[, 1:4])
 
 }
 \references{
-* R project CRAN package: \emph{\bold{e1071}: Misc Functions of the Department of Statistics,
+\itemize{
+\item R project CRAN package: \emph{\strong{e1071}: Misc Functions of the Department of Statistics,
 Probability Theory Group (Formerly: E1071), TU Wien} \url{https://CRAN.R-project.org/package=e1071}
-
-* Chang, Chih-Chung and Lin, Chih-Jen, \emph{LIBSVM: a library for Support Vector Machines}
-  \url{https://www.csie.ntu.edu.tw/~cjlin/libsvm/}
+\item Chang, Chih-Chung and Lin, Chih-Jen, \emph{LIBSVM: a library for Support Vector Machines}
+\url{https://www.csie.ntu.edu.tw/~cjlin/libsvm/}
+}
 }
 \seealso{
-\code{\link[pmml]{pmml}},
+\code{\link[=pmml]{pmml()}},
 \href{https://dmg.org/pmml/v4-4-1/SupportVectorMachine.html}{PMML SVM specification}
 }

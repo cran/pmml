@@ -34,9 +34,9 @@
 #' the PMML version of the model.
 #' @param \dots Further arguments passed to or from other methods.
 #'
-#' @return An object of class \code{XMLNode} as that defined by the \pkg{XML} package.
+#' @return An object of class `XMLNode` as that defined by the \pkg{XML} package.
 #' This represents the top level, or root node, of the XML document and is of
-#' type PMML. It can be written to file with \code{saveXML}.
+#' type PMML. It can be written to file with `saveXML`.
 #'
 #' @details
 #' The PMML format allows a DataField element to have 'Interval' and 'Value'

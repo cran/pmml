@@ -30,27 +30,27 @@
 #' @details
 #'
 #' Calculate the expression provided
-#' in \code{expression} for every row in the \code{wrap_object$data}
-#' data frame. The \code{expression} argument must represent
+#' in `expression` for every row in the `wrap_object$data`
+#' data frame. The `expression` argument must represent
 #' a valid R expression, and any functions used in
-#' \code{expression} must be defined in the current
+#' `expression` must be defined in the current
 #' environment.
 #'
 #' The name of the new field is optional (a default name is provided), but an error
 #' will be thrown if attempting to create a field with a name that already exists in
 #' the xform_wrap object.
 #'
-#' When \code{new_field_data_type = "numeric"}, the \code{DerivedField} attributes
-#' in PMML will be \code{dataType = "double"} and \code{optype = "continuous"}.
-#' When \code{new_field_data_type = "factor"}, these attributes will be
-#' \code{dataType = "string"} and \code{optype = "categorical"}.
+#' When `new_field_data_type = "numeric"`, the `DerivedField` attributes
+#' in PMML will be `dataType = "double"` and `optype = "continuous"`.
+#' When `new_field_data_type = "factor"`, these attributes will be
+#' `dataType = "string"` and `optype = "categorical"`.
 #'
 #'
 #' @return R object containing the raw data, the transformed data and data statistics.
-#' The \code{data} data frame will contain a new \code{new_field_name} column, and
-#' \code{field_data} will contain a new \code{new_field_name} row.
+#' The `data` data frame will contain a new `new_field_name` column, and
+#' `field_data` will contain a new `new_field_name` row.
 #'
-#' @seealso \code{\link{xform_wrap}}
+#' @seealso [xform_wrap()]
 #'
 #' @examples
 #' # Load the standard iris dataset:

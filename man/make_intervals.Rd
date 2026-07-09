@@ -40,7 +40,7 @@ mi <- make_intervals(
 )
 }
 \seealso{
-\code{\link{make_values}} to make Values child elements, \code{\link{add_data_field_children}}
+\code{\link[=make_values]{make_values()}} to make Values child elements, \code{\link[=add_data_field_children]{add_data_field_children()}}
 to add these xml fragments to the DataDictionary PMML element.
 }
 \author{

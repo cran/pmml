@@ -19,7 +19,7 @@
 # #############################################################################
 
 #' Normalize continuous values in accordance with the PMML element
-#' \bold{NormContinuous}.
+#' **NormContinuous**.
 #'
 #'
 #' @param wrap_object Output of xform_wrap or another transformation function.
@@ -35,12 +35,12 @@
 #' Given input data in a xform_wrap format, normalize the given data values to
 #' lie between provided limits.
 #'
-#' Given an input variable named \bold{InputVar}, the name of the transformed
-#' variable \bold{OutputVar}, the desired minimum value the transformed
-#' variable may have \bold{low_limit}, the desired maximum value the
-#' transformed variable may have \bold{high_limit}, and the desired value of
+#' Given an input variable named **InputVar**, the name of the transformed
+#' variable **OutputVar**, the desired minimum value the transformed
+#' variable may have **low_limit**, the desired maximum value the
+#' transformed variable may have **high_limit**, and the desired value of
 #' the transformed variable if the input variable value is missing
-#' \bold{missingVal}, the \bold{xform_min_max} command including all the optional
+#' **missingVal**, the **xform_min_max** command including all the optional
 #' parameters is in the format:
 #'
 #' \preformatted{
@@ -49,26 +49,26 @@
 #' }
 #'
 #' There are two ways to refer to variables. The first way is
-#' to use the variable's column number; given the \bold{data} attribute of the
-#' \bold{boxData} object, this would be the order at which the variable
+#' to use the variable's column number; given the **data** attribute of the
+#' **boxData** object, this would be the order at which the variable
 #' appears. This can be indicated in the format "column#". The second way is
 #' to refer to the variable by its name.
 #'
 #' The name of the transformed variable is optional; if the name is not
 #' provided, the transformed variable is given the name: "derived_" +
-#' \emph{original_variable_name}. Similarly, the low and high limit values
+#' *original_variable_name*. Similarly, the low and high limit values
 #' are optional; they have the default values of 0 and 1 respectively.
-#' \bold{missingValue} is an optional parameter as well. It is the value of the
+#' **missingValue** is an optional parameter as well. It is the value of the
 #' derived variable if the input value is missing.
 #'
 #' If no input variable names are provided, by default all numeric variables
 #' are transformed. Note that in this case a replacement value for missing
-#' input values cannot be specified; the same applies to the \bold{low_limit}
-#' and \bold{high_limit} parameters.
+#' input values cannot be specified; the same applies to the **low_limit**
+#' and **high_limit** parameters.
 #'
 #' @author Tridivesh Jena
 #'
-#' @seealso \code{\link{xform_wrap}}
+#' @seealso [xform_wrap()]
 #'
 #' @keywords manip
 #'

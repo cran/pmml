@@ -21,7 +21,7 @@
 #' Generate the PMML representation for a gbm object from the package \pkg{gbm}.
 #'
 #'
-#' @param model A \code{gbm} object.
+#' @param model A `gbm` object.
 #' @param missing_value_replacement Value to be used as the 'missingValueReplacement'
 #' attribute for all MiningFields.
 #'
@@ -40,8 +40,8 @@
 #' @author Tridivesh Jena
 #'
 #' @references
-#' \href{https://CRAN.R-project.org/package=gbm}{gbm: Generalized Boosted
-#' Regression Models (on CRAN)}
+#' [gbm: Generalized Boosted
+#' Regression Models (on CRAN)](https://CRAN.R-project.org/package=gbm)
 #'
 #' @examples
 #' \dontrun{

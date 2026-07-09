@@ -39,8 +39,8 @@
 #' @author Tridivesh Jena
 #'
 #' @references
-#' \href{https://CRAN.R-project.org/package=randomForest}{randomForest:
-#' Breiman and Cutler's random forests for classification and regression}
+#' [randomForest:
+#' Breiman and Cutler's random forests for classification and regression](https://CRAN.R-project.org/package=randomForest)
 #'
 #' @examples
 #' \dontrun{

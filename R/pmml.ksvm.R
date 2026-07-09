@@ -37,12 +37,12 @@
 #' The following ksvm kernels are currently supported: rbfdot, polydot,
 #' vanilladot, tanhdot.
 #'
-#' The argument \code{dataset} is required since the \code{ksvm} object does not
+#' The argument `dataset` is required since the `ksvm` object does not
 #' contain information about the used categorical variable.
 #'
 #' @references
-#' \href{https://CRAN.R-project.org/package=kernlab}{kernlab: Kernel-based
-#' Machine Learning Lab (on CRAN)}
+#' [kernlab: Kernel-based
+#' Machine Learning Lab (on CRAN)](https://CRAN.R-project.org/package=kernlab)
 #'
 #' @examples
 #' \dontrun{
